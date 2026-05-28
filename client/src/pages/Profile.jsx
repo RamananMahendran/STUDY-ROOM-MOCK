@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Sidebar from "./components/Sidebar";
+import TopBar from "./components/TopBar";
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
 const IcoDashboard  = ({s=15}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>;
@@ -29,110 +31,6 @@ const IcoCheckCircle= ({s=16}) => <svg width={s} height={s} viewBox="0 0 24 24" 
 const IcoFlame      = ({s=16}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg>;
 const IcoMoreHorizontal = ({s=16}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>;
 const IcoCheck      = ({s=16}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
-
-// ── Nav items ─────────────────────────────────────────────────────────────────
-const NAV_ITEMS = [
-  { id: "home",      label: "Home",         Icon: IcoDashboard,  path: "/home"  },
-  { id: "rooms",     label: "Rooms",        Icon: IcoHeadphones, path: "/rooms" },
-  { id: "practice",  label: "Practice",     Icon: IcoCode,       chevron: true  },
-  { id: "contests",  label: "Contests",     Icon: IcoZap,        soon: true     },
-  { id: "community", label: "Community",    Icon: IcoUsers                      },
-  { id: "profile",   label: "Profile",      Icon: IcoBar,        path: "/profile" },
-  { id: "refer",     label: "Refer & earn", Icon: IcoGift                       },
-];
-
-// ── Sidebar ───────────────────────────────────────────────────────────────────
-function Sidebar({ active, onNav }) {
-  return (
-    <div className="flex-shrink-0 h-full flex flex-col" style={{ width: 220, backgroundColor: "var(--surface)", borderRight: "1px solid var(--border)" }}>
-      {/* Brand */}
-      <div className="flex items-center gap-2.5 flex-shrink-0" style={{ padding: "14px 14px 12px", borderBottom: "1px solid var(--border)" }}>
-        <div className="flex items-center justify-center flex-shrink-0" style={{ width: 30, height: 30, borderRadius: 9, background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
-          <IcoBookOpen s={13} />
-        </div>
-        <span style={{ fontWeight: 800, fontSize: 14, color: "var(--text)", letterSpacing: "-0.3px" }}>Study Room</span>
-      </div>
-
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto flex flex-col" style={{ padding: "10px 8px", gap: 1 }}>
-        {NAV_ITEMS.map(({ id, label, Icon, chevron, soon, path }) => {
-          const isActive = active === id;
-          return (
-            <div key={id} style={{ position: "relative" }}>
-              <button
-                aria-label={label}
-                onClick={() => onNav(id, path)}
-                className="flex items-center w-full text-left cursor-pointer"
-                style={{
-                  gap: 10, padding: "7px 10px", borderRadius: 8, border: "none",
-                  fontSize: 13, position: "relative",
-                  fontWeight: isActive ? 600 : 400,
-                  color: isActive ? "var(--accent)" : "var(--text-muted)",
-                  backgroundColor: isActive ? "var(--accent-bg)" : "transparent",
-                  transition: "background-color var(--dur-fast), color var(--dur-fast)",
-                  fontFamily: "inherit",
-                }}
-              >
-                <Icon s={15} />
-                <span style={{ flex: "1 1 0%", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>
-                {chevron && <IcoChevron s={13} rotate="-90" />}
-              </button>
-              {soon && (
-                <span className="absolute flex items-center gap-1 pointer-events-none" style={{ top: 6, right: 6, fontSize: 8, fontWeight: 800, letterSpacing: "0.4px", padding: "1px 5px", borderRadius: 10, backgroundColor: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text-subtle)" }}>
-                  <IcoLock s={7} /> SOON
-                </span>
-              )}
-            </div>
-          );
-        })}
-      </nav>
-
-      {/* Bottom – user */}
-      <div className="flex-shrink-0 flex flex-col" style={{ borderTop: "1px solid var(--border)", padding: "10px 12px", gap: 8 }}>
-        <div className="flex items-center" style={{ gap: 8 }}>
-          <img alt="Mayur K S" src="https://lh3.googleusercontent.com/a/ACg8ocJOHQ3CBE3KjE6jm37Rh6DZ1INAG8-i1M7xZZNfvCYrlZHgTg=s96-c" style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0, objectFit: "cover" }} onError={e => { e.currentTarget.style.display = "none"; }} />
-          <div className="flex-1 min-w-0">
-            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Mayur K S</div>
-          </div>
-          {/* Dark-mode toggle */}
-          <button title="Switch to light mode" className="flex-shrink-0 flex items-center cursor-pointer" style={{ width: 40, height: 22, borderRadius: 99, border: "1px solid var(--border)", backgroundColor: "rgb(26,26,26)", padding: 2 }}>
-            <span className="flex items-center justify-center rounded-full" style={{ width: 16, height: 16, backgroundColor: "rgb(99,102,241)", transform: "translateX(0px)", transition: "transform 0.3s cubic-bezier(0.34,1.56,0.64,1)", fontSize: 9, boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }}>🌙</span>
-          </button>
-        </div>
-        <button className="flex items-center justify-center w-full cursor-pointer" style={{ gap: 6, padding: "6px 0", borderRadius: 7, fontSize: 12, border: "1px solid var(--border)", backgroundColor: "transparent", color: "var(--text-muted)", fontFamily: "inherit", transition: "background-color var(--dur-fast), color var(--dur-fast)" }}>
-          <IcoLogout s={12} /> Sign out
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ── Top bar ───────────────────────────────────────────────────────────────────
-function TopBar({ title, subtitle }) {
-  return (
-    <div className="flex-shrink-0 flex items-center" style={{ height: 48, gap: 12, padding: "0 20px", borderBottom: "1px solid var(--border)", backgroundColor: "var(--surface)" }}>
-      <div className="min-w-0">
-        <h1 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--text)", lineHeight: 1, whiteSpace: "nowrap" }}>{title}</h1>
-        {subtitle && <p style={{ margin: "2px 0 0", fontSize: 11, color: "var(--text-muted)", lineHeight: 1 }}>{subtitle}</p>}
-      </div>
-      <div className="flex-1 flex justify-center" />
-      <div className="flex items-center ml-auto flex-shrink-0" style={{ gap: 6 }}>
-        <button title="Command palette (⌘K)" aria-label="Open command palette" className="flex items-center cursor-pointer" style={{ gap: 5, padding: "4px 10px", borderRadius: "var(--radius-md)", border: "1px solid var(--border)", backgroundColor: "var(--surface-2)", color: "var(--text-muted)", fontSize: 11, fontWeight: 500, fontFamily: "inherit" }}>
-          <IcoSearch s={12} />
-          <span style={{ letterSpacing: "0.3px" }}>⌘K</span>
-        </button>
-        <div style={{ position: "relative" }}>
-          <button title="Notifications" aria-label="Notifications" className="flex items-center justify-center cursor-pointer" style={{ position: "relative", width: 32, height: 32, borderRadius: "var(--radius-md)", border: "none", backgroundColor: "transparent", color: "var(--text-muted)", fontFamily: "inherit" }}>
-            <IcoBell s={15} />
-          </button>
-        </div>
-        <button title="Create room" aria-label="Create room" className="flex items-center justify-center cursor-pointer" style={{ width: 28, height: 28, borderRadius: "var(--radius-md)", border: "none", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "#fff", fontFamily: "inherit" }}>
-          <IcoPlus s={14} />
-        </button>
-      </div>
-    </div>
-  );
-}
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
 function StatCard({ icon, label, value, unit, color }) {

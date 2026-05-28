@@ -1,632 +1,35 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "./components/Sidebar";
+import TopBar from "./components/TopBar";
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
-const IcoDashboard  = ({s=15}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>;
-const IcoHeadphones = ({s=15}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg>;
-const IcoCode       = ({s=15}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>;
-const IcoZap        = ({s=15}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>;
-const IcoUsers      = ({s=15}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>;
-const IcoBar        = ({s=15}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M5 21v-6"/><path d="M12 21V3"/><path d="M19 21V9"/></svg>;
-const IcoGift       = ({s=15}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/><rect x="3" y="7" width="18" height="4" rx="1"/></svg>;
-const IcoLogout     = ({s=12}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>;
-const IcoChevron    = ({s=13, rotate="0"}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{transition:"transform var(--dur-fast)", transform:`rotate(${rotate}deg)`}}><path d="m6 9 6 6 6-6"/></svg>;
-const IcoChevRight  = ({s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>;
-const IcoLock       = ({s=7})  => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
-const IcoSearch     = ({s=12}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>;
-const IcoBell       = ({s=15}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>;
-const IcoPlus       = ({s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>;
-const IcoFlame      = ({s=24, style:st}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={st}><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/></svg>;
-const IcoTimer      = ({s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/></svg>;
-const IcoCheck      = ({s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>;
-const IcoArrow      = ({s=12}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>;
-const IcoMsg        = ({s=20}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg>;
-const IcoBookOpen   = ({s=13}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>;
-
-
-
-// ── Create Room Modal ─────────────────────────────────────────────────────────
-const ROOM_ICONS = ["📚", "🗓", "🖨", "🦊", "🔬", "📝", "🌀", "🍎"];
-const ROOM_COLORS = ["#7c6fe0", "#b060e0", "#40b8e0", "#22c55e", "#f59e0b", "#ef4444"];
-const QUICK_STARTS = [
-  { label: "Exam Sprint",     emoji: "🔴", focus: 50, brk: 10 },
-  { label: "Group Project",   emoji: "🟡", focus: 25, brk:  5 },
-  { label: "Deep Work",       emoji: "🟠", focus: 50, brk: 10 },
-  { label: "Quick Revision",  emoji: "⚡", focus: 15, brk:  5 },
-];
-
-function CreateRoomModal({ onClose }) {
-  const [roomName, setRoomName]     = useState("");
-  const [goal, setGoal]             = useState("");
-  const [selectedIcon, setIcon]     = useState(0);
-  const [selectedColor, setColor]   = useState(0);
-  const [focus, setFocus]           = useState(10);
-  const [brk, setBrk]               = useState(5);
-  const [expires, setExpires]       = useState("24h");
-
-  const applyQuick = (qs) => {
-    setFocus(qs.focus);
-    setBrk(qs.brk);
-  };
-
-  // Close on Escape
-  useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: "fixed", inset: 0, zIndex: 10000,
-        background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "16px",
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: "100%", maxWidth: 660,
-          background: "#12151c",
-          border: "1px solid #1e2433",
-          borderRadius: 16,
-          boxShadow: "0 24px 80px rgba(0,0,0,0.7)",
-          fontFamily: "inherit",
-          color: "#e2e8f0",
-          overflow: "hidden",
-        }}
-      >
-        {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px 16px", borderBottom: "1px solid #1e2433" }}>
-          <span style={{ fontSize: 15, fontWeight: 700, color: "#f1f5f9" }}>Create a Room</span>
-          <button
-            onClick={onClose}
-            style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: 18, lineHeight: 1, padding: 4, borderRadius: 6, display: "flex", alignItems: "center" }}
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Body */}
-        <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: 0 }}>
-          {/* Left – preview + icon + color */}
-          <div style={{ padding: "20px 16px 24px", borderRight: "1px solid #1e2433", display: "flex", flexDirection: "column", gap: 20 }}>
-            {/* Preview card */}
-            <div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Preview</div>
-              <div style={{
-                background: "#1a1f2e",
-                border: `2px solid ${ROOM_COLORS[selectedColor]}`,
-                borderRadius: 10,
-                padding: "12px 14px",
-                display: "flex", flexDirection: "column", gap: 8,
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 18 }}>{ROOM_ICONS[selectedIcon]}</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: roomName ? "#f1f5f9" : "#475569" }}>
-                    {roomName || "Room name..."}
-                  </span>
-                </div>
-                <div style={{ display: "flex", gap: 10, fontSize: 10, color: "#64748b" }}>
-                  <span>⏱ {focus}m</span>
-                  <span>· {brk}m</span>
-                  <span>· {expires}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Icon picker */}
-            <div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Icon</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
-                {ROOM_ICONS.map((ico, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setIcon(i)}
-                    style={{
-                      background: selectedIcon === i ? "#1f2433" : "#0d1117",
-                      border: selectedIcon === i ? `2px solid ${ROOM_COLORS[selectedColor]}` : "2px solid #1e2433",
-                      borderRadius: 8,
-                      padding: "6px",
-                      cursor: "pointer",
-                      fontSize: 16,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      transition: "border-color 0.15s",
-                    }}
-                  >
-                    {ico}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Color picker */}
-            <div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Color</div>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {ROOM_COLORS.map((col, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setColor(i)}
-                    style={{
-                      width: 26, height: 26, borderRadius: "50%",
-                      background: col,
-                      border: selectedColor === i ? "2px solid #fff" : "2px solid transparent",
-                      outline: selectedColor === i ? `2px solid ${col}` : "none",
-                      cursor: "pointer",
-                      transition: "outline 0.15s, border 0.15s",
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Right – form */}
-          <div style={{ padding: "20px 24px 24px", display: "flex", flexDirection: "column", gap: 18 }}>
-            {/* Quick Start */}
-            <div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>Quick Start</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                {QUICK_STARTS.map((qs) => (
-                  <button
-                    key={qs.label}
-                    onClick={() => applyQuick(qs)}
-                    style={{
-                      background: "#0d1117",
-                      border: "1px solid #1e2433",
-                      borderRadius: 8,
-                      padding: "10px 12px",
-                      cursor: "pointer",
-                      textAlign: "left",
-                      color: "#e2e8f0",
-                      transition: "border-color 0.15s, background 0.15s",
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.background = "#161b26"; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#1e2433"; e.currentTarget.style.background = "#0d1117"; }}
-                  >
-                    <div style={{ fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
-                      <span>{qs.emoji}</span> {qs.label}
-                    </div>
-                    <div style={{ fontSize: 10, color: "#64748b", marginTop: 3 }}>
-                      {qs.focus}m · {qs.brk}m break
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Room Name */}
-            <div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>Room Name</div>
-              <div style={{ position: "relative" }}>
-                <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 12 }}>🖥</span>
-                <input
-                  type="text"
-                  placeholder="e.g. DSA Study Session"
-                  value={roomName}
-                  onChange={e => setRoomName(e.target.value)}
-                  style={{
-                    width: "100%", boxSizing: "border-box",
-                    background: "#0d1117",
-                    border: "1px solid #1e2433",
-                    borderRadius: 8,
-                    padding: "10px 12px 10px 34px",
-                    fontSize: 13,
-                    color: "#f1f5f9",
-                    outline: "none",
-                    fontFamily: "inherit",
-                  }}
-                  onFocus={e => e.target.style.borderColor = "#6366f1"}
-                  onBlur={e => e.target.style.borderColor = "#1e2433"}
-                />
-              </div>
-            </div>
-
-            {/* Session Goal */}
-            <div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>Session Goal</div>
-              <div style={{ position: "relative" }}>
-                <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 12 }}>🎯</span>
-                <input
-                  type="text"
-                  placeholder="e.g. Finish trees and graphs"
-                  value={goal}
-                  onChange={e => setGoal(e.target.value)}
-                  style={{
-                    width: "100%", boxSizing: "border-box",
-                    background: "#0d1117",
-                    border: "1px solid #1e2433",
-                    borderRadius: 8,
-                    padding: "10px 12px 10px 34px",
-                    fontSize: 13,
-                    color: "#f1f5f9",
-                    outline: "none",
-                    fontFamily: "inherit",
-                  }}
-                  onFocus={e => e.target.style.borderColor = "#6366f1"}
-                  onBlur={e => e.target.style.borderColor = "#1e2433"}
-                />
-              </div>
-            </div>
-
-            {/* Expires + Pomodoro */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "start" }}>
-              {/* Expires */}
-              <div>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>Expires In</div>
-                <div style={{ position: "relative" }}>
-                  <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 12 }}>⏰</span>
-                  <select
-                    value={expires}
-                    onChange={e => setExpires(e.target.value)}
-                    style={{
-                      width: "100%",
-                      background: "#0d1117",
-                      border: "1px solid #1e2433",
-                      borderRadius: 8,
-                      padding: "9px 12px 9px 30px",
-                      fontSize: 13,
-                      color: "#f1f5f9",
-                      outline: "none",
-                      fontFamily: "inherit",
-                      cursor: "pointer",
-                      appearance: "none",
-                    }}
-                  >
-                    <option value="1h">1 hour</option>
-                    <option value="2h">2 hours</option>
-                    <option value="4h">4 hours</option>
-                    <option value="8h">8 hours</option>
-                    <option value="24h">24 hours</option>
-                  </select>
-                  <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: 10, color: "#64748b", pointerEvents: "none" }}>▼</span>
-                </div>
-              </div>
-
-              {/* Pomodoro */}
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase" }}>Pomodoro</div>
-                  <span style={{ fontSize: 11 }}>⏱</span>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {/* Focus */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 11, color: "#94a3b8" }}>Focus</span>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <button onClick={() => setFocus(f => Math.max(5, f - 5))} style={pomoBtnStyle}>−</button>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#818cf8", minWidth: 30, textAlign: "center" }}>{focus}m</span>
-                      <button onClick={() => setFocus(f => Math.min(120, f + 5))} style={pomoBtnStyle}>+</button>
-                    </div>
-                  </div>
-                  {/* Break */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 11, color: "#94a3b8" }}>Break</span>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <button onClick={() => setBrk(b => Math.max(1, b - 1))} style={pomoBtnStyle}>−</button>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#818cf8", minWidth: 30, textAlign: "center" }}>{brk}m</span>
-                      <button onClick={() => setBrk(b => Math.min(30, b + 1))} style={pomoBtnStyle}>+</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div style={{ display: "flex", gap: 10, padding: "16px 24px", borderTop: "1px solid #1e2433" }}>
-          <button
-            onClick={onClose}
-            style={{
-              flex: "0 0 auto",
-              padding: "11px 24px",
-              borderRadius: 10,
-              border: "1px solid #1e2433",
-              background: "transparent",
-              color: "#94a3b8",
-              fontSize: 13, fontWeight: 600,
-              cursor: "pointer",
-              fontFamily: "inherit",
-            }}
-          >
-            Cancel
-          </button>
-          <button
-            style={{
-              flex: 1,
-              padding: "11px 24px",
-              borderRadius: 10,
-              border: "none",
-              background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-              color: "#fff",
-              fontSize: 13, fontWeight: 700,
-              cursor: "pointer",
-              fontFamily: "inherit",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            }}
-          >
-            <IcoPlus s={14} /> Create Room
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const pomoBtnStyle = {
-  width: 24, height: 24,
-  display: "flex", alignItems: "center", justifyContent: "center",
-  background: "#1a1f2e",
-  border: "1px solid #1e2433",
-  borderRadius: 6,
-  color: "#94a3b8",
-  fontSize: 14, fontWeight: 700,
-  cursor: "pointer",
-  lineHeight: 1,
-};
-
-// ── Notifications Panel ────────────────────────────────────────────────────────
-function NotificationsPanel({ onClose }) {
-  const panelRef = useRef(null);
-
-  // Close when clicking outside
-  useEffect(() => {
-    const handler = (e) => {
-      if (panelRef.current && !panelRef.current.contains(e.target)) onClose();
-    };
-    // slight delay so the open-click doesn't immediately close
-    const t = setTimeout(() => document.addEventListener("mousedown", handler), 50);
-    return () => { clearTimeout(t); document.removeEventListener("mousedown", handler); };
-  }, [onClose]);
-
-  // Close on Escape
-  useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
-  return (
-    <div
-      ref={panelRef}
-      style={{
-        position: "absolute",
-        top: "calc(100% + 8px)",
-        right: 0,
-        width: 320,
-        background: "#12151c",
-        border: "1px solid #1e2433",
-        borderRadius: 14,
-        boxShadow: "0 16px 48px rgba(0,0,0,0.6)",
-        zIndex: 9999,
-        overflow: "hidden",
-        color: "#e2e8f0",
-        fontFamily: "inherit",
-      }}
-    >
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 12px", borderBottom: "1px solid #1e2433" }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>Notifications</span>
-        <button
-          onClick={onClose}
-          style={{ background: "none", border: "none", cursor: "pointer", color: "#64748b", fontSize: 16, lineHeight: 1, padding: 2, borderRadius: 4, display: "flex", alignItems: "center" }}
-        >
-          ✕
-        </button>
-      </div>
-
-      {/* Empty state */}
-      <div style={{ padding: "48px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-        <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#1a1f2e", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <IcoBell s={20} />
-        </div>
-        <span style={{ fontSize: 12, color: "#64748b" }}>No notifications</span>
-      </div>
-    </div>
-  );
-}
-
-// ── Top bar ───────────────────────────────────────────────────────────────────
-function TopBar() {
-  const PALETTE_ITEMS = [
-      { id: "home",        label: "Go to Home",         icon: "▩" },
-      { id: "rooms",       label: "My Rooms",           icon: "🎧" },
-      { id: "problems",    label: "Problems",           icon: "🗒" },
-      { id: "playground",  label: "Code Playground",    icon: "🧩" },
-      { id: "pair",        label: "Start Pair Session", icon: "⚿" },
-      { id: "leaderboard", label: "Leaderboard",        icon: "🏆" },
-      { id: "analytics",   label: "Profile / Analytics",icon: "📊" },
-      { id: "community",   label: "Community / Friends",icon: "👥" },
-      { id: "createRoom",  label: "Create a room",      icon: "➕" },
-      { id: "invite",      label: "Invite friends",     icon: "✉️" },
-      { id: "OpenProblem", label: "Open a problem",     icon: "🔍" },
-  ];
-
-  const [isOpen, setIsOpen]             = useState(false);
-  const [searchQuery, setSearchQuery]   = useState("");
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [showNotif, setShowNotif]       = useState(false);
-  const [showCreateRoom, setShowCreateRoom] = useState(false);
-  
-  const paletteRef  = useRef(null);
-  const inputRef    = useRef(null);
-  const bellWrapRef = useRef(null);
-
-  const filteredItems = PALETTE_ITEMS.filter(item =>
-    item.label.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  useEffect(() => {
-    if (isOpen) {
-      inputRef.current?.focus();
-      setSelectedIndex(0);
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
-  }, [isOpen]);
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        setIsOpen((prev) => !prev);
-      }
-      if (e.key === "Escape") setIsOpen(false);
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  const handleListKeyDown = (e) => {
-    if (!isOpen || filteredItems.length === 0) return;
-    if (e.key === "ArrowDown") { e.preventDefault(); setSelectedIndex((prev) => (prev + 1) % filteredItems.length); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); setSelectedIndex((prev) => (prev - 1 + filteredItems.length) % filteredItems.length); }
-    else if (e.key === "Enter") { e.preventDefault(); handleItemTrigger(filteredItems[selectedIndex]); }
-  };
-
-  const handleItemTrigger = (item) => {
-    if (item.id === "createRoom") { setShowCreateRoom(true); }
-    setIsOpen(false);
-    setSearchQuery("");
-  };
-
-  return (
-    <>
-      {/* Create Room Modal */}
-      {showCreateRoom && <CreateRoomModal onClose={() => setShowCreateRoom(false)} />}
-
-      <div
-        className="flex-shrink-0 flex items-center"
-        style={{ height: 48, gap: 12, padding: "0 20px", borderBottom: "1px solid var(--border)", backgroundColor: "var(--surface)" }}
-      >
-        <div className="min-w-0">
-          <h1 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--text)", lineHeight: 1, whiteSpace: "nowrap" }}>Home</h1>
-          <p style={{ margin: "2px 0 0", fontSize: 11, color: "var(--text-muted)", lineHeight: 1 }}>Your study analytics</p>
-        </div>
-
-        <div className="flex-1 flex justify-center" />
-
-        <div className="flex items-center ml-auto flex-shrink-0" style={{ gap: 6 }}>
-          {/* ⌘K Search */}
-          <button
-            title="Command palette (⌘K)"
-            aria-label="Open command palette"
-            onClick={() => setIsOpen(true)}
-            className="flex items-center cursor-pointer gap-[5px] px-[10px] py-[4px] rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-muted)] text-[11px] font-[500] font-inherit transition-all duration-150"
-          >
-            <IcoSearch s={12} />
-            <span style={{ letterSpacing: "0.3px" }}>⌘K</span>
-          </button>
-
-          {/* Command Palette Modal */}
-          {isOpen && (
-            <div
-              className="fixed inset-0 z-[9999] flex items-center justify-center pt-[10vh] px-4 bg-black/60 backdrop-blur-[4px]"
-              onClick={() => setIsOpen(false)}
-            >
-              <div
-                ref={paletteRef}
-                onClick={(e) => e.stopPropagation()}
-                onKeyDown={handleListKeyDown}
-                className="w-full max-w-[580px] bg-[#0d1117] border border-[#1e2433] rounded-xl shadow-2xl overflow-hidden flex flex-col font-sans text-[#e2e8f0]"
-              >
-                <div className="h-8 flex items-center px-4 py-3.5 border-b border-[#1e2433] gap-3">
-                  <svg className="ml-8 text-gray-500 p-4 flex-shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    placeholder="Jump to, search, or do something..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-transparent border-none outline-none text-[14px] text-[#f1f5f9] placeholder-gray-600 font-sans"
-                  />
-                </div>
-                <div className="max-h-[340px] overflow-y-auto p-2 flex flex-col gap-0.5">
-                  <div className="text-[10px] font-bold text-gray-500 tracking-wider uppercase px-3 pt-2 pb-1.5">Navigate</div>
-                  {filteredItems.length > 0 ? (
-                    filteredItems.map((item, index) => {
-                      const isSelected = index === selectedIndex;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => handleItemTrigger(item)}
-                          onMouseEnter={() => setSelectedIndex(index)}
-                          className={`w-full flex items-center text-left gap-4 px-3 py-2.5 rounded-lg text-[13px] font-medium border-none cursor-pointer transition-colors duration-150 ${
-                            isSelected ? "bg-[#161b26] text-[#818cf8]" : "bg-transparent text-gray-300"
-                          }`}
-                        >
-                          <span className={`w-7 h-7 flex items-center justify-center rounded-md text-[13px] border ${
-                            isSelected ? "bg-[#1f2433] border-[#312e81]" : "bg-[#111622] border-[#1a202c]"
-                          }`}>
-                            {item.icon}
-                          </span>
-                          <span className="flex-1 truncate">{item.label}</span>
-                        </button>
-                      );
-                    })
-                  ) : (
-                    <div className="text-center py-8 text-[12px] text-gray-500">No matching items found.</div>
-                  )}
-                </div>
-                <div className="flex items-center gap-4 px-4 py-2.5 bg-[#080c12] border-t border-[#1e2433] text-[10px] text-gray-500 select-none">
-                  <div className="flex items-center gap-1"><span className="bg-[#111622] border border-[#1a202c] px-1 py-0.5 rounded text-[9px] font-mono">↑↓</span> Navigate</div>
-                  <div className="flex items-center gap-1"><span className="bg-[#111622] border border-[#1a202c] px-1 py-0.5 rounded text-[9px] font-mono">↵</span> Open</div>
-                  <div className="flex items-center gap-1"><span className="bg-[#111622] border border-[#1a202c] px-1 py-0.5 rounded text-[9px] font-mono">Esc</span> Close</div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Bell – Notifications */}
-          <div ref={bellWrapRef} style={{ position: "relative" }}>
-            <button
-              title="Notifications"
-              aria-label="Notifications"
-              onClick={() => setShowNotif((p) => !p)}
-              className="flex items-center justify-center cursor-pointer"
-              style={{
-                width: 32, height: 32, borderRadius: "var(--radius-md)",
-                border: "none",
-                backgroundColor: showNotif ? "var(--accent-bg)" : "transparent",
-                color: showNotif ? "var(--accent)" : "var(--text-muted)",
-                fontFamily: "inherit",
-                transition: "background-color var(--dur-fast), color var(--dur-fast)",
-              }}
-            >
-              <IcoBell s={15} />
-            </button>
-            {showNotif && <NotificationsPanel onClose={() => setShowNotif(false)} />}
-          </div>
-
-          {/* + Create room */}
-          <button
-            title="Create room"
-            aria-label="Create room"
-            onClick={() => setShowCreateRoom(true)}
-            className="flex items-center justify-center cursor-pointer"
-            style={{ width: 28, height: 28, borderRadius: "var(--radius-md)", border: "none", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "#fff", fontFamily: "inherit", transition: "opacity var(--dur-fast)" }}
-          >
-            <IcoPlus s={14} />
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
+const IcoDashboard = ({ s = 15 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}><rect width="7" height="9" x="3" y="3" rx="1" /><rect width="7" height="5" x="14" y="3" rx="1" /><rect width="7" height="9" x="14" y="12" rx="1" /><rect width="7" height="5" x="3" y="16" rx="1" /></svg>;
+const IcoHeadphones = ({ s = 15 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3" /></svg>;
+const IcoCode = ({ s = 15 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}><path d="m18 16 4-4-4-4" /><path d="m6 8-4 4 4 4" /><path d="m14.5 4-5 16" /></svg>;
+const IcoZap = ({ s = 15 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" /></svg>;
+const IcoUsers = ({ s = 15 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><path d="M16 3.128a4 4 0 0 1 0 7.744" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><circle cx="9" cy="7" r="4" /></svg>;
+const IcoBar = ({ s = 15 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}><path d="M5 21v-6" /><path d="M12 21V3" /><path d="M19 21V9" /></svg>;
+const IcoGift = ({ s = 15 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}><path d="M12 7v14" /><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8" /><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5" /><rect x="3" y="7" width="18" height="4" rx="1" /></svg>;
+const IcoLogout = ({ s = 12 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m16 17 5-5-5-5" /><path d="M21 12H9" /><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /></svg>;
+const IcoChevron = ({ s = 13, rotate = "0" }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ transition: "transform var(--dur-fast)", transform: `rotate(${rotate}deg)` }}><path d="m6 9 6 6 6-6" /></svg>;
+const IcoChevRight = ({ s = 14 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>;
+const IcoLock = ({ s = 7 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>;
+const IcoSearch = ({ s = 12 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34" /><circle cx="11" cy="11" r="8" /></svg>;
+const IcoBell = ({ s = 15 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0" /><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" /></svg>;
+const IcoPlus = ({ s = 14 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M12 5v14" /></svg>;
+const IcoFlame = ({ s = 24, style: st }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={st}><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4" /></svg>;
+const IcoTimer = ({ s = 14 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="10" x2="14" y1="2" y2="2" /><line x1="12" x2="15" y1="14" y2="11" /><circle cx="12" cy="14" r="8" /></svg>;
+const IcoCheck = ({ s = 14 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>;
+const IcoArrow = ({ s = 12 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>;
+const IcoMsg = ({ s = 20 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" /></svg>;
+const IcoBookOpen = ({ s = 13 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 7v14" /><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" /></svg>;
 
 // ── Daily challenge banner ────────────────────────────────────────────────────
 function DailyChallenge() {
-  const now   = new Date();
-  const day   = now.toLocaleDateString("en-US", { weekday: "long" });
-  const date  = now.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+  const now = new Date();
+  const day = now.toLocaleDateString("en-US", { weekday: "long" });
+  const date = now.toLocaleDateString("en-US", { month: "long", day: "numeric" });
 
   return (
     <div
@@ -689,9 +92,9 @@ function DailyChallenge() {
 
 // ── Hero greeting card ────────────────────────────────────────────────────────
 function HeroCard() {
-  const hour     = new Date().getHours();
+  const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-  const day      = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][new Date().getDay()];
+  const day = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][new Date().getDay()];
 
   return (
     <div
@@ -858,7 +261,7 @@ export default function Dashboard() {
 
       {/* Main pane */}
       <div style={{ flex: "1 1 0%", display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0 }}>
-        <TopBar />
+        <TopBar title="Home" subtitle="Your study analytics" />
 
         <main
           className="shell-main-content route-transition"
@@ -883,9 +286,9 @@ export default function Dashboard() {
 
               {/* KPI row */}
               <div className="kpi-row" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
-                <KpiCard icon={IcoTimer} iconBg="var(--accent-bg)"          iconColor="var(--accent)" label="Focus this week"   value="0h" />
-                <KpiCard icon={IcoTimer} iconBg="rgba(16,185,129,0.12)"     iconColor="#10b981"       label="Pomodoros today"  value="0"  sub="0 total" />
-                <KpiCard icon={IcoCheck} iconBg="rgba(139,92,246,0.12)"     iconColor="#8b5cf6"       label="Solved this month" value="0" sub="0 of 50 all-time" />
+                <KpiCard icon={IcoTimer} iconBg="var(--accent-bg)" iconColor="var(--accent)" label="Focus this week" value="0h" />
+                <KpiCard icon={IcoTimer} iconBg="rgba(16,185,129,0.12)" iconColor="#10b981" label="Pomodoros today" value="0" sub="0 total" />
+                <KpiCard icon={IcoCheck} iconBg="rgba(139,92,246,0.12)" iconColor="#8b5cf6" label="Solved this month" value="0" sub="0 of 50 all-time" />
               </div>
 
               {/* Charts row */}
@@ -949,10 +352,10 @@ export default function Dashboard() {
         style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, display: "none", height: 56, backgroundColor: "var(--surface)", borderTop: "1px solid var(--border)", paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         {[
-          { id: "home",      label: "Home",      Icon: IcoDashboard },
-          { id: "practice",  label: "Practice",  Icon: IcoCode      },
-          { id: "community", label: "Community", Icon: IcoUsers     },
-          { id: "profile",   label: "Profile",   Icon: IcoBar       },
+          { id: "home", label: "Home", Icon: IcoDashboard },
+          { id: "practice", label: "Practice", Icon: IcoCode },
+          { id: "community", label: "Community", Icon: IcoUsers },
+          { id: "profile", label: "Profile", Icon: IcoBar },
         ].map(({ id, label, Icon }) => (
           <button
             key={id}
@@ -990,7 +393,7 @@ export default function Dashboard() {
           transition: "transform 0.15s, box-shadow 0.15s",
         }}
         onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(99,102,241,0.5)"; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)";    e.currentTarget.style.boxShadow = "0 4px 16px rgba(99,102,241,0.4)"; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(99,102,241,0.4)"; }}
       >
         <IcoMsg s={20} />
       </button>
