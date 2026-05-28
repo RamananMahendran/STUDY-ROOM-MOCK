@@ -38,7 +38,7 @@
 #
 #CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]
 
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /usr/src/app
 COPY package*.json ./
 COPY prisma ./prisma/
@@ -52,7 +52,7 @@ RUN npx prisma generate
 
 RUN npm run build
 
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /usr/src/app
 ENV NODE_ENV=production
 
@@ -69,4 +69,4 @@ COPY --from=builder /usr/src/app/prisma.config.ts ./
 
 EXPOSE 5000
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]
+CMD ["sh", "-c", "npm run db:push && node dist/server.js"]

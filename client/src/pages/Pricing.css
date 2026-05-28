@@ -1,0 +1,343 @@
+/* ── PRICING HERO ── */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap');
+.pricing-hero {
+  position: relative;
+  padding: 80px 24px 40px;
+  text-align: center;
+  overflow: hidden;
+}
+.pricing-tag {
+  display: inline-block;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid #059669;
+  border-radius: 99px;
+  padding: 6px 16px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #10b981;
+  letter-spacing: 0.05em;
+  margin-bottom: 24px;
+}
+.pricing-title {
+  font-family: 'DM Serif Display', serif;
+  font-weight: 800;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  color: #f1f5f9;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+.pricing-subtitle {
+  color: #6b7280;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-width: 540px;
+  margin: 0 auto;
+}
+.pricing-subtitle a {
+  color: #6366f1;
+  text-decoration: underline;
+}
+
+/* ── LIVE FOUNDER SLOTS BAR ── */
+.founder-slots-container {
+  max-width: 500px;
+  margin: 32px auto 0;
+  background: rgba(13, 16, 32, 0.6);
+  border: 1px solid #1e2433;
+  border-radius: 12px;
+  padding: 16px;
+}
+.slots-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #1a1200;
+  border: 1px solid #78350f;
+  color: #fbbf24;
+  border-radius: 99px;
+  padding: 4px 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.slots-text {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 6px;
+}
+.slots-sub {
+  font-size: 0.75rem;
+  color: #4b5563;
+}
+
+/* ── PRICING CARDS GRID ── */
+.pricing-grid-section {
+  padding: 40px 24px 80px;
+}
+.pricing-grid {
+  max-width: 1140px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  align-items: stretch;
+}
+.pcard {
+  background: rgba(13, 17, 23, 0.7);
+  border: 1px solid #111827;
+  border-radius: 16px;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.pcard:hover {
+  border-color: #1f2937;
+}
+.pcard.popular {
+  background: linear-gradient(180deg, #0d1226 0%, #0d1117 100%);
+  border: 1px solid #312e81;
+  box-shadow: 0 0 24px rgba(99, 102, 241, 0.1);
+}
+.pcard-popular-tag {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #6366f1;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 99px;
+  letter-spacing: 0.05em;
+}
+.pcard-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 4px;
+}
+.pcard-target {
+  font-size: 0.72rem;
+  color: #4b5563;
+  margin-bottom: 20px;
+}
+.pcard-price-box {
+  margin-bottom: 24px;
+}
+.pcard-price {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+.pcard-period {
+  font-size: 0.78rem;
+  color: #4b5563;
+  margin-left: 2px;
+}
+.pcard-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 32px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-grow: 1;
+}
+.pcard-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.78rem;
+  color: #9ca3af;
+  line-height: 1.4;
+}
+.pcard-feature-item.checked {
+  color: #d1d5db;
+}
+.pcard-feature-item svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.pcard-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+/* ── MATRIX FEATURES COMPARISON ── */
+.matrix-section {
+  padding: 60px 24px 80px;
+}
+.matrix-inner {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.matrix-title {
+  text-align: center;
+  font-weight: 800;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  color: #f1f5f9;
+  margin-bottom: 40px;
+  letter-spacing: -0.02em;
+}
+.matrix-title em {
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-weight: 400;
+}
+.matrix-table {
+  background: #0d1117;
+  border: 1px solid #111827;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.matrix-row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #111827;
+}
+.matrix-row:last-child {
+  border-bottom: none;
+}
+.matrix-header {
+  background: #080c12;
+  border-bottom: 1px solid #1e2433;
+}
+.matrix-cell {
+  padding: 14px 20px;
+  font-size: 0.8rem;
+}
+.matrix-cell.feature-name {
+  flex: 2;
+  color: #d1d5db;
+  text-align: left;
+}
+.matrix-cell.tier-val {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #6b7280;
+}
+.matrix-cell.tier-val.active-tier {
+  background: rgba(99, 102, 241, 0.02);
+  color: #f1f5f9;
+}
+.matrix-head-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #4b5563;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.matrix-head-tier {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #9ca3af;
+}
+.matrix-head-tier.pro {
+  color: #6366f1;
+}
+
+/* ── FAQ ACCORDION ── */
+.faq-section {
+  padding: 60px 24px 80px;
+}
+.faq-inner {
+  max-width: 680px;
+  margin: 0 auto;
+}
+.faq-title {
+  text-align: center;
+  font-weight: 800;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  color: #f1f5f9;
+  margin-bottom: 36px;
+  letter-spacing: -0.02em;
+}
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.faq-item {
+  background: #0d1117;
+  border: 1px solid #111827;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.faq-trigger {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 18px 24px;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #e2e8f0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.faq-trigger:hover {
+  color: #f1f5f9;
+}
+.faq-arrow {
+  color: #4b5563;
+  transition: transform 0.2s;
+  font-size: 0.8rem;
+}
+.faq-item.open .faq-arrow {
+  transform: rotate(180deg);
+}
+.faq-content {
+  padding: 0 24px 18px 24px;
+  color: #6b7280;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+/* ── STILL HAVE QUESTIONS ── */
+.questions-box {
+  max-width: 540px;
+  margin: 64px auto 0;
+  background: rgba(13, 16, 32, 0.4);
+  border: 1px solid #1e2433;
+  border-radius: 16px;
+  padding: 36px 24px;
+  text-align: center;
+}
+.questions-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  margin-bottom: 8px;
+}
+.questions-desc {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+/* ── RESPONSIVE PRICING ── */
+@media (max-width: 1024px) {
+  .pricing-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+@media (max-width: 640px) {
+  .pricing-grid {
+    grid-template-columns: 1fr;
+  }
+  .matrix-cell {
+    padding: 12px 10px;
+    font-size: 0.75rem;
+  }
+}

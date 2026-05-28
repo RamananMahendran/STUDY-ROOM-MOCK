@@ -1,0 +1,289 @@
+/* ── PROMISE HERO ── */
+.promise-hero {
+  position: relative;
+  padding: 100px 24px 60px;
+  text-align: center;
+  overflow: hidden;
+}
+.promise-tag {
+  display: inline-block;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid #312e81;
+  border-radius: 99px;
+  padding: 6px 16px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #818cf8;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+.promise-title {
+  font-weight: 800;
+  font-size: clamp(2.4rem, 5.5vw, 3.8rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #f1f5f9;
+  max-width: 700px;
+  margin: 0 auto 24px;
+}
+.promise-title span.purple {
+  color: #a78bfa;
+}
+.promise-sub {
+  font-size: 0.95rem;
+  color: #6b7280;
+  line-height: 1.7;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* ── GRID FEATURES LAYER ── */
+.pfeatures-section {
+  padding: 60px 24px 80px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+.pfeatures-heading {
+  text-align: center;
+  font-weight: 800;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  color: #f1f5f9;
+  margin-bottom: 48px;
+  letter-spacing: -0.02em;
+}
+.pfeatures-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+.pfeature-box {
+  background: #0d1117;
+  border: 1px solid #111827;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.pfeature-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 6px;
+}
+.pfeature-desc {
+  font-size: 0.78rem;
+  color: #6b7280;
+  line-height: 1.55;
+}
+
+/* ── ECONOMICS SECTION ── */
+.economics-section {
+  padding: 80px 24px;
+  border-top: 1px solid #0f172a;
+}
+.economics-inner {
+  max-width: 680px;
+  margin: 0 auto;
+}
+.eco-heading {
+  font-weight: 800;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  color: #f1f5f9;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+.eco-sub {
+  font-size: 0.9rem;
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+.eco-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.eco-row-card {
+  background: #0d1117;
+  border: 1px solid #111827;
+  border-radius: 10px;
+  padding: 20px;
+}
+.eco-row-card.highlight {
+  border-color: #1e2433;
+  background: linear-gradient(135deg, #0d1117 0%, #0a0f1a 100%);
+}
+.eco-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.eco-row-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+.eco-row-meta {
+  font-size: 0.75rem;
+  color: #4b5563;
+}
+.eco-row-desc {
+  font-size: 0.8rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+.eco-link-foot {
+  font-size: 0.8rem;
+  color: #4b5563;
+}
+.eco-link-foot a {
+  color: #6366f1;
+  text-decoration: underline;
+}
+
+/* ── STUDENT TRADE SECTION ── */
+.trade-section {
+  padding: 80px 24px;
+  border-top: 1px solid #0f172a;
+}
+.trade-inner {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.trade-heading {
+  text-align: center;
+  font-weight: 800;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  color: #f1f5f9;
+  margin-bottom: 40px;
+  letter-spacing: -0.02em;
+}
+.trade-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.trade-side-box {
+  background: #0d1117;
+  border: 1px solid #111827;
+  border-radius: 14px;
+  padding: 28px;
+}
+.trade-side-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+.trade-side-label.green { color: #10b981; }
+.trade-side-label.gray { color: #4b5563; }
+.trade-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.trade-item-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 0.82rem;
+  color: #9ca3af;
+  line-height: 1.4;
+}
+
+/* ── FOUNDER NOTE SECTION ── */
+.founder-note-section {
+  padding: 80px 24px;
+  border-top: 1px solid #0f172a;
+}
+.founder-card-inner {
+  max-width: 600px;
+  margin: 0 auto;
+  background: #0d1117;
+  border: 1px solid #1e2433;
+  border-radius: 16px;
+  padding: 32px;
+}
+.f-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.f-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.f-avatar {
+  width: 40px;
+  height: 40px;
+  background: #6366f1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #fff;
+  font-size: 0.95rem;
+}
+.f-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+.f-title {
+  font-size: 0.75rem;
+  color: #4b5563;
+  margin-top: 1px;
+}
+.f-date {
+  font-size: 0.75rem;
+  color: #374151;
+}
+.f-body-text {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+.f-rules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid #111827;
+  padding-top: 20px;
+  margin-bottom: 28px;
+}
+.f-rule-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 0.82rem;
+  color: #d1d5db;
+  line-height: 1.4;
+}
+.f-rule-row strong {
+  color: #f1f5f9;
+}
+.f-signature {
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 1.3rem;
+  color: #e2e8f0;
+}
+
+/* ── RESPONSIVE PROMISE ── */
+@media (max-width: 768px) {
+  .pfeatures-grid, .trade-split {
+    grid-template-columns: 1fr;
+  }
+  .founder-card-inner {
+    padding: 24px;
+  }
+}

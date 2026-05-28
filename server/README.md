@@ -1,102 +1,203 @@
-That TypeScript error is a classic Prisma quirk! Even though Docker is handling the database behind the scenes, your local code editor (and TypeScript compiler) doesn't know what `PrismaClient` looks like until you explicitly generate the types on your local machine.
+# Study Room Server
 
-To fix that error immediately, just run this in your local terminal:
+Express, TypeScript, PostgreSQL, Prisma 7, and Judge0 power the backend for Study Room. The server exposes auth, practice problem, and browser code execution APIs.
+
+## Quick Start
+
+Run the API and PostgreSQL:
 
 ```bash
-npx prisma generate
-
+docker compose up -d --build
 ```
 
-*(This reads your `schema.prisma` and builds the `@prisma/client` library inside your local `node_modules` so TypeScript stops complaining).*
-
----
-
-Here is a perfectly structured guide you can copy and paste directly into your `README.md`. It explains exactly how new developers can spin up the Docker environment, fix that exact TypeScript issue, and start interacting with the database.
-
-## 📖 README: Developer Onboarding Guide
-
-### 🚀 1. Starting the Infrastructure (Docker)
-
-Our database and backend run inside Docker. To spin up the entire environment, simply run:
+Run the API, PostgreSQL, and Judge0 code runner:
 
 ```bash
-docker compose up --build
-
+docker compose --profile judge0 up -d --build
 ```
 
-*Note: If you want to run it in the background, add the `-d` flag.*
-
----
-
-### 🛠️ 2. Local TypeScript & Prisma Setup
-
-Even though the app runs in Docker, you need to sync your local environment so your IDE (like VS Code) recognizes the database types and doesn't throw `PrismaClient` errors.
-
-Open a **new terminal tab** on your local machine and run:
+Run the backend smoke suite inside Docker:
 
 ```bash
-# 1. Install dependencies locally (if you haven't already)
+docker compose exec api node dist/test-db.js
+```
+
+Run locally against a local PostgreSQL database:
+
+```bash
 npm install
-
-# 2. Generate the local Prisma Client types
-npx prisma generate
-
+npm run build
+npm run db:push
+npm run test:db
 ```
 
----
+## Project Structure
 
-### 🗄️ 3. Managing the Database Schema
+```text
+server/
+  Dockerfile                  # API image build
+  docker-compose.yml          # API, app DB, and optional Judge0 stack
+  judge0.conf                 # Judge0 database and Redis config
+  prisma/
+    schema.prisma             # Prisma models and table mappings
+    seed.ts                   # Optional seed entry
+  src/
+    app.ts                    # Express app and route mounting
+    server.ts                 # Server bootstrap
+    config/database.ts        # Prisma client with pg adapter
+    middleware/               # Auth and error middleware
+    modules/
+      auth/                   # Register, login, profile routes
+      practice/               # Problems CRUD routes
+      codeExecution/          # Judge0 proxy routes
+    test-db.ts                # Backend smoke suite
+```
 
-If you make changes to `prisma/schema.prisma` (like adding a new table or column), you need to apply those changes to the database.
+Generated files in `dist/` are ignored by git. Build them with `npm run build`.
 
-Run this command to create and apply a migration:
+## Existing APIs
+
+Health:
+
+```http
+GET /health
+```
+
+Auth:
+
+```http
+POST /api/auth/register
+POST /api/auth/login
+GET  /api/auth/profile
+```
+
+Practice problems:
+
+```http
+GET    /api/problems
+GET    /api/problems/:id
+POST   /api/problems
+PUT    /api/problems/:id
+DELETE /api/problems/:id
+```
+
+Code execution:
+
+```http
+GET  /api/code/languages
+POST /api/code/run
+```
+
+Example `POST /api/code/run` body:
+
+```json
+{
+  "sourceCode": "console.log('Hello World')",
+  "languageId": 63,
+  "stdin": ""
+}
+```
+
+## Add A New Feature API
+
+Create one folder per feature inside `src/modules`.
+
+```text
+src/modules/example/
+  exampleRoutes.ts
+  exampleController.ts
+  exampleModel.ts
+```
+
+1. Add data access in `exampleModel.ts`. Import the shared Prisma client from `../../config/database.js`.
+2. Add request handlers in `exampleController.ts`. Validate required fields and return JSON responses.
+3. Add routes in `exampleRoutes.ts` with an Express router.
+4. Mount the router in `src/app.ts`.
+5. If the feature needs tables, update `prisma/schema.prisma`.
+6. Run `npm run build` and `npm run test:db`.
+
+Minimal route example:
+
+```ts
+import express from 'express';
+import { getExamples } from './exampleController.js';
+
+const router = express.Router();
+
+router.get('/', getExamples);
+
+export default router;
+```
+
+Mount it in `src/app.ts`:
+
+```ts
+import exampleRoutes from './modules/example/exampleRoutes.js';
+
+app.use('/api/examples', exampleRoutes);
+```
+
+## Database Workflow
+
+For the current development Docker workflow, schema sync happens automatically when the API container starts:
 
 ```bash
-npx prisma migrate dev --name describe_your_change_here
-
+npm run db:push
 ```
 
-*(This will automatically update the PostgreSQL database inside Docker and regenerate your local TypeScript types).*
+When the schema changes locally:
 
----
+```bash
+npm run db:push
+npm run build
+```
 
-### 💻 4. How to Read & Write Data in Code
+Use migrations before production deployment:
 
-We have configured a central database singleton. **Do not** instantiate `new PrismaClient()` in your files. Instead, always import the pre-configured instance from our config file.
+```bash
+npx prisma migrate dev --name your_change_name
+```
 
-Here is an example of how to use it in your services or controllers:
+## Judge0 Notes
 
-```typescript
-// 1. Import our custom prisma instance
-import prisma from '../config/database.js';
+Judge0 runs only when the `judge0` Compose profile is enabled. The API talks to Judge0 through:
 
-// --- WRITING DATA (Create) ---
-export const createUser = async (req, res) => {
-  try {
-    const newUser = await prisma.user.create({
-      data: {
-        email: 'dev@studyroom.com',
-        name: 'New Developer',
-      },
-    });
-    res.status(201).json(newUser);
-  } catch (error) {
-    console.error(error);
-  }
-};
+```text
+JUDGE0_URL=http://judge0-server:2358
+```
 
-// --- READING DATA (Find) ---
-export const getUsers = async (req, res) => {
-  try {
-    const users = await prisma.user.findMany({
-      where: {
-        isActive: true, // Example filter
-      },
-    });
-    res.status(200).json(users);
-  } catch (error) {
-    console.error(error);
-  }
-};
+The frontend should call this server API instead of calling Judge0 directly:
 
+```http
+POST /api/code/run
+```
+
+For JavaScript on Judge0, use `languageId: 63`.
+
+## Git Workflow
+
+Commit your feature branch:
+
+```bash
+git status
+git add .
+git commit -m "Add backend database and code execution APIs"
+git push origin feature/database-setup
+```
+
+Merge to main through GitHub:
+
+1. Push the feature branch.
+2. Open a pull request from `feature/database-setup` into `main`.
+3. Wait for checks and review.
+4. Merge the pull request.
+
+Merge locally if your team allows direct pushes:
+
+```bash
+git fetch originsudo docker compose exec api node dist/test-db.js
+git checkout main
+git pull origin main
+git merge feature/database-setup
+git push origin main
 ```

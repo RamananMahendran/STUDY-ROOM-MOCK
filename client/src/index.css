@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+/* ── Design Tokens (dark / light) ───────────────────────────── */
+:root {
+  --bg:           #0b0d14;
+  --surface:      #13151f;
+  --surface-2:    #1a1d2a;
+  --border:       rgba(255,255,255,0.08);
+  --text:         #f1f5f9;
+  --text-muted:   #8b93a7;
+  --text-subtle:  #4b5563;
+  --accent:       #6366f1;
+  --accent-2:     #8b5cf6;
+  --accent-text:  #a5b4fc;
+  --accent-bg:    rgba(99,102,241,0.12);
+  --success:      #10b981;
+  --font-sans:    'Inter', system-ui, sans-serif;
+  --card-shadow:  0 1px 3px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.25);
+  --dur-fast:     0.12s;
+  --radius-md:    8px;
+  --radius-lg:    14px;
+}
+[data-theme="light"] {
+  --bg:          #f8f9fc;
+  --surface:     #ffffff;
+  --surface-2:   #f1f5f9;
+  --border:      rgba(0,0,0,0.08);
+  --text:        #0f172a;
+  --text-muted:  #64748b;
+  --text-subtle: #94a3b8;
+  --accent-text: #6366f1;
+}
+
+/* ── Reset ───────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { text-decoration: none; color: inherit; }
+
+/* ── Tailwind-layer utilities for things that can't be inlined ─ */
+@layer utilities {
+  .font-fraunces {
+    font-family: 'Fraunces', Georgia, serif;
+  }
+  .font-mono-code {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  .text-gradient-indigo {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .bg-gradient-submit {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  }
+  .bg-mesh {
+    background:
+      radial-gradient(ellipse 55% 60% at 25% 30%, rgba(99,102,241,0.33) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 80% 90%, rgba(139,92,246,0.33) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 40% at 60% 40%, rgba(99,102,241,0.18) 0%, transparent 65%);
+  }
+  .card-glass {
+    background: rgba(20,20,28,0.6);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 30px 80px -10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .sidebar-glass {
+    background: rgba(0,0,0,0.2);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+  }
+  .dash-glass {
+    background: rgba(15,15,22,0.7);
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    box-shadow: 0 40px 100px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .timer-glass {
+    background: linear-gradient(135deg, rgba(99,102,241,0.13), rgba(139,92,246,0.13));
+  }
+  .input-glass {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .input-glass::placeholder {
+    color: var(--text-subtle);
+  }
+  .input-glass:focus {
+    outline: none;
+    border-color: rgba(99,102,241,0.7);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+  }
+  .btn-google {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .btn-google:hover {
+    border-color: var(--accent);
+    box-shadow: 0 1px 6px rgba(99,102,241,0.15);
+  }
+  .btn-submit-glow {
+    box-shadow: 0 8px 32px rgba(99,102,241,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
+  }
+  .btn-submit-glow:hover {
+    box-shadow: 0 12px 40px rgba(99,102,241,0.6), inset 0 1px 0 rgba(255,255,255,0.18);
+    transform: translateY(-1px);
+  }
+  .pulse-green {
+    animation: pulse-green 1.6s ease-in-out infinite;
+  }
+  .float-badge {
+    animation: floatBadge 4s ease-in-out infinite;
+  }
+  .timer-bar-anim {
+    animation: timerBar 30s linear infinite;
+  }
+  .blink-anim {
+    animation: blink 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse-green {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+@keyframes floatBadge {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-4px); }
+}
+@keyframes timerBar {
+  0%   { width: 38%; }
+  100% { width: 42%; }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slideUp 220ms cubic-bezier(0.2,0,0,1);
+}
