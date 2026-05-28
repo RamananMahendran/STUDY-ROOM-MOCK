@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
 const IcoDashboard  = ({s=15}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>;
@@ -24,13 +25,13 @@ const IcoBookOpen   = ({s=13}) => <svg width={s} height={s} viewBox="0 0 24 24" 
 
 // ── Nav items ─────────────────────────────────────────────────────────────────
 const NAV_ITEMS = [
-  { id: "home",      label: "Home",        Icon: IcoDashboard  },
-  { id: "rooms",     label: "Rooms",       Icon: IcoHeadphones },
-  { id: "practice",  label: "Practice",    Icon: IcoCode, chevron: true },
-  { id: "contests",  label: "Contests",    Icon: IcoZap, soon: true },
-  { id: "community", label: "Community",   Icon: IcoUsers      },
-  { id: "profile",   label: "Profile",     Icon: IcoBar        },
-  { id: "refer",     label: "Refer & earn",Icon: IcoGift       },
+  { id: "home",      label: "Home",         Icon: IcoDashboard,  path: "/home"  },
+  { id: "rooms",     label: "Rooms",        Icon: IcoHeadphones, path: "/rooms" },
+  { id: "practice",  label: "Practice",     Icon: IcoCode,       chevron: true  },
+  { id: "contests",  label: "Contests",     Icon: IcoZap,        soon: true     },
+  { id: "community", label: "Community",    Icon: IcoUsers                      },
+  { id: "profile",   label: "Profile",      Icon: IcoBar                        },
+  { id: "refer",     label: "Refer & earn", Icon: IcoGift                       },
 ];
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
@@ -58,13 +59,13 @@ function Sidebar({ active, onNav }) {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto flex flex-col" style={{ padding: "10px 8px", gap: 1 }}>
-        {NAV_ITEMS.map(({ id, label, Icon, chevron, soon }) => {
+        {NAV_ITEMS.map(({ id, label, Icon, chevron, soon, path }) => {
           const isActive = active === id;
           return (
             <div key={id} style={{ position: "relative" }}>
               <button
                 aria-label={label}
-                onClick={() => onNav(id)}
+                onClick={() => onNav(id, path)}
                 className="flex items-center w-full text-left cursor-pointer"
                 style={{
                   gap: 10,
@@ -385,6 +386,12 @@ function ChartEmpty({ msg, py = "26px 12px" }) {
 // ── DASHBOARD PAGE ────────────────────────────────────────────────────────────
 export default function Dashboard() {
   const [activeNav, setActiveNav] = useState("home");
+  const navigate = useNavigate();
+
+  function handleNav(id, path) {
+    setActiveNav(id);
+    if (path) navigate(path);
+  }
 
   return (
     <div
@@ -393,7 +400,7 @@ export default function Dashboard() {
     >
       {/* Sidebar */}
       <div className="sidebar-desktop">
-        <Sidebar active={activeNav} onNav={setActiveNav} />
+        <Sidebar active={activeNav} onNav={handleNav} />
       </div>
 
       {/* Main pane */}
