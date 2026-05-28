@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useTransition, useRef, useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
@@ -167,6 +167,80 @@ function Sidebar({ active, onNav }) {
 
 // ── Top bar ───────────────────────────────────────────────────────────────────
 function TopBar() {
+  const PALETTE_ITEMS = [
+      { id: "home",        label: "Go to Home",         icon: "▩" },
+      { id: "rooms",       label: "My Rooms",           icon: "🎧" },
+      { id: "problems",    label: "Problems",           icon: "🗒" },
+      { id: "playground",  label: "Code Playground",    icon: "🧩" },
+      { id: "pair",        label: "Start Pair Session", icon: "⚿" },
+      { id: "leaderboard", label: "Leaderboard",        icon: "🏆" },
+      { id: "analytics",   label: "Profile / Analytics",icon: "📊" },
+      { id: "community",   label: "Community / Friends",icon: "👥" },
+      { id: "createRoom",    label: "Create a room",    icon: "➕" },
+      { id: "invite",      label: "Invite friends",    icon: "✉️" },
+      { id: "OpenProblem", label: "Open a problem",    icon: "🔍" },
+  ];
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  
+  const paletteRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // Filter items based on user search query input string
+  const filteredItems = PALETTE_ITEMS.filter(item =>
+    item.label.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  useEffect(() => {
+    if (isOpen) {
+      inputRef.current?.focus();
+      setSelectedIndex(0);
+      document.body.style.overflow = "hidden"; // Prevent background content scroll
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [isOpen]);
+
+  // Global listener tracking shortcuts (⌘K, Ctrl+K, Escape)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setIsOpen((prev) => !prev);
+      }
+      if (e.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Keyboard navigation controller handling index updates inside container lists
+  const handleListKeyDown = (e) => {
+    if (!isOpen || filteredItems.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev + 1) % filteredItems.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev - 1 + filteredItems.length) % filteredItems.length);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      handleItemTrigger(filteredItems[selectedIndex]);
+    }
+  };
+
+  const handleItemTrigger = (item) => {
+    console.log(`Navigating route instance selection: ${item.id}`);
+    setIsOpen(false);
+    setSearchQuery("");
+  };
+
   return (
     <div
       className="flex-shrink-0 flex items-center"
@@ -182,15 +256,91 @@ function TopBar() {
       <div className="flex items-center ml-auto flex-shrink-0" style={{ gap: 6 }}>
         {/* ⌘K */}
         <button
-          title="Command palette (⌘K)"
-          aria-label="Open command palette"
-          className="flex items-center cursor-pointer"
-          style={{ gap: 5, padding: "4px 10px", borderRadius: "var(--radius-md)", border: "1px solid var(--border)", backgroundColor: "var(--surface-2)", color: "var(--text-muted)", fontSize: 11, fontWeight: 500, fontFamily: "inherit", transition: "background-color var(--dur-fast), color var(--dur-fast)" }}
-        >
+         title="Command palette (⌘K)"
+        aria-label="Open command palette"
+        onClick={() => setIsOpen(true)}
+        className="flex items-center cursor-pointer gap-[5px] px-[10px] py-[4px] rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-muted)] text-[11px] font-[500] font-inherit transition-all duration-150"
+      >
           <IcoSearch s={12} />
           <span style={{ letterSpacing: "0.3px" }}>⌘K</span>
         </button>
+        {isOpen && (
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center pt-[10vh] px-4 bg-black/60 backdrop-blur-[4px] transition-opacity duration-200"
+          onClick={() => setIsOpen(false)} // Closes system when clicking the backdrop layer
+        >
+          <div
+            ref={paletteRef}
+            onClick={(e) => e.stopPropagation()} // Prevents bubble trigger patterns closing inner card box
+            onKeyDown={handleListKeyDown}
+            className="w-full max-w-[580px] bg-[#0d1117] border border-[#1e2433] rounded-xl shadow-2xl overflow-hidden flex flex-col font-sans text-[#e2e8f0]"
+          >
+            {/* INPUT SEARCH HEADER WRAPPER */}
+            <div className="h-8 flex items-center px-4 py-3.5 border-b border-[#1e2433] gap-3">
+              <svg className="ml-8 text-gray-500 p-4 flex-shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder="Jump to, search, or do something..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-transparent border-none outline-none text-[14px] text-[#f1f5f9] placeholder-gray-600 font-sans"
+              />
+            </div>
 
+            {/* NAVIGATIONAL ROUTE LOOP LISTING */}
+            <div className="max-h-[340px] overflow-y-auto p-2 flex flex-col gap-0.5">
+              <div className="text-[10px] font-bold text-gray-500 tracking-wider uppercase px-3 pt-2 pb-1.5 selection-none">
+                Navigate
+              </div>
+              
+              {filteredItems.length > 0 ? (
+                filteredItems.map((item, index) => {
+                  const isSelected = index === selectedIndex;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleItemTrigger(item)}
+                      onMouseEnter={() => setSelectedIndex(index)}
+                      className={`w-full flex items-center text-left gap-4 px-3 py-2.5 rounded-lg text-[13px] font-medium border-none cursor-pointer transition-colors duration-700 ${
+                        isSelected 
+                          ? "bg-[#161b26] text-[#818cf8]" 
+                          : "bg-transparent text-gray-300"
+                      }`}
+                    >
+                      {/* Unified dynamic icon container cell layout rendering block */}
+                      <span className={`w-7 h-7 flex items-center justify-center rounded-md text-[13px] border ${
+                        isSelected ? "bg-[#1f2433] border-[#312e81]" : "bg-[#111622] border-[#1a202c]"
+                      }`}>
+                        {item.icon}
+                      </span>
+                      <span className="flex-1 truncate">{item.label}</span>
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="text-center py-8 text-[12px] text-gray-500">
+                  No matching workspace parameters found.
+                </div>
+              )}
+            </div>
+
+            {/* SYSTEM SHORTCUT HELP LEGEND BAR FOOTER */}
+            <div className="flex items-center gap-4 px-4 py-2.5 bg-[#080c12] border-t border-[#1e2433] text-[10px] text-gray-500 select-none">
+              <div className="flex items-center gap-1">
+                <span className="bg-[#111622] border border-[#1a202c] px-1 py-0.5 rounded text-[9px] font-mono">↑↓</span> Navigate
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="bg-[#111622] border border-[#1a202c] px-1 py-0.5 rounded text-[9px] font-mono">↵</span> Open
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="bg-[#111622] border border-[#1a202c] px-1 py-0.5 rounded text-[9px] font-mono">Esc</span> Close
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
         {/* Bell */}
         <div style={{ position: "relative" }}>
           <button
@@ -387,20 +537,147 @@ function ChartEmpty({ msg, py = "26px 12px" }) {
 export default function Dashboard() {
   const [activeNav, setActiveNav] = useState("home");
   const navigate = useNavigate();
+  const [theme, setTheme] = useState("dark");
 
   function handleNav(id, path) {
     setActiveNav(id);
     if (path) navigate(path);
   }
 
+  const toggleTheme = (event) => {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+
+    // Fallback if browser doesn't support the View Transition API
+    if (!document.startViewTransition) {
+      setTheme(nextTheme);
+      return;
+    }
+
+    // Get click target geometry coordinates to calculate the expansion origin
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+
+    // Calculate maximum radius distance to the furthest screen corner
+    const endRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    );
+
+    const transition = document.startViewTransition(() => {
+      setTheme(nextTheme);
+    });
+
+    // Inject dynamic keyframes into the document execution loop
+    transition.ready.then(() => {
+      document.documentElement.animate(
+        {
+          clipPath: [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${endRadius}px at ${x}px ${y}px)`,
+          ],
+        },
+        {
+          duration: 450,
+          easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+          pseudoElement: "::view-transition-new(root)",
+        }
+      );
+    });
+  };
+
   return (
     <div
-      data-theme="dark"
+      data-theme={theme}
       style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "row", backgroundColor: "var(--bg)" }}
     >
-      {/* Sidebar */}
+      {/* ── SIDEBAR CONSOLE CONTAINER ── */}
       <div className="sidebar-desktop">
-        <Sidebar active={activeNav} onNav={handleNav} />
+        <div
+          className="flex-shrink-0 h-full flex flex-col"
+          style={{ width: 220, backgroundColor: "var(--surface)", borderRight: "1px solid var(--border)" }}
+        >
+          {/* Brand */}
+          <div className="flex items-center gap-2.5 flex-shrink-0" style={{ padding: "14px 14px 12px", borderBottom: "1px solid var(--border)" }}>
+            <div className="flex items-center justify-center flex-shrink-0" style={{ width: 30, height: 30, borderRadius: 9, background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
+              <IcoBookOpen s={13} />
+            </div>
+            <span style={{ fontWeight: 800, fontSize: 14, color: "var(--text)", letterSpacing: "-0.3px" }}>Study Room</span>
+          </div>
+
+          {/* Navigation Items Map Link Iterators */}
+          <nav className="flex-1 overflow-y-auto flex flex-col" style={{ padding: "10px 8px", gap: 1 }}>
+            {NAV_ITEMS.map(({ id, label, Icon, chevron, soon, path }) => {
+              const isActive = activeNav === id;
+              return (
+                <div key={id} style={{ position: "relative" }}>
+                  <button
+                    aria-label={label}
+                    onClick={() => handleNav(id, path)}
+                    className="flex items-center w-full text-left cursor-pointer"
+                    style={{
+                      gap: 10, padding: "7px 10px", borderRadius: 8, border: "none", fontSize: 13,
+                      fontWeight: isActive ? 600 : 400,
+                      color: isActive ? "var(--accent, #6366f1)" : "var(--text-muted)",
+                      backgroundColor: isActive ? "var(--accent-bg)" : "transparent",
+                      transition: "background-color var(--dur-fast), color var(--dur-fast)",
+                      fontFamily: "inherit",
+                    }}
+                  >
+                    <Icon s={15} />
+                    <span style={{ flex: "1 1 0%", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>
+                    {chevron && <IcoChevron s={13} rotate="-90" />}
+                  </button>
+                  {soon && (
+                    <span className="absolute flex items-center gap-1 pointer-events-none" style={{ top: 6, right: 6, fontSize: 8, fontWeight: 800, letterSpacing: "0.4px", padding: "1px 5px", borderRadius: 10, backgroundColor: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text-subtle)" }}>
+                      <IcoLock s={7} /> SOON
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </nav>
+
+          {/* Bottom user configurations tray */}
+          <div className="flex-shrink-0 flex flex-col" style={{ borderTop: "1px solid var(--border)", padding: "10px 12px", gap: 8 }}>
+            <div className="flex items-center" style={{ gap: 8 }}>
+              <img alt="Mayur K S" src="https://lh3.googleusercontent.com/a/ACg8ocJOHQ3CBE3KjE6jm37Rh6DZ1INAG8-i1M7xZZNfvCYrlZHgTg=s96-c" style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0, objectFit: "cover" }} />
+              <div className="flex-1 min-w-0">
+                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Mayur K S</div>
+              </div>
+
+              {/* Dynamic Theme Interactive Pill Switch Button */}
+              <button
+                title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                onClick={toggleTheme}
+                className="flex-shrink-0 flex items-center cursor-pointer"
+                style={{
+                  width: 40, height: 22, borderRadius: 99, 
+                  border: "1px solid var(--border)", 
+                  backgroundColor: theme === "dark" ? "rgb(26,26,26)" : "rgb(241,245,249)", 
+                  padding: 2, position: "relative"
+                }}
+              >
+                <span
+                  className="flex items-center justify-center rounded-full"
+                  style={{
+                    width: 16, height: 16, 
+                    backgroundColor: "rgb(99,102,241)", 
+                    transform: theme === "dark" ? "translateX(0px)" : "translateX(18px)", 
+                    transition: "transform 0.3s cubic-bezier(0.34,1.56,0.64,1)", 
+                    fontSize: 9, boxShadow: "0 1px 3px rgba(0,0,0,0.3)"
+                  }}
+                >
+                  {theme === "dark" ? "🌙" : "☀️"}
+                </span>
+              </button>
+            </div>
+
+            <button className="flex items-center justify-center w-full cursor-pointer" style={{ gap: 6, padding: "6px 0", borderRadius: 7, fontSize: 12, border: "1px solid var(--border)", backgroundColor: "transparent", color: "var(--text-muted)", fontFamily: "inherit" }}>
+              <IcoLogout s={12} /> Sign out
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Main pane */}

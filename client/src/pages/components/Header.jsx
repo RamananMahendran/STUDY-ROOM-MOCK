@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import '../Home.css'; // Make sure the path correctly points to your CSS
 
 function Header({ activePage }) {
@@ -33,8 +33,12 @@ function Header({ activePage }) {
             ))}
         </div>
         <div className="navbar-actions">
-          <button className="btn-outline sm">Log in</button>
-          <button className="btn-primary sm">Get started →</button>
+          <Link to="/login" className="btn-outline sm">
+            Log in
+          </Link>
+          <Link to="/signup" className="btn-primary sm">
+            Get started →
+          </Link>
         </div>
       </div>
     </nav>

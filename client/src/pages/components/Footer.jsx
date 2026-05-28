@@ -21,7 +21,7 @@ function Footer() {
           <div>
             <div className="footer-col-label">PRODUCT</div>
             {["Study rooms","Coding ground","Mock interviews","Pricing"].map(l => (
-              <a key={l} href="#" className="footer-link">{l}</a>
+              <a key={l} href={`#${l.toLowerCase().replace(/\s+/g, '-')}`} className="footer-link">{l}</a>
             ))}
           </div>
           <div>
