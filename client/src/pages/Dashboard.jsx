@@ -1,5 +1,6 @@
-import { useState, useTransition, useRef, useEffect} from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Sidebar from "../components/Sidebar";
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
 const IcoDashboard  = ({s=15}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>;
@@ -23,143 +24,409 @@ const IcoArrow      = ({s=12}) => <svg width={s} height={s} viewBox="0 0 24 24" 
 const IcoMsg        = ({s=20}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg>;
 const IcoBookOpen   = ({s=13}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>;
 
-// ── Nav items ─────────────────────────────────────────────────────────────────
-const NAV_ITEMS = [
-  { id: "home",      label: "Home",         Icon: IcoDashboard,  path: "/home"  },
-  { id: "rooms",     label: "Rooms",        Icon: IcoHeadphones, path: "/rooms" },
-  { id: "practice",  label: "Practice",     Icon: IcoCode,       chevron: true  },
-  { id: "contests",  label: "Contests",     Icon: IcoZap,        soon: true     },
-  { id: "community", label: "Community",    Icon: IcoUsers                      },
-  { id: "profile",   label: "Profile",      Icon: IcoBar                        },
-  { id: "refer",     label: "Refer & earn", Icon: IcoGift                       },
+
+
+// ── Create Room Modal ─────────────────────────────────────────────────────────
+const ROOM_ICONS = ["📚", "🗓", "🖨", "🦊", "🔬", "📝", "🌀", "🍎"];
+const ROOM_COLORS = ["#7c6fe0", "#b060e0", "#40b8e0", "#22c55e", "#f59e0b", "#ef4444"];
+const QUICK_STARTS = [
+  { label: "Exam Sprint",     emoji: "🔴", focus: 50, brk: 10 },
+  { label: "Group Project",   emoji: "🟡", focus: 25, brk:  5 },
+  { label: "Deep Work",       emoji: "🟠", focus: 50, brk: 10 },
+  { label: "Quick Revision",  emoji: "⚡", focus: 15, brk:  5 },
 ];
 
-// ── Sidebar ───────────────────────────────────────────────────────────────────
-function Sidebar({ active, onNav }) {
+function CreateRoomModal({ onClose }) {
+  const [roomName, setRoomName]     = useState("");
+  const [goal, setGoal]             = useState("");
+  const [selectedIcon, setIcon]     = useState(0);
+  const [selectedColor, setColor]   = useState(0);
+  const [focus, setFocus]           = useState(10);
+  const [brk, setBrk]               = useState(5);
+  const [expires, setExpires]       = useState("24h");
+
+  const applyQuick = (qs) => {
+    setFocus(qs.focus);
+    setBrk(qs.brk);
+  };
+
+  // Close on Escape
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   return (
     <div
-      className="flex-shrink-0 h-full flex flex-col"
-      style={{ width: 220, backgroundColor: "var(--surface)", borderRight: "1px solid var(--border)" }}
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 10000,
+        background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "16px",
+      }}
     >
-      {/* Brand */}
       <div
-        className="flex items-center gap-2.5 flex-shrink-0"
-        style={{ padding: "14px 14px 12px", borderBottom: "1px solid var(--border)" }}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%", maxWidth: 660,
+          background: "#12151c",
+          border: "1px solid #1e2433",
+          borderRadius: 16,
+          boxShadow: "0 24px 80px rgba(0,0,0,0.7)",
+          fontFamily: "inherit",
+          color: "#e2e8f0",
+          overflow: "hidden",
+        }}
       >
-        <div
-          className="flex items-center justify-center flex-shrink-0"
-          style={{ width: 30, height: 30, borderRadius: 9, background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}
-        >
-          <IcoBookOpen s={13} />
-        </div>
-        <span style={{ fontWeight: 800, fontSize: 14, color: "var(--text)", letterSpacing: "-0.3px" }}>
-          Study Room
-        </span>
-      </div>
-
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto flex flex-col" style={{ padding: "10px 8px", gap: 1 }}>
-        {NAV_ITEMS.map(({ id, label, Icon, chevron, soon, path }) => {
-          const isActive = active === id;
-          return (
-            <div key={id} style={{ position: "relative" }}>
-              <button
-                aria-label={label}
-                onClick={() => onNav(id, path)}
-                className="flex items-center w-full text-left cursor-pointer"
-                style={{
-                  gap: 10,
-                  padding: "7px 10px",
-                  borderRadius: 8,
-                  border: "none",
-                  fontSize: 13,
-                  position: "relative",
-                  fontWeight: isActive ? 600 : 400,
-                  color: isActive ? "var(--accent)" : "var(--text-muted)",
-                  backgroundColor: isActive ? "var(--accent-bg)" : "transparent",
-                  transition: "background-color var(--dur-fast), color var(--dur-fast)",
-                  fontFamily: "inherit",
-                }}
-              >
-                <Icon s={15} />
-                <span style={{ flex: "1 1 0%", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {label}
-                </span>
-                {chevron && <IcoChevron s={13} rotate="-90" />}
-              </button>
-              {soon && (
-                <span
-                  className="absolute flex items-center gap-1 pointer-events-none"
-                  style={{
-                    top: 6, right: 6,
-                    fontSize: 8, fontWeight: 800, letterSpacing: "0.4px",
-                    padding: "1px 5px", borderRadius: 10,
-                    backgroundColor: "var(--surface-2)",
-                    border: "1px solid var(--border)",
-                    color: "var(--text-subtle)",
-                  }}
-                >
-                  <IcoLock s={7} /> SOON
-                </span>
-              )}
-            </div>
-          );
-        })}
-      </nav>
-
-      {/* Bottom – user */}
-      <div
-        className="flex-shrink-0 flex flex-col"
-        style={{ borderTop: "1px solid var(--border)", padding: "10px 12px", gap: 8 }}
-      >
-        <div className="flex items-center" style={{ gap: 8 }}>
-          {/* Avatar */}
-          <img
-            alt="Mayur K S"
-            src="https://lh3.googleusercontent.com/a/ACg8ocJOHQ3CBE3KjE6jm37Rh6DZ1INAG8-i1M7xZZNfvCYrlZHgTg=s96-c"
-            style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0, objectFit: "cover" }}
-            onError={e => {
-              e.currentTarget.style.display = "none";
-              e.currentTarget.nextSibling.style.display = "flex";
-            }}
-          />
-          <div
-            className="items-center justify-center flex-shrink-0 text-white font-bold"
-            style={{
-              display: "none", width: 28, height: 28, borderRadius: 8,
-              background: "linear-gradient(135deg, #6366f1, #8b5cf6)", fontSize: 11,
-            }}
-          >
-            MK
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-              Mayur K S
-            </div>
-          </div>
-
-          {/* Dark-mode toggle */}
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px 16px", borderBottom: "1px solid #1e2433" }}>
+          <span style={{ fontSize: 15, fontWeight: 700, color: "#f1f5f9" }}>Create a Room</span>
           <button
-            title="Switch to light mode"
-            className="flex-shrink-0 flex items-center cursor-pointer"
-            style={{ width: 40, height: 22, borderRadius: 99, border: "1px solid var(--border)", backgroundColor: "rgb(26,26,26)", padding: 2 }}
+            onClick={onClose}
+            style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: 18, lineHeight: 1, padding: 4, borderRadius: 6, display: "flex", alignItems: "center" }}
           >
-            <span
-              className="flex items-center justify-center rounded-full"
-              style={{ width: 16, height: 16, backgroundColor: "rgb(99,102,241)", transform: "translateX(0px)", transition: "transform 0.3s cubic-bezier(0.34,1.56,0.64,1)", fontSize: 9, boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }}
-            >
-              🌙
-            </span>
+            ✕
           </button>
         </div>
 
+        {/* Body */}
+        <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: 0 }}>
+          {/* Left – preview + icon + color */}
+          <div style={{ padding: "20px 16px 24px", borderRight: "1px solid #1e2433", display: "flex", flexDirection: "column", gap: 20 }}>
+            {/* Preview card */}
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Preview</div>
+              <div style={{
+                background: "#1a1f2e",
+                border: `2px solid ${ROOM_COLORS[selectedColor]}`,
+                borderRadius: 10,
+                padding: "12px 14px",
+                display: "flex", flexDirection: "column", gap: 8,
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 18 }}>{ROOM_ICONS[selectedIcon]}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: roomName ? "#f1f5f9" : "#475569" }}>
+                    {roomName || "Room name..."}
+                  </span>
+                </div>
+                <div style={{ display: "flex", gap: 10, fontSize: 10, color: "#64748b" }}>
+                  <span>⏱ {focus}m</span>
+                  <span>· {brk}m</span>
+                  <span>· {expires}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Icon picker */}
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Icon</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+                {ROOM_ICONS.map((ico, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setIcon(i)}
+                    style={{
+                      background: selectedIcon === i ? "#1f2433" : "#0d1117",
+                      border: selectedIcon === i ? `2px solid ${ROOM_COLORS[selectedColor]}` : "2px solid #1e2433",
+                      borderRadius: 8,
+                      padding: "6px",
+                      cursor: "pointer",
+                      fontSize: 16,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      transition: "border-color 0.15s",
+                    }}
+                  >
+                    {ico}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Color picker */}
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Color</div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {ROOM_COLORS.map((col, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setColor(i)}
+                    style={{
+                      width: 26, height: 26, borderRadius: "50%",
+                      background: col,
+                      border: selectedColor === i ? "2px solid #fff" : "2px solid transparent",
+                      outline: selectedColor === i ? `2px solid ${col}` : "none",
+                      cursor: "pointer",
+                      transition: "outline 0.15s, border 0.15s",
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right – form */}
+          <div style={{ padding: "20px 24px 24px", display: "flex", flexDirection: "column", gap: 18 }}>
+            {/* Quick Start */}
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>Quick Start</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                {QUICK_STARTS.map((qs) => (
+                  <button
+                    key={qs.label}
+                    onClick={() => applyQuick(qs)}
+                    style={{
+                      background: "#0d1117",
+                      border: "1px solid #1e2433",
+                      borderRadius: 8,
+                      padding: "10px 12px",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      color: "#e2e8f0",
+                      transition: "border-color 0.15s, background 0.15s",
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.background = "#161b26"; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#1e2433"; e.currentTarget.style.background = "#0d1117"; }}
+                  >
+                    <div style={{ fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                      <span>{qs.emoji}</span> {qs.label}
+                    </div>
+                    <div style={{ fontSize: 10, color: "#64748b", marginTop: 3 }}>
+                      {qs.focus}m · {qs.brk}m break
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Room Name */}
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>Room Name</div>
+              <div style={{ position: "relative" }}>
+                <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 12 }}>🖥</span>
+                <input
+                  type="text"
+                  placeholder="e.g. DSA Study Session"
+                  value={roomName}
+                  onChange={e => setRoomName(e.target.value)}
+                  style={{
+                    width: "100%", boxSizing: "border-box",
+                    background: "#0d1117",
+                    border: "1px solid #1e2433",
+                    borderRadius: 8,
+                    padding: "10px 12px 10px 34px",
+                    fontSize: 13,
+                    color: "#f1f5f9",
+                    outline: "none",
+                    fontFamily: "inherit",
+                  }}
+                  onFocus={e => e.target.style.borderColor = "#6366f1"}
+                  onBlur={e => e.target.style.borderColor = "#1e2433"}
+                />
+              </div>
+            </div>
+
+            {/* Session Goal */}
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>Session Goal</div>
+              <div style={{ position: "relative" }}>
+                <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 12 }}>🎯</span>
+                <input
+                  type="text"
+                  placeholder="e.g. Finish trees and graphs"
+                  value={goal}
+                  onChange={e => setGoal(e.target.value)}
+                  style={{
+                    width: "100%", boxSizing: "border-box",
+                    background: "#0d1117",
+                    border: "1px solid #1e2433",
+                    borderRadius: 8,
+                    padding: "10px 12px 10px 34px",
+                    fontSize: 13,
+                    color: "#f1f5f9",
+                    outline: "none",
+                    fontFamily: "inherit",
+                  }}
+                  onFocus={e => e.target.style.borderColor = "#6366f1"}
+                  onBlur={e => e.target.style.borderColor = "#1e2433"}
+                />
+              </div>
+            </div>
+
+            {/* Expires + Pomodoro */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "start" }}>
+              {/* Expires */}
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>Expires In</div>
+                <div style={{ position: "relative" }}>
+                  <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 12 }}>⏰</span>
+                  <select
+                    value={expires}
+                    onChange={e => setExpires(e.target.value)}
+                    style={{
+                      width: "100%",
+                      background: "#0d1117",
+                      border: "1px solid #1e2433",
+                      borderRadius: 8,
+                      padding: "9px 12px 9px 30px",
+                      fontSize: 13,
+                      color: "#f1f5f9",
+                      outline: "none",
+                      fontFamily: "inherit",
+                      cursor: "pointer",
+                      appearance: "none",
+                    }}
+                  >
+                    <option value="1h">1 hour</option>
+                    <option value="2h">2 hours</option>
+                    <option value="4h">4 hours</option>
+                    <option value="8h">8 hours</option>
+                    <option value="24h">24 hours</option>
+                  </select>
+                  <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: 10, color: "#64748b", pointerEvents: "none" }}>▼</span>
+                </div>
+              </div>
+
+              {/* Pomodoro */}
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase" }}>Pomodoro</div>
+                  <span style={{ fontSize: 11 }}>⏱</span>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {/* Focus */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 11, color: "#94a3b8" }}>Focus</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <button onClick={() => setFocus(f => Math.max(5, f - 5))} style={pomoBtnStyle}>−</button>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#818cf8", minWidth: 30, textAlign: "center" }}>{focus}m</span>
+                      <button onClick={() => setFocus(f => Math.min(120, f + 5))} style={pomoBtnStyle}>+</button>
+                    </div>
+                  </div>
+                  {/* Break */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 11, color: "#94a3b8" }}>Break</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <button onClick={() => setBrk(b => Math.max(1, b - 1))} style={pomoBtnStyle}>−</button>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#818cf8", minWidth: 30, textAlign: "center" }}>{brk}m</span>
+                      <button onClick={() => setBrk(b => Math.min(30, b + 1))} style={pomoBtnStyle}>+</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ display: "flex", gap: 10, padding: "16px 24px", borderTop: "1px solid #1e2433" }}>
+          <button
+            onClick={onClose}
+            style={{
+              flex: "0 0 auto",
+              padding: "11px 24px",
+              borderRadius: 10,
+              border: "1px solid #1e2433",
+              background: "transparent",
+              color: "#94a3b8",
+              fontSize: 13, fontWeight: 600,
+              cursor: "pointer",
+              fontFamily: "inherit",
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            style={{
+              flex: 1,
+              padding: "11px 24px",
+              borderRadius: 10,
+              border: "none",
+              background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+              color: "#fff",
+              fontSize: 13, fontWeight: 700,
+              cursor: "pointer",
+              fontFamily: "inherit",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            }}
+          >
+            <IcoPlus s={14} /> Create Room
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const pomoBtnStyle = {
+  width: 24, height: 24,
+  display: "flex", alignItems: "center", justifyContent: "center",
+  background: "#1a1f2e",
+  border: "1px solid #1e2433",
+  borderRadius: 6,
+  color: "#94a3b8",
+  fontSize: 14, fontWeight: 700,
+  cursor: "pointer",
+  lineHeight: 1,
+};
+
+// ── Notifications Panel ────────────────────────────────────────────────────────
+function NotificationsPanel({ onClose }) {
+  const panelRef = useRef(null);
+
+  // Close when clicking outside
+  useEffect(() => {
+    const handler = (e) => {
+      if (panelRef.current && !panelRef.current.contains(e.target)) onClose();
+    };
+    // slight delay so the open-click doesn't immediately close
+    const t = setTimeout(() => document.addEventListener("mousedown", handler), 50);
+    return () => { clearTimeout(t); document.removeEventListener("mousedown", handler); };
+  }, [onClose]);
+
+  // Close on Escape
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      ref={panelRef}
+      style={{
+        position: "absolute",
+        top: "calc(100% + 8px)",
+        right: 0,
+        width: 320,
+        background: "#12151c",
+        border: "1px solid #1e2433",
+        borderRadius: 14,
+        boxShadow: "0 16px 48px rgba(0,0,0,0.6)",
+        zIndex: 9999,
+        overflow: "hidden",
+        color: "#e2e8f0",
+        fontFamily: "inherit",
+      }}
+    >
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 12px", borderBottom: "1px solid #1e2433" }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>Notifications</span>
         <button
-          className="flex items-center justify-center w-full cursor-pointer"
-          style={{ gap: 6, padding: "6px 0", borderRadius: 7, fontSize: 12, border: "1px solid var(--border)", backgroundColor: "transparent", color: "var(--text-muted)", fontFamily: "inherit", transition: "background-color var(--dur-fast), color var(--dur-fast)" }}
+          onClick={onClose}
+          style={{ background: "none", border: "none", cursor: "pointer", color: "#64748b", fontSize: 16, lineHeight: 1, padding: 2, borderRadius: 4, display: "flex", alignItems: "center" }}
         >
-          <IcoLogout s={12} /> Sign out
+          ✕
         </button>
+      </div>
+
+      {/* Empty state */}
+      <div style={{ padding: "48px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#1a1f2e", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <IcoBell s={20} />
+        </div>
+        <span style={{ fontSize: 12, color: "#64748b" }}>No notifications</span>
       </div>
     </div>
   );
@@ -176,19 +443,21 @@ function TopBar() {
       { id: "leaderboard", label: "Leaderboard",        icon: "🏆" },
       { id: "analytics",   label: "Profile / Analytics",icon: "📊" },
       { id: "community",   label: "Community / Friends",icon: "👥" },
-      { id: "createRoom",    label: "Create a room",    icon: "➕" },
-      { id: "invite",      label: "Invite friends",    icon: "✉️" },
-      { id: "OpenProblem", label: "Open a problem",    icon: "🔍" },
+      { id: "createRoom",  label: "Create a room",      icon: "➕" },
+      { id: "invite",      label: "Invite friends",     icon: "✉️" },
+      { id: "OpenProblem", label: "Open a problem",     icon: "🔍" },
   ];
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [isOpen, setIsOpen]             = useState(false);
+  const [searchQuery, setSearchQuery]   = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [showNotif, setShowNotif]       = useState(false);
+  const [showCreateRoom, setShowCreateRoom] = useState(false);
   
-  const paletteRef = useRef(null);
-  const inputRef = useRef(null);
+  const paletteRef  = useRef(null);
+  const inputRef    = useRef(null);
+  const bellWrapRef = useRef(null);
 
-  // Filter items based on user search query input string
   const filteredItems = PALETTE_ITEMS.filter(item =>
     item.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -197,173 +466,159 @@ function TopBar() {
     if (isOpen) {
       inputRef.current?.focus();
       setSelectedIndex(0);
-      document.body.style.overflow = "hidden"; // Prevent background content scroll
+      document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
     }
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
-  // Global listener tracking shortcuts (⌘K, Ctrl+K, Escape)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         setIsOpen((prev) => !prev);
       }
-      if (e.key === "Escape") {
-        setIsOpen(false);
-      }
+      if (e.key === "Escape") setIsOpen(false);
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Keyboard navigation controller handling index updates inside container lists
   const handleListKeyDown = (e) => {
     if (!isOpen || filteredItems.length === 0) return;
-
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setSelectedIndex((prev) => (prev + 1) % filteredItems.length);
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setSelectedIndex((prev) => (prev - 1 + filteredItems.length) % filteredItems.length);
-    } else if (e.key === "Enter") {
-      e.preventDefault();
-      handleItemTrigger(filteredItems[selectedIndex]);
-    }
+    if (e.key === "ArrowDown") { e.preventDefault(); setSelectedIndex((prev) => (prev + 1) % filteredItems.length); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setSelectedIndex((prev) => (prev - 1 + filteredItems.length) % filteredItems.length); }
+    else if (e.key === "Enter") { e.preventDefault(); handleItemTrigger(filteredItems[selectedIndex]); }
   };
 
   const handleItemTrigger = (item) => {
-    console.log(`Navigating route instance selection: ${item.id}`);
+    if (item.id === "createRoom") { setShowCreateRoom(true); }
     setIsOpen(false);
     setSearchQuery("");
   };
 
   return (
-    <div
-      className="flex-shrink-0 flex items-center"
-      style={{ height: 48, gap: 12, padding: "0 20px", borderBottom: "1px solid var(--border)", backgroundColor: "var(--surface)" }}
-    >
-      <div className="min-w-0">
-        <h1 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--text)", lineHeight: 1, whiteSpace: "nowrap" }}>Home</h1>
-        <p style={{ margin: "2px 0 0", fontSize: 11, color: "var(--text-muted)", lineHeight: 1 }}>Your study analytics</p>
-      </div>
+    <>
+      {/* Create Room Modal */}
+      {showCreateRoom && <CreateRoomModal onClose={() => setShowCreateRoom(false)} />}
 
-      <div className="flex-1 flex justify-center" />
-
-      <div className="flex items-center ml-auto flex-shrink-0" style={{ gap: 6 }}>
-        {/* ⌘K */}
-        <button
-         title="Command palette (⌘K)"
-        aria-label="Open command palette"
-        onClick={() => setIsOpen(true)}
-        className="flex items-center cursor-pointer gap-[5px] px-[10px] py-[4px] rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-muted)] text-[11px] font-[500] font-inherit transition-all duration-150"
+      <div
+        className="flex-shrink-0 flex items-center"
+        style={{ height: 48, gap: 12, padding: "0 20px", borderBottom: "1px solid var(--border)", backgroundColor: "var(--surface)" }}
       >
-          <IcoSearch s={12} />
-          <span style={{ letterSpacing: "0.3px" }}>⌘K</span>
-        </button>
-        {isOpen && (
-        <div 
-          className="fixed inset-0 z-[9999] flex items-center justify-center pt-[10vh] px-4 bg-black/60 backdrop-blur-[4px] transition-opacity duration-200"
-          onClick={() => setIsOpen(false)} // Closes system when clicking the backdrop layer
-        >
-          <div
-            ref={paletteRef}
-            onClick={(e) => e.stopPropagation()} // Prevents bubble trigger patterns closing inner card box
-            onKeyDown={handleListKeyDown}
-            className="w-full max-w-[580px] bg-[#0d1117] border border-[#1e2433] rounded-xl shadow-2xl overflow-hidden flex flex-col font-sans text-[#e2e8f0]"
-          >
-            {/* INPUT SEARCH HEADER WRAPPER */}
-            <div className="h-8 flex items-center px-4 py-3.5 border-b border-[#1e2433] gap-3">
-              <svg className="ml-8 text-gray-500 p-4 flex-shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
-              <input
-                ref={inputRef}
-                type="text"
-                placeholder="Jump to, search, or do something..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent border-none outline-none text-[14px] text-[#f1f5f9] placeholder-gray-600 font-sans"
-              />
-            </div>
-
-            {/* NAVIGATIONAL ROUTE LOOP LISTING */}
-            <div className="max-h-[340px] overflow-y-auto p-2 flex flex-col gap-0.5">
-              <div className="text-[10px] font-bold text-gray-500 tracking-wider uppercase px-3 pt-2 pb-1.5 selection-none">
-                Navigate
-              </div>
-              
-              {filteredItems.length > 0 ? (
-                filteredItems.map((item, index) => {
-                  const isSelected = index === selectedIndex;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => handleItemTrigger(item)}
-                      onMouseEnter={() => setSelectedIndex(index)}
-                      className={`w-full flex items-center text-left gap-4 px-3 py-2.5 rounded-lg text-[13px] font-medium border-none cursor-pointer transition-colors duration-700 ${
-                        isSelected 
-                          ? "bg-[#161b26] text-[#818cf8]" 
-                          : "bg-transparent text-gray-300"
-                      }`}
-                    >
-                      {/* Unified dynamic icon container cell layout rendering block */}
-                      <span className={`w-7 h-7 flex items-center justify-center rounded-md text-[13px] border ${
-                        isSelected ? "bg-[#1f2433] border-[#312e81]" : "bg-[#111622] border-[#1a202c]"
-                      }`}>
-                        {item.icon}
-                      </span>
-                      <span className="flex-1 truncate">{item.label}</span>
-                    </button>
-                  );
-                })
-              ) : (
-                <div className="text-center py-8 text-[12px] text-gray-500">
-                  No matching workspace parameters found.
-                </div>
-              )}
-            </div>
-
-            {/* SYSTEM SHORTCUT HELP LEGEND BAR FOOTER */}
-            <div className="flex items-center gap-4 px-4 py-2.5 bg-[#080c12] border-t border-[#1e2433] text-[10px] text-gray-500 select-none">
-              <div className="flex items-center gap-1">
-                <span className="bg-[#111622] border border-[#1a202c] px-1 py-0.5 rounded text-[9px] font-mono">↑↓</span> Navigate
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="bg-[#111622] border border-[#1a202c] px-1 py-0.5 rounded text-[9px] font-mono">↵</span> Open
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="bg-[#111622] border border-[#1a202c] px-1 py-0.5 rounded text-[9px] font-mono">Esc</span> Close
-              </div>
-            </div>
-
-          </div>
+        <div className="min-w-0">
+          <h1 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--text)", lineHeight: 1, whiteSpace: "nowrap" }}>Home</h1>
+          <p style={{ margin: "2px 0 0", fontSize: 11, color: "var(--text-muted)", lineHeight: 1 }}>Your study analytics</p>
         </div>
-      )}
-        {/* Bell */}
-        <div style={{ position: "relative" }}>
+
+        <div className="flex-1 flex justify-center" />
+
+        <div className="flex items-center ml-auto flex-shrink-0" style={{ gap: 6 }}>
+          {/* ⌘K Search */}
           <button
-            title="Notifications"
-            aria-label="Notifications"
-            className="flex items-center justify-center cursor-pointer"
-            style={{ position: "relative", width: 32, height: 32, borderRadius: "var(--radius-md)", border: "none", backgroundColor: "transparent", color: "var(--text-muted)", fontFamily: "inherit", transition: "background-color var(--dur-fast), color var(--dur-fast)" }}
+            title="Command palette (⌘K)"
+            aria-label="Open command palette"
+            onClick={() => setIsOpen(true)}
+            className="flex items-center cursor-pointer gap-[5px] px-[10px] py-[4px] rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-muted)] text-[11px] font-[500] font-inherit transition-all duration-150"
           >
-            <IcoBell s={15} />
+            <IcoSearch s={12} />
+            <span style={{ letterSpacing: "0.3px" }}>⌘K</span>
+          </button>
+
+          {/* Command Palette Modal */}
+          {isOpen && (
+            <div
+              className="fixed inset-0 z-[9999] flex items-center justify-center pt-[10vh] px-4 bg-black/60 backdrop-blur-[4px]"
+              onClick={() => setIsOpen(false)}
+            >
+              <div
+                ref={paletteRef}
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={handleListKeyDown}
+                className="w-full max-w-[580px] bg-[#0d1117] border border-[#1e2433] rounded-xl shadow-2xl overflow-hidden flex flex-col font-sans text-[#e2e8f0]"
+              >
+                <div className="h-8 flex items-center px-4 py-3.5 border-b border-[#1e2433] gap-3">
+                  <svg className="ml-8 text-gray-500 p-4 flex-shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    placeholder="Jump to, search, or do something..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-transparent border-none outline-none text-[14px] text-[#f1f5f9] placeholder-gray-600 font-sans"
+                  />
+                </div>
+                <div className="max-h-[340px] overflow-y-auto p-2 flex flex-col gap-0.5">
+                  <div className="text-[10px] font-bold text-gray-500 tracking-wider uppercase px-3 pt-2 pb-1.5">Navigate</div>
+                  {filteredItems.length > 0 ? (
+                    filteredItems.map((item, index) => {
+                      const isSelected = index === selectedIndex;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleItemTrigger(item)}
+                          onMouseEnter={() => setSelectedIndex(index)}
+                          className={`w-full flex items-center text-left gap-4 px-3 py-2.5 rounded-lg text-[13px] font-medium border-none cursor-pointer transition-colors duration-150 ${
+                            isSelected ? "bg-[#161b26] text-[#818cf8]" : "bg-transparent text-gray-300"
+                          }`}
+                        >
+                          <span className={`w-7 h-7 flex items-center justify-center rounded-md text-[13px] border ${
+                            isSelected ? "bg-[#1f2433] border-[#312e81]" : "bg-[#111622] border-[#1a202c]"
+                          }`}>
+                            {item.icon}
+                          </span>
+                          <span className="flex-1 truncate">{item.label}</span>
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <div className="text-center py-8 text-[12px] text-gray-500">No matching items found.</div>
+                  )}
+                </div>
+                <div className="flex items-center gap-4 px-4 py-2.5 bg-[#080c12] border-t border-[#1e2433] text-[10px] text-gray-500 select-none">
+                  <div className="flex items-center gap-1"><span className="bg-[#111622] border border-[#1a202c] px-1 py-0.5 rounded text-[9px] font-mono">↑↓</span> Navigate</div>
+                  <div className="flex items-center gap-1"><span className="bg-[#111622] border border-[#1a202c] px-1 py-0.5 rounded text-[9px] font-mono">↵</span> Open</div>
+                  <div className="flex items-center gap-1"><span className="bg-[#111622] border border-[#1a202c] px-1 py-0.5 rounded text-[9px] font-mono">Esc</span> Close</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Bell – Notifications */}
+          <div ref={bellWrapRef} style={{ position: "relative" }}>
+            <button
+              title="Notifications"
+              aria-label="Notifications"
+              onClick={() => setShowNotif((p) => !p)}
+              className="flex items-center justify-center cursor-pointer"
+              style={{
+                width: 32, height: 32, borderRadius: "var(--radius-md)",
+                border: "none",
+                backgroundColor: showNotif ? "var(--accent-bg)" : "transparent",
+                color: showNotif ? "var(--accent)" : "var(--text-muted)",
+                fontFamily: "inherit",
+                transition: "background-color var(--dur-fast), color var(--dur-fast)",
+              }}
+            >
+              <IcoBell s={15} />
+            </button>
+            {showNotif && <NotificationsPanel onClose={() => setShowNotif(false)} />}
+          </div>
+
+          {/* + Create room */}
+          <button
+            title="Create room"
+            aria-label="Create room"
+            onClick={() => setShowCreateRoom(true)}
+            className="flex items-center justify-center cursor-pointer"
+            style={{ width: 28, height: 28, borderRadius: "var(--radius-md)", border: "none", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "#fff", fontFamily: "inherit", transition: "opacity var(--dur-fast)" }}
+          >
+            <IcoPlus s={14} />
           </button>
         </div>
-
-        {/* + Create room */}
-        <button
-          title="Create room"
-          aria-label="Create room"
-          className="flex items-center justify-center cursor-pointer"
-          style={{ width: 28, height: 28, borderRadius: "var(--radius-md)", border: "none", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "#fff", fontFamily: "inherit", transition: "opacity var(--dur-fast)" }}
-        >
-          <IcoPlus s={14} />
-        </button>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -591,93 +846,14 @@ export default function Dashboard() {
       data-theme={theme}
       style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "row", backgroundColor: "var(--bg)" }}
     >
-      {/* ── SIDEBAR CONSOLE CONTAINER ── */}
+      {/* ── SIDEBAR ── */}
       <div className="sidebar-desktop">
-        <div
-          className="flex-shrink-0 h-full flex flex-col"
-          style={{ width: 220, backgroundColor: "var(--surface)", borderRight: "1px solid var(--border)" }}
-        >
-          {/* Brand */}
-          <div className="flex items-center gap-2.5 flex-shrink-0" style={{ padding: "14px 14px 12px", borderBottom: "1px solid var(--border)" }}>
-            <div className="flex items-center justify-center flex-shrink-0" style={{ width: 30, height: 30, borderRadius: 9, background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
-              <IcoBookOpen s={13} />
-            </div>
-            <span style={{ fontWeight: 800, fontSize: 14, color: "var(--text)", letterSpacing: "-0.3px" }}>Study Room</span>
-          </div>
-
-          {/* Navigation Items Map Link Iterators */}
-          <nav className="flex-1 overflow-y-auto flex flex-col" style={{ padding: "10px 8px", gap: 1 }}>
-            {NAV_ITEMS.map(({ id, label, Icon, chevron, soon, path }) => {
-              const isActive = activeNav === id;
-              return (
-                <div key={id} style={{ position: "relative" }}>
-                  <button
-                    aria-label={label}
-                    onClick={() => handleNav(id, path)}
-                    className="flex items-center w-full text-left cursor-pointer"
-                    style={{
-                      gap: 10, padding: "7px 10px", borderRadius: 8, border: "none", fontSize: 13,
-                      fontWeight: isActive ? 600 : 400,
-                      color: isActive ? "var(--accent, #6366f1)" : "var(--text-muted)",
-                      backgroundColor: isActive ? "var(--accent-bg)" : "transparent",
-                      transition: "background-color var(--dur-fast), color var(--dur-fast)",
-                      fontFamily: "inherit",
-                    }}
-                  >
-                    <Icon s={15} />
-                    <span style={{ flex: "1 1 0%", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>
-                    {chevron && <IcoChevron s={13} rotate="-90" />}
-                  </button>
-                  {soon && (
-                    <span className="absolute flex items-center gap-1 pointer-events-none" style={{ top: 6, right: 6, fontSize: 8, fontWeight: 800, letterSpacing: "0.4px", padding: "1px 5px", borderRadius: 10, backgroundColor: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text-subtle)" }}>
-                      <IcoLock s={7} /> SOON
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </nav>
-
-          {/* Bottom user configurations tray */}
-          <div className="flex-shrink-0 flex flex-col" style={{ borderTop: "1px solid var(--border)", padding: "10px 12px", gap: 8 }}>
-            <div className="flex items-center" style={{ gap: 8 }}>
-              <img alt="Mayur K S" src="https://lh3.googleusercontent.com/a/ACg8ocJOHQ3CBE3KjE6jm37Rh6DZ1INAG8-i1M7xZZNfvCYrlZHgTg=s96-c" style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0, objectFit: "cover" }} />
-              <div className="flex-1 min-w-0">
-                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Mayur K S</div>
-              </div>
-
-              {/* Dynamic Theme Interactive Pill Switch Button */}
-              <button
-                title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-                onClick={toggleTheme}
-                className="flex-shrink-0 flex items-center cursor-pointer"
-                style={{
-                  width: 40, height: 22, borderRadius: 99, 
-                  border: "1px solid var(--border)", 
-                  backgroundColor: theme === "dark" ? "rgb(26,26,26)" : "rgb(241,245,249)", 
-                  padding: 2, position: "relative"
-                }}
-              >
-                <span
-                  className="flex items-center justify-center rounded-full"
-                  style={{
-                    width: 16, height: 16, 
-                    backgroundColor: "rgb(99,102,241)", 
-                    transform: theme === "dark" ? "translateX(0px)" : "translateX(18px)", 
-                    transition: "transform 0.3s cubic-bezier(0.34,1.56,0.64,1)", 
-                    fontSize: 9, boxShadow: "0 1px 3px rgba(0,0,0,0.3)"
-                  }}
-                >
-                  {theme === "dark" ? "🌙" : "☀️"}
-                </span>
-              </button>
-            </div>
-
-            <button className="flex items-center justify-center w-full cursor-pointer" style={{ gap: 6, padding: "6px 0", borderRadius: 7, fontSize: 12, border: "1px solid var(--border)", backgroundColor: "transparent", color: "var(--text-muted)", fontFamily: "inherit" }}>
-              <IcoLogout s={12} /> Sign out
-            </button>
-          </div>
-        </div>
+        <Sidebar
+          active={activeNav}
+          onNav={handleNav}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+        />
       </div>
 
       {/* Main pane */}
