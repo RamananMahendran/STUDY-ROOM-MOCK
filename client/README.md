@@ -1,16 +1,81 @@
-# React + Vite
+# STUDY-ROOM-MOCK
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A collaborative EdTech platform inspired by modern group-study workflows, built for students preparing for placements, coding interviews, and academic sessions together.
 
-Currently, two official plugins are available:
+This project combines:
+- Shared study rooms
+- Synced Pomodoro timers
+- Group chat & voice communication
+- Collaborative notes
+- Coding interview preparation
+- Progress tracking and analytics
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The goal of this project is to create an all-in-one study environment where students can learn, practice, and prepare together without switching between multiple apps.
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Real-time collaborative study rooms
+- Synced Pomodoro timer
+- Group text and voice chat
+- Shared live notepad
+- Coding interview problem practice
+- Study analytics dashboard
+- User authentication
+- Room invite system
+- Responsive modern UI
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Frontend: React / Next.js / Tailwind CSS
+- Backend: Node.js / Express
+- Database: MongoDB
+- Realtime: Socket.IO / WebRTC
+- Authentication: Clerk / Firebase / Auth.js
+- Deployment: Vercel / Render / Railway
+
+---
+
+# TODO
+
+## Frontend
+- [ ] Create landing page UI
+- [ ] Build responsive navbar
+- [ ] Create authentication pages
+- [ ] Design study room interface
+- [ ] Add Pomodoro timer UI
+- [ ] Build coding practice dashboard
+- [ ] Create analytics page
+- [ ] Add dark mode support
+
+## Backend
+- [ ] Setup backend server
+- [ ] Configure database
+- [ ] Implement authentication
+- [ ] Create room APIs
+- [ ] Add real-time socket connection
+- [ ] Implement collaborative notes
+- [ ] Add voice chat support
+- [ ] Create coding problem APIs
+
+## Realtime Features
+- [ ] Synced Pomodoro timer
+- [ ] Live chat system
+- [ ] Shared notepad updates
+- [ ] User presence tracking
+- [ ] Room join invite code
+
+## Deployment
+- [ ] Deploy frontend
+- [ ] Deploy backend
+- [ ] Setup environment variables
+- [ ] Configure domain
+- [ ] Add CI/CD pipeline
+
+## Future Improvements
+- [ ] AI study assistant
+- [ ] Mock interview system
+- [ ] Leaderboards
+- [ ] Weekly challenges
+- [ ] Mobile application
+- [ ] Screen sharing
+- [ ] Study streak tracking
