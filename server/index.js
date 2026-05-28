@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import mongoose from 'mongoose';
+import pool from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 
@@ -13,18 +13,14 @@ const app = express();
 app.use(cors());
 app.use(express.json()); // Parses incoming JSON requests
 
-// Connect to MongoDB
-const connectDB = async () => {
-  try {
-    const conn = await mongoose.connect(process.env.MONGO_URI);
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`Error: ${error.message}`);
-    process.exit(1);
+// Test PostgreSQL Connection
+pool.connect((err, client, release) => {
+  if (err) {
+    return console.error('Error acquiring client', err.stack);
   }
-};
-
-connectDB();
+  console.log('PostgreSQL Connected');
+  release();
+});
 
 // Routes
 app.use('/api/auth', authRoutes);

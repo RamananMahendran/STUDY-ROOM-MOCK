@@ -1,55 +1,42 @@
-import mongoose from 'mongoose';
+import pool from '../config/db.js';
 import bcrypt from 'bcryptjs';
 
-const userSchema = new mongoose.Schema(
-  {
-    username: {
-      type: String,
-      required: [true, 'Please add a username'],
-      unique: true,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: [true, 'Please add an email'],
-      unique: true,
-      match: [
-        /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-        'Please add a valid email',
-      ],
-    },
-    password: {
-      type: String,
-      required: [true, 'Please add a password'],
-      minlength: 6,
-      select: false, // Do not return password by default
-    },
-    // Adding streak and joined date for home page requirements
-    streak: {
-      type: Number,
-      default: 0,
-    },
+const User = {
+  // Find a user by email
+  async findByEmail(email) {
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    return result.rows[0];
   },
-  {
-    timestamps: true,
+
+  // Find a user by username
+  async findByUsername(username) {
+    const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+    return result.rows[0];
+  },
+
+  // Find a user by ID
+  async findById(id) {
+    const result = await pool.query('SELECT id, username, email, streak, created_at FROM users WHERE id = $1', [id]);
+    return result.rows[0];
+  },
+
+  // Create a new user
+  async create({ username, email, password }) {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const result = await pool.query(
+      'INSERT INTO users (username, email, password, streak) VALUES ($1, $2, $3, $4) RETURNING id, username, email, streak, created_at',
+      [username, email, hashedPassword, 0]
+    );
+
+    return result.rows[0];
+  },
+
+  // Compare password
+  async matchPassword(enteredPassword, hashedPassword) {
+    return await bcrypt.compare(enteredPassword, hashedPassword);
   }
-);
-
-// Hash password before saving to DB
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    next();
-  }
-
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-});
-
-// Method to compare entered password with hashed password in database
-userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
 };
-
-const User = mongoose.model('User', userSchema);
 
 export default User;
