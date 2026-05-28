@@ -8,9 +8,10 @@ export const registerUser = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
 
-    const userExists = await User.findOne({ $or: [{ email }, { username }] });
+    const emailExists = await User.findByEmail(email);
+    const usernameExists = await User.findByUsername(username);
 
-    if (userExists) {
+    if (emailExists || usernameExists) {
       res.status(400);
       throw new Error('User already exists (email or username taken)');
     }
@@ -22,11 +23,11 @@ export const registerUser = async (req, res, next) => {
     });
 
     if (user) {
-      // Send token in response instead of cookie for standard stateless JWT flow
-      const token = generateToken(res, user._id);
+      // Send token in response
+      const token = generateToken(res, user.id);
       
       res.status(201).json({
-        _id: user._id,
+        id: user.id,
         username: user.username,
         email: user.email,
         streak: user.streak,
@@ -48,15 +49,13 @@ export const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    // Use +password if select: false was set in schema, 
-    // but in mongoose, findOne().select('+password') is needed
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findByEmail(email);
 
-    if (user && (await user.matchPassword(password))) {
-      const token = generateToken(res, user._id);
+    if (user && (await User.matchPassword(password, user.password))) {
+      const token = generateToken(res, user.id);
       
       res.json({
-        _id: user._id,
+        id: user.id,
         username: user.username,
         email: user.email,
         streak: user.streak,
@@ -76,11 +75,12 @@ export const loginUser = async (req, res, next) => {
 // @access  Private
 export const getUserProfile = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id);
+    // req.user is set by the authMiddleware
+    const user = await User.findById(req.user.id);
 
     if (user) {
       res.json({
-        _id: user._id,
+        id: user.id,
         username: user.username,
         email: user.email,
         streak: user.streak,
