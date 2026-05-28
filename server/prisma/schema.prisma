@@ -1,0 +1,358 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  //url      = env("DATABASE_URL") // 👈 FIXED: Un-commented database target url hook
+}
+
+// ============================================================
+// MODULE 1: Users, Authentication & Gamification (BE1)
+// ============================================================
+
+model User {
+  id             Int       @id @default(autoincrement()) // 👈 Master Primary Key: Int
+  name           String
+  email          String    @unique
+  password       String    @db.Text
+  avatarUrl      String?   @map("avatar_url")
+  role           String    @default("free") // 'free', 'pro', 'admin'
+  streakCount    Int       @default(0)      @map("streak_count")
+  lastActiveAt   DateTime? @db.Timestamptz  @map("last_active_at")
+  createdAt      DateTime  @default(now())  @db.Timestamptz @map("created_at")
+  updatedAt      DateTime  @default(now())  @updatedAt @db.Timestamptz @map("updated_at")
+
+  // Relations
+  oauthAccounts  OAuthAccount[]
+  subscriptions  Subscription[]
+  submissions    Submission[]
+  ownedRooms     StudyRoom[]          @relation("RoomOwner")
+  roomMembers    RoomMember[]
+  chatMessages   ChatMessage[]
+  friendshipsA   Friendship[]         @relation("UserAFriendships")
+  friendshipsB   Friendship[]         @relation("UserBFriendships")
+  userBadges     UserBadge[]
+  discussions    Discussion[]
+  contestEntries ContestParticipant[]
+  interviewsAsInterviewer InterviewSlot[] @relation("Interviewer")
+  interviewsAsCandidate   InterviewSlot[] @relation("Candidate")
+
+  @@map("users")
+}
+
+model OAuthAccount {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           Int      @map("user_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  provider         String   // 'google', 'github'
+  providerClientId String   @map("provider_client_id")
+  createdAt        DateTime @default(now()) @db.Timestamptz @map("created_at")
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerClientId])
+  @@map("oauth_accounts")
+}
+
+model Subscription {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId             Int       @map("user_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  status             String    // 'active', 'canceled', 'unpaid'
+  planType           String    @map("plan_type") // 'monthly', 'yearly'
+  currentPeriodStart DateTime  @db.Timestamptz @map("current_period_start")
+  currentPeriodEnd   DateTime  @db.Timestamptz @map("current_period_end")
+  createdAt          DateTime  @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt          DateTime  @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
+
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model Badge {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String      // e.g., "7-Day Streak Warrior", "Algorithm Master"
+  description String
+  iconUrl     String      @map("icon_url")
+  userBadges  UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    Int      @map("user_id")  // 👈 FIXED: Changed String @db.Uuid to Int
+  badgeId   String   @db.Uuid @map("badge_id")
+  earnedAt  DateTime @default(now()) @db.Timestamptz @map("earned_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+model Friendship {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userAId   Int      @map("user_a_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  userBId   Int      @map("user_b_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  status    String   @default("pending") // 'pending', 'accepted', 'blocked'
+  createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
+
+  userA     User     @relation("UserAFriendships", fields: [userAId], references: [id], onDelete: Cascade)
+  userB     User     @relation("UserBFriendships", fields: [userBId], references: [id], onDelete: Cascade)
+
+  @@unique([userAId, userBId])
+  @@map("friendships")
+}
+
+// ============================================================
+// MODULE 2: Real-time Study Rooms & Productivity (BE2)
+// ============================================================
+
+model StudyRoom {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  slug       String   @unique
+  ownerId    Int      @map("owner_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  isPrivate  Boolean  @default(false) @map("is_private")
+  roomType   String   @default("study") // 'study', 'pair_programming', 'mock_interview'
+  createdAt  DateTime @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt  DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
+
+  owner      User         @relation("RoomOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members    RoomMember[]
+  messages   ChatMessage[]
+  tasks      RoomTask[]
+  whiteboard WhiteboardSession?
+
+  @@map("study_rooms")
+}
+
+model RoomMember {
+  id       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId   String    @db.Uuid @map("room_id")
+  userId   Int       @map("user_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  isOnline Boolean   @default(false) @map("is_online")
+  socketId String?   @map("socket_id")
+  joinedAt DateTime  @default(now()) @db.Timestamptz @map("joined_at")
+
+  room     StudyRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+  @@map("room_members")
+}
+
+model ChatMessage {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId    String   @db.Uuid @map("room_id")
+  userId    Int      @map("user_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  message   String
+  createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
+
+  room      StudyRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+}
+
+model RoomTask {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId      String   @db.Uuid @map("room_id")
+  title       String
+  isCompleted Boolean  @default(false) @map("is_completed")
+  createdAt   DateTime @default(now()) @db.Timestamptz @map("created_at")
+
+  room        StudyRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@map("room_tasks")
+}
+
+model WhiteboardSession {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId    String   @unique @db.Uuid @map("room_id")
+  elements  Json     @default("[]")
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
+
+  room      StudyRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@map("whiteboard_sessions")
+}
+
+// ============================================================
+// MODULE 3: Problems, Contests & Discussions (BE3)
+// ============================================================
+
+model Problem {
+  id             Int      @id @default(autoincrement()) // 👈 Master Primary Key: Int
+  title          String   @unique
+  slug           String   @unique
+  description    String   @db.Text
+  difficulty     String
+  tags           String[]
+  testCases      Json     @default("[]")    @map("test_cases")
+  isPremium      Boolean  @default(false) @map("is_premium")
+  acceptanceRate Float    @default(0.0)   @map("acceptance_rate")
+  createdAt      DateTime @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt      DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
+
+  submissions     Submission[]
+  planProblems    StudyPlanProblem[]
+  discussions     Discussion[]
+  contestProblems ContestProblem[]
+
+  @@map("problems")
+}
+
+model Submission {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    Int      @map("user_id")    // 👈 FIXED: Changed String @db.Uuid to Int
+  problemId Int      @map("problem_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  language  String
+  code      String   @db.Text
+  status    String   @default("pending")
+  runtimeMs Int?     @map("runtime_ms")
+  memoryKb  Int?     @map("memory_kb")
+  createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@map("submissions")
+}
+
+model StudyPlan {
+  id           String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title        String
+  description  String
+  isPremium    Boolean            @default(false) @map("is_premium")
+  durationDays Int                @map("duration_days")
+  problems     StudyPlanProblem[]
+
+  @@map("study_plans")
+}
+
+model StudyPlanProblem {
+  planId    String @db.Uuid @map("plan_id")
+  problemId Int    @map("problem_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  dayNumber Int    @map("day_number")
+
+  plan      StudyPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  problem   Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@id([planId, problemId])
+  @@map("study_plan_problems")
+}
+
+model Discussion {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  problemId Int      @map("problem_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  userId    Int      @map("user_id")    // 👈 FIXED: Changed String @db.Uuid to Int
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
+
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("discussions")
+}
+
+model Contest {
+  id           String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title        String
+  description  String
+  startTime    DateTime             @db.Timestamptz @map("start_time")
+  endTime      DateTime             @db.Timestamptz @map("end_time")
+  createdAt    DateTime             @default(now()) @db.Timestamptz @map("created_at")
+  problems     ContestProblem[]
+  participants ContestParticipant[]
+
+  @@map("contests")
+}
+
+model ContestProblem {
+  contestId String @db.Uuid @map("contest_id")
+  problemId Int    @map("problem_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  points    Int    @default(100)
+
+  contest   Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  problem   Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@id([contestId, problemId])
+  @@map("contest_problems")
+}
+
+model ContestParticipant {
+  contestId  String @db.Uuid @map("contest_id")
+  userId     Int    @map("user_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  totalScore Int    @default(0) @map("total_score")
+
+  contest    Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([contestId, userId])
+  @@map("contest_participants")
+}
+
+// ============================================================
+// MODULE 4: Peer Mock Interviews (BE2/BE3 Integration)
+// ============================================================
+
+model InterviewSlot {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  interviewerId Int       @map("interviewer_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  candidateId   Int?      @map("candidate_id")   // 👈 FIXED: Changed String @db.Uuid to Int?
+  scheduledAt   DateTime  @db.Timestamptz @map("scheduled_at")
+  status        String    @default("available")
+  feedbackScore Int?      @map("feedback_score")
+  feedbackNotes String?   @db.Text @map("feedback_notes")
+  createdAt     DateTime  @default(now()) @db.Timestamptz @map("created_at")
+
+  interviewer   User      @relation("Interviewer", fields: [interviewerId], references: [id], onDelete: Cascade)
+  candidate     User?     @relation("Candidate", fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@map("interview_slots")
+}
+
+// ============================================================
+// MODULE 5: Global Infrastructure, Leaderboard & Audits (BE4)
+// ============================================================
+
+model LeaderboardEntry {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     Int      @map("user_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  period     String
+  score      Int      @default(0)
+  rank       Int?
+  computedAt DateTime @default(now()) @db.Timestamptz @map("computed_at")
+
+  @@unique([userId, period])
+  @@map("leaderboard_entries")
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    Int?     @map("user_id") // 👈 FIXED: Changed String @db.Uuid to Int?
+  eventName String   @map("event_name")
+  properties Json?
+  createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
+
+  @@index([eventName])
+  @@index([createdAt(sort: Desc)])
+  @@map("analytics_events")
+}
+
+model AuditLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  actorId    Int      @map("actor_id") // 👈 FIXED: Changed String @db.Uuid to Int (Assuming users/admins run actions)
+  action     String
+  targetType String   @map("target_type")
+  targetId   String   @map("target_id")
+  metaData   Json?    @map("metadata")
+  createdAt  DateTime @default(now()) @db.Timestamptz @map("created_at")
+
+  @@map("audit_logs")
+}
