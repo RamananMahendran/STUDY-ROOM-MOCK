@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "./Home.css";
+import Header from "./components/header.jsx";
 
 // ── DATA ──────────────────────────────────────────────────────────────────────
 
@@ -383,23 +384,7 @@ export default function Home() {
     <div style={{ fontFamily:"'DM Sans', sans-serif", background:"#060810", color:"#e2e8f0", minHeight:"100vh", overflowX:"hidden" }}>
 
       {/* ── NAVBAR ── */}
-      <nav className="navbar">
-        <div className="navbar-inner">
-          <a href="/" className="navbar-logo">
-            <div className="navbar-logo-icon">▦</div>
-            <span className="navbar-logo-text">Study Room</span>
-          </a>
-          <div className="navbar-links">
-            {NAV_LINKS.map((l, i) => (
-              <span key={l} className={`nav-link${i === 0 ? " active" : ""}`}>{l}</span>
-            ))}
-          </div>
-          <div className="navbar-actions">
-            <button className="btn-outline sm">Log in</button>
-            <button className="btn-primary sm">Get started →</button>
-          </div>
-        </div>
-      </nav>
+      <Header activePage="Home" />
 
       {/* ── HERO ── */}
       <section className="hero">
