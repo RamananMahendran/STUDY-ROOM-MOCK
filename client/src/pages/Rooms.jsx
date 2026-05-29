@@ -27,11 +27,11 @@ const IcoUsersLg    = ({s=36}) => <svg width={s} height={s} viewBox="0 0 24 24" 
 const NAV_ITEMS = [
   { id: "home",      label: "Home",         Icon: IcoDashboard,  path: "/home"  },
   { id: "rooms",     label: "Rooms",        Icon: IcoHeadphones, path: "/rooms" },
-  { id: "practice",  label: "Practice",     Icon: IcoCode,       chevron: true  },
+  { id: "practice",  label: "Practice",     Icon: IcoCode,       path: "/practice/leaderboard" },
   { id: "contests",  label: "Contests",     Icon: IcoZap,        soon: true     },
-  { id: "community", label: "Community",    Icon: IcoUsers                      },
-  { id: "profile",   label: "Profile",      Icon: IcoBar                        },
-  { id: "refer",     label: "Refer & earn", Icon: IcoGift                       },
+  { id: "community", label: "Community",    Icon: IcoUsers,      path: "/community" },
+  { id: "profile",   label: "Profile",      Icon: IcoBar,        path: "/profile" },
+  { id: "refer",     label: "Refer & earn", Icon: IcoGift,       path: "/refer" },
 ];
 
 // ── Quick-start card ──────────────────────────────────────────────────────────

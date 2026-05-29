@@ -10,6 +10,9 @@ import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import Pricing from './pages/Pricing.jsx';
 import Promise from './pages/Promise.jsx';
 import Changelog from './pages/Changelog.jsx';
+import LeaderboardPage from './pages/leaderboard.jsx';
+import Community from './pages/Community.jsx';
+import Refer from './pages/Refer.jsx';
 
 function App() {
   return (
@@ -23,10 +26,13 @@ function App() {
         <Route path="/home" element={<Dashboard />} />
         <Route path="/rooms" element={<Rooms />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/community" element={<Community />} />
+        <Route path="/refer" element={<Refer />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/promise" element={<Promise />} />
         <Route path="/changelog" element={<Changelog />} />
         <Route path="/room/:roomId" element={<Room />} />
+        <Route path="/practice/leaderboard" element={<LeaderboardPage />} />
       </Routes>
     </Router>
   );
