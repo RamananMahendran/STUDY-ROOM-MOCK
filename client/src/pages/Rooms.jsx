@@ -27,11 +27,11 @@ const IcoUsersLg    = ({s=36}) => <svg width={s} height={s} viewBox="0 0 24 24" 
 const NAV_ITEMS = [
   { id: "home",      label: "Home",         Icon: IcoDashboard,  path: "/home"  },
   { id: "rooms",     label: "Rooms",        Icon: IcoHeadphones, path: "/rooms" },
-  { id: "practice",  label: "Practice",     Icon: IcoCode,       chevron: true  },
+  { id: "practice",  label: "Practice",     Icon: IcoCode,       path: "/practice/leaderboard" },
   { id: "contests",  label: "Contests",     Icon: IcoZap,        soon: true     },
-  { id: "community", label: "Community",    Icon: IcoUsers                      },
-  { id: "profile",   label: "Profile",      Icon: IcoBar                        },
-  { id: "refer",     label: "Refer & earn", Icon: IcoGift                       },
+  { id: "community", label: "Community",    Icon: IcoUsers,      path: "/community" },
+  { id: "profile",   label: "Profile",      Icon: IcoBar,        path: "/profile" },
+  { id: "refer",     label: "Refer & earn", Icon: IcoGift,       path: "/refer" },
 ];
 
 // ── Quick-start card ──────────────────────────────────────────────────────────
@@ -294,6 +294,83 @@ export default function Rooms() {
                   >
                     Create a room
                   </button>
+                </div>
+              </section>
+
+              {/* ── Your rooms ── */}
+              <section id="your-rooms">
+                <div className="flex items-baseline justify-between flex-wrap" style={{ marginBottom: 10, gap: 10 }}>
+                  <div className="flex items-baseline" style={{ gap: 10 }}>
+                    <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.3px" }}>
+                      Your rooms
+                    </h2>
+                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Rooms you've created or joined</span>
+                  </div>
+                </div>
+
+                {/* Active badge */}
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
+                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>Active</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 999, backgroundColor: "var(--surface-2)", color: "var(--text-muted)", border: "1px solid var(--border)" }}>2</span>
+                </div>
+
+                {/* Room cards grid */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
+                  {[
+                    { id: "ffaaae", name: "try", icon: "📚", color: "#6366f1", goal: "", focusMin: 90, breakMin: 15, left: "23H 59M", members: 1 },
+                    { id: "f3e62f", name: "try", icon: "🟡", color: "#f59e0b", goal: "work should be completed", focusMin: 90, breakMin: 15, left: "23H 56M", members: 1 },
+                  ].map(room => (
+                    <button
+                      key={room.id}
+                      onClick={() => {
+                        sessionStorage.setItem("currentRoom", JSON.stringify(room));
+                        navigate(`/room/${room.id}`);
+                      }}
+                      style={{
+                        display: "flex", flexDirection: "column", gap: 10,
+                        padding: 14, borderRadius: 12,
+                        backgroundColor: "var(--surface)",
+                        border: `2px solid ${room.color}44`,
+                        cursor: "pointer", textAlign: "left",
+                        fontFamily: "inherit", color: "var(--text)",
+                        transition: "border-color 0.15s, box-shadow 0.15s, transform 0.15s",
+                        boxShadow: "var(--card-shadow)",
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = room.color; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 6px 20px ${room.color}30`; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = `${room.color}44`; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--card-shadow)"; }}
+                    >
+                      {/* Top row */}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontSize: 20 }}>{room.icon}</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>{room.name}</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ fontSize: 10, fontFamily: "monospace", color: "var(--text-muted)", background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 5, padding: "2px 6px" }}>{room.id}</span>
+                          <span style={{ color: "var(--text-muted)", fontSize: 12 }}>→</span>
+                        </div>
+                      </div>
+
+                      {/* Goal */}
+                      {room.goal && (
+                        <p style={{ margin: 0, fontSize: 11, color: "var(--text-muted)", lineHeight: 1.4 }}>{room.goal}</p>
+                      )}
+
+                      {/* Footer stats */}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 6, borderTop: "1px solid var(--border)" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ fontSize: 10, background: "rgba(16,185,129,0.12)", color: "#10b981", border: "1px solid rgba(16,185,129,0.25)", borderRadius: 999, padding: "2px 7px", fontWeight: 700 }}>
+                            ⏱ {room.left} LEFT
+                          </span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 10, color: "var(--text-muted)" }}>
+                          <span>👥 {room.members} member</span>
+                          <span>{room.focusMin}m · {room.breakMin}m</span>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </section>
 

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
 const IcoSearch  = ({s=12}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>;
@@ -27,7 +28,7 @@ const pomoBtnStyle = {
   lineHeight: 1,
 };
 
-function CreateRoomModal({ onClose }) {
+function CreateRoomModal({ onClose, onNavigate }) {
   const [roomName, setRoomName]   = useState("");
   const [goal, setGoal]           = useState("");
   const [selectedIcon, setIcon]   = useState(0);
@@ -299,6 +300,22 @@ function CreateRoomModal({ onClose }) {
             Cancel
           </button>
           <button
+            onClick={() => {
+              const id = Math.random().toString(36).slice(2, 8);
+              const room = {
+                id,
+                name:     roomName || "My Room",
+                icon:     ROOM_ICONS[selectedIcon],
+                color:    ROOM_COLORS[selectedColor],
+                goal,
+                focusMin: focus,
+                breakMin: brk,
+                expires,
+              };
+              sessionStorage.setItem("currentRoom", JSON.stringify(room));
+              onClose();
+              if (onNavigate) onNavigate(`/room/${id}`);
+            }}
             style={{
               flex: 1, padding: "11px 24px", borderRadius: 10,
               border: "none", background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
@@ -392,6 +409,7 @@ const PALETTE_ITEMS = [
  *  subtitle – optional subtitle shown below title
  */
 export default function TopBar({ title, subtitle }) {
+  const navigate = useNavigate();
   const [isOpen,          setIsOpen]          = useState(false);
   const [searchQuery,     setSearchQuery]     = useState("");
   const [selectedIndex,   setSelectedIndex]   = useState(0);
@@ -445,7 +463,7 @@ export default function TopBar({ title, subtitle }) {
   return (
     <>
       {/* Create Room Modal */}
-      {showCreateRoom && <CreateRoomModal onClose={() => setShowCreateRoom(false)} />}
+      {showCreateRoom && <CreateRoomModal onClose={() => setShowCreateRoom(false)} onNavigate={navigate} />}
 
       <div
         style={{

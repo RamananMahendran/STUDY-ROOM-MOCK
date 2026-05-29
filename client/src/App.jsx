@@ -5,10 +5,14 @@ import ForgotPassword from './pages/ForgotPassword.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Rooms from './pages/Rooms.jsx';
 import Profile from './pages/Profile.jsx';
+import Room from './pages/Room.jsx';
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import Pricing from './pages/Pricing.jsx';
 import Promise from './pages/Promise.jsx';
 import Changelog from './pages/Changelog.jsx';
+import LeaderboardPage from './pages/leaderboard.jsx';
+import Community from './pages/Community.jsx';
+import Refer from './pages/Refer.jsx';
 import StudyPlans from './pages/StudyPlans.jsx';
 import PairCodeSetup from './pages/PairCodeSetup.jsx';
 import Community from './pages/community.jsx';
@@ -24,9 +28,13 @@ function App() {
         <Route path="/home" element={<Dashboard />} />
         <Route path="/rooms" element={<Rooms />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/community" element={<Community />} />
+        <Route path="/refer" element={<Refer />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/promise" element={<Promise />} />
         <Route path="/changelog" element={<Changelog />} />
+        <Route path="/room/:roomId" element={<Room />} />
+        <Route path="/practice/leaderboard" element={<LeaderboardPage />} />
         <Route path="/studyplans" element={<StudyPlans />} />
         <Route path="*" element={<Home />} /> {/* Fallback route for unmatched paths */}  
         <Route path="/paircode" element={<PairCodeSetup />} />

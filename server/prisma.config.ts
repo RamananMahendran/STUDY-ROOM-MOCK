@@ -27,6 +27,6 @@ export default defineConfig({
   },
   datasource: {
     // Read the injected Docker compose URL, otherwise use local fallback
-    url: process.env.DATABASE_URL || "postgresql://studyadmin:studypass123@127.0.0.1:5432/studyroom_db?schema=public",
+    url: process.env.DATABASE_URL || "postgresql://postgres:prar0210thna@localhost:5432/studyplatform?schema=public",
   },
 });
