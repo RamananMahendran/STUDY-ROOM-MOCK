@@ -5,6 +5,7 @@ import ForgotPassword from './pages/ForgotPassword.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Rooms from './pages/Rooms.jsx';
 import Profile from './pages/Profile.jsx';
+import Room from './pages/Room.jsx';
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import Pricing from './pages/Pricing.jsx';
 import Promise from './pages/Promise.jsx';
@@ -25,6 +26,7 @@ function App() {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/promise" element={<Promise />} />
         <Route path="/changelog" element={<Changelog />} />
+        <Route path="/room/:roomId" element={<Room />} />
       </Routes>
     </Router>
   );
