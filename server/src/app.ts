@@ -4,6 +4,7 @@ import authRoutes from './modules/auth/authRoutes.js';       //  Import migrated
 import problemRoutes from './modules/practice/problemRoutes.js';
 import codeExecutionRoutes from './modules/codeExecution/codeExecutionRoutes.js';
 import submissionRoutes from './modules/submission/submissionRoutes.js';
+import pairRoutes from './modules/pair/pairRoutes.js';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 
 const app: Application = express();
@@ -23,6 +24,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/problems', problemRoutes);
 app.use('/api/code', codeExecutionRoutes);
 app.use('/api/submissions', submissionRoutes); 
+app.use('/api/pair', pairRoutes);
 
 // Fallback middlewares
 app.use(notFound);

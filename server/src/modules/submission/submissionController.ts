@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import submissionModel from './submissionModel.js';
 import { runJudge0Submission } from '../codeExecution/codeExecutionService.js';
 import prisma from '../../config/database.js';
+import { getIO } from '../../socket/socketServer.js';
 
 // Helper to get problem by ID
 const getProblemById = async (id: number) => {
@@ -12,17 +13,14 @@ const getProblemById = async (id: number) => {
 
 // Helper to normalize output for comparison
 const normalizeOutput = (output: string, expected: any): any => {
-  // If expected is an object/array, try to parse the output as JSON
   if (typeof expected === 'object') {
     try {
       return JSON.parse(output);
     } catch (e) {
-      // If parsing fails, return the original string
       return output;
     }
   }
   
-  // For primitive values, try to convert to number if applicable
   if (typeof expected === 'number') {
     const num = Number(output);
     return isNaN(num) ? output : num;
@@ -59,32 +57,19 @@ const runCodeWithTestCases = async (
     
     const expected = testCase.expected;
 
-    // IMPORTANT: Don't send expectedOutput - let Judge0 always return status 3
     const result = await runJudge0Submission({
       sourceCode,
       languageId,
       stdin: input,
-      // expectedOutput is REMOVED - we compare ourselves
     });
 
-    const isAccepted = result.status?.id === 3;
     const output = result.stdout?.trim() || '';
     
-    // Normalize both sides for comparison
     const normalizedOutput = normalizeOutput(output, expected);
     const normalizedExpected = expected;
-    
-    // Pass if output matches expected (Judge0 always returns status 3 for valid code)
     const passed = deepEqual(normalizedOutput, normalizedExpected);
     
-    // Debug logging (remove in production)
-    console.log(`Test ${i + 1}:`);
-    console.log(`  Input: ${input}`);
-    console.log(`  Expected: ${JSON.stringify(expected)}`);
-    console.log(`  Got: ${output}`);
-    console.log(`  Normalized Got: ${JSON.stringify(normalizedOutput)}`);
-    console.log(`  Passed: ${passed}`);
-    console.log(`  Judge0 Status: ${result.status?.id} - ${result.status?.description}`);
+    console.log(`Test ${i + 1}: Passed: ${passed}`);
     
     results.push({
       test_case_index: i + 1,
@@ -110,7 +95,10 @@ const processSubmissionInBackground = async (
   submissionId: string,
   code: string,
   languageId: number,
-  testCases: any[]
+  testCases: any[],
+  submittedFrom?: string,
+  pairSessionId?: string,
+  userId?: number
 ) => {
   console.log(`🔄 Processing submission ${submissionId}...`);
   
@@ -148,17 +136,57 @@ const processSubmissionInBackground = async (
     await submissionModel.updateStatus(submissionId, status, {
       runtimeMs: totalRuntime,
       memoryKb: maxMemory,
+      errorMessage: error_message || undefined,  // Changed
+      testResults: result.results,                // Changed
     });
+
+    // EMIT SOCKET.IO EVENT IF FROM PAIR SESSION
+    if (submittedFrom === 'pair' && pairSessionId) {
+      try {
+        const io = getIO();
+        if (io) {
+          const pairSession = await prisma.pairSession.findUnique({
+            where: { id: pairSessionId },
+            include: {
+              host: { select: { id: true, name: true } },
+              guest: { select: { id: true, name: true } }
+            }
+          });
+          
+          if (pairSession) {
+            const userName = userId === pairSession.hostId 
+              ? pairSession.host.name 
+              : pairSession.guest?.name || 'User';
+            
+            io.to(`pair:${pairSession.roomCode}`).emit('submission:result', {
+              submission_id: submissionId,
+              status: status,
+              runtime_ms: totalRuntime,
+              memory_kb: maxMemory,
+              test_results: result.results,
+              submitted_by: userId,
+              submitted_by_name: userName,
+              submitted_at: new Date().toISOString()
+            });
+            console.log(`📡 Emitted submission:result to pair:${pairSession.roomCode}`);
+          }
+        }
+      } catch (socketError) {
+        console.error('Failed to emit socket event:', socketError);
+      }
+    }
   } catch (error: any) {
     console.error(`Error processing submission ${submissionId}:`, error);
-    await submissionModel.updateStatus(submissionId, 'error', {});
+    await submissionModel.updateStatus(submissionId, 'error', {
+      errorMessage: error.message || 'Internal processing error',
+    });
   }
 };
 
 // POST /api/submissions - Submit code for a problem
 export const submitProblem = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { problemId, code, language } = req.body;
+    const { problemId, code, language, submittedFrom, pairSessionId } = req.body;
     const userId = (req as any).user?.id || 1;
 
     if (!problemId || !code || !language) {
@@ -197,14 +225,19 @@ export const submitProblem = async (req: Request, res: Response): Promise<any> =
       problemId: parseInt(problemId),
       code,
       language,
+      submittedFrom: submittedFrom || 'solo',
+      pairSessionId: pairSessionId || null,
     });
 
-    // Process in background
+    // Process in background with pair session info
     processSubmissionInBackground(
       submission.id, 
       code, 
       languageId, 
-      testCases
+      testCases,
+      submittedFrom,
+      pairSessionId,
+      userId
     );
 
     return res.status(201).json({
@@ -225,7 +258,6 @@ export const submitProblem = async (req: Request, res: Response): Promise<any> =
 // GET /api/submissions/:id - Poll submission result
 export const getSubmissionResult = async (req: Request, res: Response): Promise<any> => {
   try {
-    // Extract id and ensure it's a string
     const { id } = req.params;
     const submissionId = Array.isArray(id) ? id[0] : id;
     
@@ -257,6 +289,8 @@ export const getSubmissionResult = async (req: Request, res: Response): Promise<
         runtimeMs: submission.runtimeMs,
         memoryKb: submission.memoryKb,
         createdAt: submission.createdAt,
+        submittedFrom: submission.submittedFrom,
+        pairSessionId: submission.pairSessionId,
       },
     });
   } catch (error: any) {
@@ -283,6 +317,51 @@ export const getUserSubmissions = async (req: Request, res: Response): Promise<a
     });
   } catch (error: any) {
     console.error('Error fetching submissions:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// GET /api/submissions/pair/latest - Get latest submission for pair session
+export const getLatestPairSubmission = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { pairSessionId } = req.query;
+    
+    if (!pairSessionId) {
+      return res.status(400).json({
+        success: false,
+        error: 'pairSessionId is required'
+      });
+    }
+    
+    const submission = await submissionModel.getLatestPairSubmission(pairSessionId as string);
+    
+    return res.json({
+      success: true,
+      data: submission,
+    });
+  } catch (error: any) {
+    console.error('Error fetching latest pair submission:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// GET /api/submissions/pair/:pairSessionId - Get all submissions for pair session
+export const getPairSessionSubmissions = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { pairSessionId } = req.params;
+    const { limit = 50 } = req.query;
+    
+    const submissions = await submissionModel.getPairSessionSubmissions(
+      pairSessionId as string,
+      parseInt(limit as string)
+    );
+    
+    return res.json({
+      success: true,
+      data: submissions,
+    });
+  } catch (error: any) {
+    console.error('Error fetching pair session submissions:', error);
     return res.status(500).json({ success: false, error: error.message });
   }
 };

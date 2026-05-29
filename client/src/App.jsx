@@ -13,6 +13,7 @@ import Changelog from './pages/Changelog.jsx';
 import LeaderboardPage from './pages/leaderboard.jsx';
 import Community from './pages/Community.jsx';
 import Refer from './pages/Refer.jsx';
+import FloatingMessage from './pages/components/FloatingMessage.jsx';
 import StudyPlans from './pages/StudyPlans.jsx';
 import PairCodeSetup from './pages/PairCodeSetup.jsx';
 
@@ -39,6 +40,7 @@ function App() {
         <Route path="*" element={<Home />} /> {/* Fallback route for unmatched paths */}  
         <Route path="/paircode" element={<PairCodeSetup />} />
       </Routes>
+      <FloatingMessage />
     </Router>
   );
 }

@@ -5,15 +5,35 @@ import { useNavigate } from "react-router-dom";
 const IcoSearch  = ({s=12}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>;
 const IcoBell    = ({s=15}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>;
 const IcoPlus    = ({s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>;
+const IcoClock   = ({s=14}) => <svg width={s} height={s} fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+const IcoGrid    = ({s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>;
+const IcoBook    = ({s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>;
+const IcoFile    = ({s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>;
+const IcoTerminal= ({s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>;
+const IcoPair    = ({s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="12" r="3"/><circle cx="18" cy="12" r="3"/><line x1="9" y1="12" x2="15" y2="12"/></svg>;
+const IcoTrophy  = ({s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>;
+const IcoChart   = ({s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>;
+const IcoUsers   = ({s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+const IcoLightning = ({s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>;
+const IcoAddUser = ({s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>;
 
 // ── Create Room Modal ─────────────────────────────────────────────────────────
-const ROOM_ICONS   = ["📚", "🗓", "🖨", "🦊", "🔬", "📝", "🌀", "🍎"];
+const ROOM_ICONS   = ["📚", "🧮", "💻", "🎨", "🔬", "📝", "🗣️", "🎯"];
 const ROOM_COLORS  = ["#7c6fe0", "#b060e0", "#40b8e0", "#22c55e", "#f59e0b", "#ef4444"];
+
+window.addNotification = (msg) => {
+  const existing = JSON.parse(localStorage.getItem("myNotifications") || "null") || [
+    { id: "welcome", message: "Welcome! Try a 10-minute focus block — one click on the Dashboard and you're in.", time: Date.now() - 38 * 60000 }
+  ];
+  existing.unshift({ id: Date.now().toString(), message: msg, time: Date.now() });
+  localStorage.setItem("myNotifications", JSON.stringify(existing));
+  window.dispatchEvent(new Event("notificationsUpdated"));
+};
 const QUICK_STARTS = [
-  { label: "Exam Sprint",    emoji: "🔴", focus: 50, brk: 10 },
-  { label: "Group Project",  emoji: "🟡", focus: 25, brk:  5 },
-  { label: "Deep Work",      emoji: "🟠", focus: 50, brk: 10 },
-  { label: "Quick Revision", emoji: "⚡", focus: 15, brk:  5 },
+  { label: "Exam Sprint",    emoji: "🎯", focus: 50, brk: 10 },
+  { label: "Group Project",  emoji: "🤝", focus: 25, brk:  5 },
+  { label: "Deep Work",      emoji: "🧘", focus: 90, brk: 15 },
+  { label: "Quick Revision", emoji: "⚡", focus: 15, brk:  3 },
 ];
 
 const pomoBtnStyle = {
@@ -158,29 +178,32 @@ function CreateRoomModal({ onClose, onNavigate }) {
             <div>
               <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>Quick Start</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                {QUICK_STARTS.map((qs) => (
-                  <button
-                    key={qs.label}
-                    onClick={() => applyQuick(qs)}
-                    style={{
-                      background: "#0d1117",
-                      border: "1px solid #1e2433",
-                      borderRadius: 8, padding: "10px 12px",
-                      cursor: "pointer", textAlign: "left",
-                      color: "#e2e8f0",
-                      transition: "border-color 0.15s, background 0.15s",
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.background = "#161b26"; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#1e2433"; e.currentTarget.style.background = "#0d1117"; }}
-                  >
-                    <div style={{ fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
-                      <span>{qs.emoji}</span> {qs.label}
-                    </div>
-                    <div style={{ fontSize: 10, color: "#64748b", marginTop: 3 }}>
-                      {qs.focus}m · {qs.brk}m break
-                    </div>
-                  </button>
-                ))}
+                {QUICK_STARTS.map((qs) => {
+                  const isActive = focus === qs.focus && brk === qs.brk;
+                  return (
+                    <button
+                      key={qs.label}
+                      onClick={() => applyQuick(qs)}
+                      style={{
+                        background: isActive ? "#161b26" : "#0d1117",
+                        border: isActive ? "1px solid #6366f1" : "1px solid #1e2433",
+                        borderRadius: 8, padding: "10px 12px",
+                        cursor: "pointer", textAlign: "left",
+                        color: "#e2e8f0",
+                        transition: "border-color 0.15s, background 0.15s",
+                      }}
+                      onMouseEnter={e => { if (!isActive) { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.background = "#161b26"; } }}
+                      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.borderColor = "#1e2433"; e.currentTarget.style.background = "#0d1117"; } }}
+                    >
+                      <div style={{ fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                        <span>{qs.emoji}</span> {qs.label}
+                      </div>
+                      <div style={{ fontSize: 10, color: "#64748b", marginTop: 3 }}>
+                        {qs.focus}m · {qs.brk}m break
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -267,7 +290,12 @@ function CreateRoomModal({ onClose, onNavigate }) {
                     <span style={{ fontSize: 11, color: "#94a3b8" }}>Focus</span>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <button onClick={() => setFocus(f => Math.max(5, f - 5))} style={pomoBtnStyle}>−</button>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#818cf8", minWidth: 30, textAlign: "center" }}>{focus}m</span>
+                      <div style={{
+                        background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.3)",
+                        borderRadius: 6, padding: "4px 0", width: 44, display: "flex", justifyContent: "center"
+                      }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "#818cf8" }}>{focus}m</span>
+                      </div>
                       <button onClick={() => setFocus(f => Math.min(120, f + 5))} style={pomoBtnStyle}>+</button>
                     </div>
                   </div>
@@ -276,7 +304,12 @@ function CreateRoomModal({ onClose, onNavigate }) {
                     <span style={{ fontSize: 11, color: "#94a3b8" }}>Break</span>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <button onClick={() => setBrk(b => Math.max(1, b - 1))} style={pomoBtnStyle}>−</button>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#818cf8", minWidth: 30, textAlign: "center" }}>{brk}m</span>
+                      <div style={{
+                        background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.3)",
+                        borderRadius: 6, padding: "4px 0", width: 44, display: "flex", justifyContent: "center"
+                      }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "#10b981" }}>{brk}m</span>
+                      </div>
                       <button onClick={() => setBrk(b => Math.min(30, b + 1))} style={pomoBtnStyle}>+</button>
                     </div>
                   </div>
@@ -311,8 +344,23 @@ function CreateRoomModal({ onClose, onNavigate }) {
                 focusMin: focus,
                 breakMin: brk,
                 expires,
+                createdAt: Date.now(),
+                members: 1
               };
               sessionStorage.setItem("currentRoom", JSON.stringify(room));
+              const existingRooms = JSON.parse(localStorage.getItem("myRooms") || "null");
+              if (!existingRooms) {
+                // Initialize with some defaults if empty
+                const defaults = [
+                  { id: "ffaaae", name: "try", icon: "📚", color: "#6366f1", goal: "", focusMin: 90, breakMin: 15, left: "23H 59M", members: 1 },
+                  { id: "f3e62f", name: "try", icon: "🟡", color: "#f59e0b", goal: "work should be completed", focusMin: 90, breakMin: 15, left: "23H 56M", members: 1 },
+                ];
+                localStorage.setItem("myRooms", JSON.stringify([...defaults, room]));
+              } else {
+                existingRooms.push(room);
+                localStorage.setItem("myRooms", JSON.stringify(existingRooms));
+              }
+              window.addNotification(`You successfully created the room "${room.name}".`);
               onClose();
               if (onNavigate) onNavigate(`/room/${id}`);
             }}
@@ -350,6 +398,33 @@ function NotificationsPanel({ onClose }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  const [notifications, setNotifications] = useState(() => {
+    const saved = localStorage.getItem("myNotifications");
+    if (saved) return JSON.parse(saved);
+    // Default welcome notification if empty
+    return [
+      { id: "welcome", message: "Welcome! Try a 10-minute focus block — one click on the Dashboard and you're in.", time: Date.now() - 38 * 60000 }
+    ];
+  });
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      const saved = localStorage.getItem("myNotifications");
+      if (saved) setNotifications(JSON.parse(saved));
+    };
+    window.addEventListener("notificationsUpdated", handleUpdate);
+    return () => window.removeEventListener("notificationsUpdated", handleUpdate);
+  }, []);
+
+  const formatAgo = (ts) => {
+    const diff = Math.floor((Date.now() - ts) / 60000);
+    if (diff < 1) return "just now";
+    if (diff < 60) return `${diff}m ago`;
+    const h = Math.floor(diff / 60);
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)}d ago`;
+  };
+
   return (
     <div
       ref={panelRef}
@@ -377,29 +452,55 @@ function NotificationsPanel({ onClose }) {
           ✕
         </button>
       </div>
-      <div style={{ padding: "48px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-        <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#1a1f2e", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <IcoBell s={20} />
-        </div>
-        <span style={{ fontSize: 12, color: "#64748b" }}>No notifications</span>
+      <div style={{ padding: notifications.length === 0 ? "48px 24px" : "12px", display: "flex", flexDirection: "column", gap: notifications.length === 0 ? 10 : 8, alignItems: notifications.length === 0 ? "center" : "stretch", maxHeight: 360, overflowY: "auto" }}>
+        {notifications.length === 0 ? (
+          <>
+            <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#1a1f2e", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <IcoBell s={20} />
+            </div>
+            <span style={{ fontSize: 12, color: "#64748b" }}>No notifications</span>
+          </>
+        ) : (
+          notifications.map((n, i) => (
+            <div key={n.id || i} style={{ display: "flex", gap: 12, padding: "12px", borderRadius: 12, background: "transparent", transition: "background-color 0.15s", cursor: "default" }} onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--surface-2)"} onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}>
+              <div style={{ width: 36, height: 36, flexShrink: 0, borderRadius: 10, background: "rgba(34, 197, 94, 0.12)", border: "1px solid rgba(34, 197, 94, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "#818cf8" }}>
+                <IcoBell s={16} />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <span style={{ fontSize: 13, color: "#f1f5f9", lineHeight: 1.4 }}>{n.message}</span>
+                <span style={{ fontSize: 11, color: "#64748b" }}>{formatAgo(n.time)}</span>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
 }
 
 // ── Command Palette ────────────────────────────────────────────────────────────
-const PALETTE_ITEMS = [
-  { id: "home",        label: "Go to Home",          icon: "▩"  },
-  { id: "rooms",       label: "My Rooms",            icon: "🎧" },
-  { id: "problems",    label: "Problems",            icon: "🗒" },
-  { id: "playground",  label: "Code Playground",     icon: "🧩" },
-  { id: "pair",        label: "Start Pair Session",  icon: "⚿"  },
-  { id: "leaderboard", label: "Leaderboard",         icon: "🏆" },
-  { id: "analytics",   label: "Profile / Analytics", icon: "📊" },
-  { id: "community",   label: "Community / Friends", icon: "👥" },
-  { id: "createRoom",  label: "Create a room",       icon: "➕" },
-  { id: "invite",      label: "Invite friends",      icon: "✉️" },
-  { id: "OpenProblem", label: "Open a problem",      icon: "🔍" },
+const COMMANDS = [
+  {
+    group: "NAVIGATE",
+    items: [
+      { id: "home",        label: "Go to Home",          icon: <IcoGrid />,     path: "/home" },
+      { id: "rooms",       label: "My Rooms",            icon: <IcoBook />,     path: "/rooms" },
+      { id: "problems",    label: "Problems",            icon: <IcoFile />,     path: "/problems" },
+      { id: "playground",  label: "Code Playground",     icon: <IcoTerminal />, path: "/playground" },
+      { id: "pair",        label: "Start Pair Session",  icon: <IcoPair />,     path: "/pair" },
+      { id: "leaderboard", label: "Leaderboard",         icon: <IcoTrophy />,   path: "/practice/leaderboard" },
+      { id: "profile",     label: "Profile / Analytics", icon: <IcoChart />,    path: "/profile" },
+      { id: "community",   label: "Community / Friends", icon: <IcoUsers />,    path: "/community" },
+    ]
+  },
+  {
+    group: "ACTIONS",
+    items: [
+      { id: "createRoom",  label: "Create a room",       icon: <IcoPlus s={16} />, shortcut: "Study" },
+      { id: "invite",      label: "Invite a friend",     icon: <IcoAddUser />,     shortcut: "Social", path: "/refer" },
+      { id: "openProblem", label: "Open a problem",      icon: <IcoLightning />,   shortcut: "Practice" },
+    ]
+  }
 ];
 
 // ── TopBar ─────────────────────────────────────────────────────────────────────
@@ -415,14 +516,23 @@ export default function TopBar({ title, subtitle }) {
   const [selectedIndex,   setSelectedIndex]   = useState(0);
   const [showNotif,       setShowNotif]       = useState(false);
   const [showCreateRoom,  setShowCreateRoom]  = useState(false);
+  
+  const [activeTimer, setActiveTimer] = useState(() => {
+    const saved = sessionStorage.getItem("activeTimer");
+    if (saved) return JSON.parse(saved);
+    return null;
+  });
 
   const paletteRef  = useRef(null);
   const inputRef    = useRef(null);
   const bellWrapRef = useRef(null);
 
-  const filteredItems = PALETTE_ITEMS.filter(item =>
-    item.label.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredGroups = COMMANDS.map(group => ({
+    ...group,
+    items: group.items.filter(item => item.label.toLowerCase().includes(searchQuery.toLowerCase()))
+  })).filter(group => group.items.length > 0);
+
+  const navigableItems = filteredGroups.flatMap(g => g.items);
 
   useEffect(() => {
     if (isOpen) {
@@ -447,15 +557,33 @@ export default function TopBar({ title, subtitle }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  useEffect(() => {
+    const handleOpenCreateRoom = () => setShowCreateRoom(true);
+    window.addEventListener("open-create-room-modal", handleOpenCreateRoom);
+    return () => window.removeEventListener("open-create-room-modal", handleOpenCreateRoom);
+  }, []);
+
+  useEffect(() => {
+    const handleTimerUpdate = (e) => {
+      setActiveTimer(e.detail);
+    };
+    window.addEventListener("timerUpdated", handleTimerUpdate);
+    return () => window.removeEventListener("timerUpdated", handleTimerUpdate);
+  }, []);
+
   const handleListKeyDown = (e) => {
-    if (!isOpen || filteredItems.length === 0) return;
-    if (e.key === "ArrowDown") { e.preventDefault(); setSelectedIndex((prev) => (prev + 1) % filteredItems.length); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); setSelectedIndex((prev) => (prev - 1 + filteredItems.length) % filteredItems.length); }
-    else if (e.key === "Enter") { e.preventDefault(); handleItemTrigger(filteredItems[selectedIndex]); }
+    if (!isOpen || navigableItems.length === 0) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); setSelectedIndex((prev) => (prev + 1) % navigableItems.length); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setSelectedIndex((prev) => (prev - 1 + navigableItems.length) % navigableItems.length); }
+    else if (e.key === "Enter") { e.preventDefault(); handleItemTrigger(navigableItems[selectedIndex]); }
   };
 
   const handleItemTrigger = (item) => {
-    if (item.id === "createRoom") { setShowCreateRoom(true); }
+    if (item.id === "createRoom") { 
+      setShowCreateRoom(true); 
+    } else if (item.path) {
+      navigate(item.path);
+    }
     setIsOpen(false);
     setSearchQuery("");
   };
@@ -474,10 +602,11 @@ export default function TopBar({ title, subtitle }) {
           padding: "0 20px",
           borderBottom: "1px solid var(--border)",
           backgroundColor: "var(--surface)",
+          position: "relative",
         }}
       >
         {/* Title block */}
-        <div style={{ minWidth: 0 }}>
+        <div style={{ minWidth: 0, flex: 1 }}>
           <h1 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--text)", lineHeight: 1, whiteSpace: "nowrap" }}>
             {title}
           </h1>
@@ -487,6 +616,31 @@ export default function TopBar({ title, subtitle }) {
             </p>
           )}
         </div>
+
+        {/* Global Timer Pill */}
+        {activeTimer && (
+          <div
+            onClick={() => activeTimer.roomId && navigate(`/room/${activeTimer.roomId}`)}
+            style={{
+              position: "absolute", left: "50%", transform: "translateX(-50%)",
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "5px 12px", borderRadius: 99,
+              backgroundColor: "rgba(108,99,255,0.08)", border: "1px solid rgba(108,99,255,0.2)",
+              cursor: "pointer", color: "var(--accent-text)", fontSize: 11, fontWeight: 600,
+              transition: "border-color 0.15s, background-color 0.15s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(108,99,255,0.4)"; e.currentTarget.style.backgroundColor = "rgba(108,99,255,0.12)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(108,99,255,0.2)"; e.currentTarget.style.backgroundColor = "rgba(108,99,255,0.08)"; }}
+          >
+            <IcoClock s={12} />
+            <span style={{ textTransform: "capitalize" }}>{activeTimer.mode}</span>
+            <span style={{ fontVariantNumeric: "tabular-nums" }}>
+              {String(Math.floor(activeTimer.timeLeft / 60)).padStart(2, "0")}:{String(activeTimer.timeLeft % 60).padStart(2, "0")}
+            </span>
+            <span style={{ color: "rgba(164,155,255,0.4)" }}>·</span>
+            <span style={{ color: "rgba(164,155,255,0.8)" }}>{activeTimer.roomName}</span>
+          </div>
+        )}
 
         {/* Right-side button group */}
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto", flexShrink: 0 }}>
@@ -561,40 +715,47 @@ export default function TopBar({ title, subtitle }) {
                 </div>
 
                 {/* Items list */}
-                <div style={{ maxHeight: 340, overflowY: "auto", padding: 8, display: "flex", flexDirection: "column", gap: 2 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", padding: "8px 12px 6px" }}>Navigate</div>
-                  {filteredItems.length > 0 ? (
-                    filteredItems.map((item, index) => {
-                      const isSelected = index === selectedIndex;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => handleItemTrigger(item)}
-                          onMouseEnter={() => setSelectedIndex(index)}
-                          style={{
-                            display: "flex", alignItems: "center", gap: 12,
-                            width: "100%", textAlign: "left",
-                            padding: "8px 12px", borderRadius: 8,
-                            fontSize: 13, fontWeight: 500,
-                            border: "none", cursor: "pointer", fontFamily: "inherit",
-                            backgroundColor: isSelected ? "#161b26" : "transparent",
-                            color: isSelected ? "#818cf8" : "#cbd5e1",
-                            transition: "background-color 0.1s, color 0.1s",
-                          }}
-                        >
-                          <span style={{
-                            width: 28, height: 28, flexShrink: 0,
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            borderRadius: 7, fontSize: 13,
-                            background: isSelected ? "#1f2433" : "#111622",
-                            border: `1px solid ${isSelected ? "#312e81" : "#1a202c"}`,
-                          }}>
-                            {item.icon}
-                          </span>
-                          <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</span>
-                        </button>
-                      );
-                    })
+                <div style={{ maxHeight: 380, overflowY: "auto", padding: 8, display: "flex", flexDirection: "column", gap: 2 }}>
+                  {filteredGroups.length > 0 ? (
+                    filteredGroups.map((group) => (
+                      <div key={group.group}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", padding: "12px 12px 6px" }}>{group.group}</div>
+                        {group.items.map((item) => {
+                          const isSelected = navigableItems[selectedIndex]?.id === item.id;
+                          return (
+                            <button
+                              key={item.id}
+                              onClick={() => handleItemTrigger(item)}
+                              onMouseEnter={() => setSelectedIndex(navigableItems.findIndex(n => n.id === item.id))}
+                              style={{
+                                display: "flex", alignItems: "center", gap: 12,
+                                width: "100%", textAlign: "left",
+                                padding: "8px 12px", borderRadius: 8,
+                                fontSize: 13, fontWeight: 500,
+                                border: "none", cursor: "pointer", fontFamily: "inherit",
+                                backgroundColor: isSelected ? "#161b26" : "transparent",
+                                color: isSelected ? "#fff" : "#cbd5e1",
+                                transition: "background-color 0.1s, color 0.1s",
+                              }}
+                            >
+                              <span style={{
+                                width: 28, height: 28, flexShrink: 0,
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                borderRadius: 7,
+                                color: "#6366f1", // Constant indigo icon color
+                                background: "rgba(99,102,241,0.08)", // Faint indigo box
+                              }}>
+                                {item.icon}
+                              </span>
+                              <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</span>
+                              {item.shortcut && (
+                                <span style={{ fontSize: 10, color: "#64748b", marginLeft: "auto" }}>{item.shortcut}</span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ))
                   ) : (
                     <div style={{ textAlign: "center", padding: "32px 0", fontSize: 12, color: "#64748b" }}>No matching items found.</div>
                   )}

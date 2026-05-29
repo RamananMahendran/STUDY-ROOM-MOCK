@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 // ── SVG Icons (top-level nav) ──────────────────────────────────────────────────
@@ -113,8 +113,58 @@ const BOTTOM_NAV = [
 ];
 
 // ── Sidebar ────────────────────────────────────────────────────────────────────
-export default function Sidebar({ active, onNav, theme, onToggleTheme }) {
+export default function Sidebar({ active, onNav }) {
   const navigate = useNavigate();
+
+  const [theme, setTheme] = useState(
+    () => document.documentElement.getAttribute("data-theme") || "dark"
+  );
+
+  useEffect(() => {
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    if (!currentTheme) {
+      document.documentElement.setAttribute("data-theme", "dark");
+    }
+  }, []);
+
+  const handleToggleTheme = (event) => {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+
+    if (!document.startViewTransition) {
+      setTheme(nextTheme);
+      document.documentElement.setAttribute("data-theme", nextTheme);
+      return;
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    const endRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    );
+
+    const transition = document.startViewTransition(() => {
+      setTheme(nextTheme);
+      document.documentElement.setAttribute("data-theme", nextTheme);
+    });
+
+    transition.ready.then(() => {
+      document.documentElement.animate(
+        {
+          clipPath: [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${endRadius}px at ${x}px ${y}px)`,
+          ],
+        },
+        {
+          duration: 450,
+          easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+          pseudoElement: "::view-transition-new(root)",
+        }
+      );
+    });
+  };
 
   const isPracticeChild = PRACTICE_ITEMS.some(i => i.id === active);
   const [practiceOpen, setPracticeOpen] = useState(isPracticeChild);
@@ -270,7 +320,7 @@ export default function Sidebar({ active, onNav, theme, onToggleTheme }) {
           {/* Theme toggle */}
           <button
             title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            onClick={onToggleTheme}
+            onClick={handleToggleTheme}
             style={{
               flexShrink: 0, display: "flex", alignItems: "center",
               width: 40, height: 22, borderRadius: 99,
@@ -293,13 +343,26 @@ export default function Sidebar({ active, onNav, theme, onToggleTheme }) {
         </div>
 
         {/* Sign out */}
-        <button style={{
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-          padding: "6px 0", borderRadius: 7, fontSize: 12,
-          border: "1px solid var(--border)", backgroundColor: "transparent",
-          color: "var(--text-muted)", fontFamily: "inherit", cursor: "pointer",
-          transition: "background-color 0.15s, color 0.15s",
-        }}>
+        <button 
+          onClick={() => navigate('/login')}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = "#ef4444";
+            e.currentTarget.style.borderColor = "rgba(239,68,68,0.3)";
+            e.currentTarget.style.backgroundColor = "rgba(239,68,68,0.1)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = "var(--text-muted)";
+            e.currentTarget.style.borderColor = "var(--border)";
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
+          style={{
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            padding: "6px 0", borderRadius: 7, fontSize: 12,
+            border: "1px solid var(--border)", backgroundColor: "transparent",
+            color: "var(--text-muted)", fontFamily: "inherit", cursor: "pointer",
+            transition: "all 0.15s ease",
+          }}
+        >
           <IcoLogout s={12} /> Sign out
         </button>
       </div>

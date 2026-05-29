@@ -14,7 +14,7 @@ datasource db {
 // ============================================================
 
 model User {
-  id             Int       @id @default(autoincrement()) // 👈 Master Primary Key: Int
+  id             Int       @id @default(autoincrement())
   name           String
   email          String    @unique
   password       String    @db.Text
@@ -25,18 +25,29 @@ model User {
   createdAt      DateTime  @default(now())  @db.Timestamptz @map("created_at")
   updatedAt      DateTime  @default(now())  @updatedAt @db.Timestamptz @map("updated_at")
 
-  // Relations
-  oauthAccounts  OAuthAccount[]
-  subscriptions  Subscription[]
-  submissions    Submission[]
-  ownedRooms     StudyRoom[]          @relation("RoomOwner")
-  roomMembers    RoomMember[]
-  chatMessages   ChatMessage[]
-  friendshipsA   Friendship[]         @relation("UserAFriendships")
-  friendshipsB   Friendship[]         @relation("UserBFriendships")
-  userBadges     UserBadge[]
-  discussions    Discussion[]
-  contestEntries ContestParticipant[]
+  // BE3 Day 4: Pair Coding Sessions
+  hostedSessions  PairSession[] @relation("HostSessions")
+  guestSessions   PairSession[] @relation("GuestSessions")
+  pairCursors     PairCursor[]
+
+  // BE1: Auth & Gamification Relations
+  oauthAccounts   OAuthAccount[]
+  subscriptions   Subscription[]
+  userBadges      UserBadge[]
+  friendshipsA    Friendship[] @relation("UserAFriendships")
+  friendshipsB    Friendship[] @relation("UserBFriendships")
+
+  // BE2: Study Rooms & Real-time Relations
+  ownedRooms      StudyRoom[]  @relation("RoomOwner")
+  roomMembers     RoomMember[]
+  chatMessages    ChatMessage[]
+
+  // BE3: Problems & Submissions Relations
+  submissions     Submission[]
+  discussions     Discussion[]
+  contestEntries  ContestParticipant[]
+
+  // BE4: Mock Interviews Relations
   interviewsAsInterviewer InterviewSlot[] @relation("Interviewer")
   interviewsAsCandidate   InterviewSlot[] @relation("Candidate")
 
@@ -187,7 +198,7 @@ model WhiteboardSession {
 // ============================================================
 
 model Problem {
-  id             Int      @id @default(autoincrement()) // 👈 Master Primary Key: Int
+  id             Int      @id @default(autoincrement())
   title          String   @unique
   slug           String   @unique
   description    String   @db.Text
@@ -203,23 +214,33 @@ model Problem {
   planProblems    StudyPlanProblem[]
   discussions     Discussion[]
   contestProblems ContestProblem[]
+  pairSessions    PairSession[]  // 👈 ADD THIS LINE
 
   @@map("problems")
 }
 
 model Submission {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    Int      @map("user_id")    // 👈 FIXED: Changed String @db.Uuid to Int
-  problemId Int      @map("problem_id") // 👈 FIXED: Changed String @db.Uuid to Int
-  language  String
-  code      String   @db.Text
-  status    String   @default("pending")
-  runtimeMs Int?     @map("runtime_ms")
-  memoryKb  Int?     @map("memory_kb")
-  createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         Int      @map("user_id")
+  problemId      Int      @map("problem_id")
+  language       String
+  code           String   @db.Text
+  status         String   @default("pending")
+  runtimeMs      Int?     @map("runtime_ms")
+  memoryKb       Int?     @map("memory_kb")
+  
+  // 👇 ADD THESE MISSING FIELDS
+  errorMessage   String?  @map("error_message")
+  testResults    Json?    @map("test_results")
+  submittedFrom  String?  @map("submitted_from")
+  pairSessionId  String?  @map("pair_session_id") @db.Uuid
+  
+  createdAt      DateTime @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt      DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem        Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  pairSession    PairSession? @relation(fields: [pairSessionId], references: [id])
 
   @@map("submissions")
 }
@@ -316,7 +337,44 @@ model InterviewSlot {
 
   @@map("interview_slots")
 }
+model PairSession {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomCode    String   @unique @map("room_code")
+  problemId   Int      @map("problem_id")
+  hostId      Int      @map("host_id")
+  guestId     Int?     @map("guest_id")
+  status      String   @default("waiting") // waiting, active, ended
+  language    String   @default("python")
+  currentCode String?  @map("current_code") @db.Text
+  createdAt   DateTime @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
+  submissions  Submission[]  // 👈 ADD THIS LINE
 
+  // Relations
+  problem     Problem      @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  host        User         @relation("HostSessions", fields: [hostId], references: [id])
+  guest       User?        @relation("GuestSessions", fields: [guestId], references: [id])
+  cursors     PairCursor[]
+
+  @@map("pair_sessions")
+}
+
+model PairCursor {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId    String   @db.Uuid @map("session_id")
+  userId       Int      @map("user_id")
+  lineNumber   Int      @default(1) @map("line_number")
+  columnNumber Int      @default(1) @map("column_number")
+  color        String   @default("#7F77DD")
+  updatedAt    DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
+
+  // Relations
+  session      PairSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, userId])
+  @@map("pair_cursors")
+}
 // ============================================================
 // MODULE 5: Global Infrastructure, Leaderboard & Audits (BE4)
 // ============================================================
