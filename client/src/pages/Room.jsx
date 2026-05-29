@@ -173,50 +173,58 @@ function TimerCircle({ minutes, seconds, label, isBreak, running, size = 168, to
   return (
     <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", width: size, height: size }}>
       <svg width={size} height={size} style={{ position: "absolute", transform: "rotate(-90deg)" }}>
-        <circle cx={cx} cy={cx} r={r} fill="none" strokeWidth={size === 168 ? 5 : 7} style={{ stroke: "var(--border-strong)" }} />
+        <circle cx={cx} cy={cx} r={r} fill="none" strokeWidth={size === 168 ? 4 : 6} style={{ stroke: "rgba(255,255,255,0.05)" }} />
         <circle
           cx={cx} cy={cx} r={r} fill="none"
-          strokeWidth={size === 168 ? 5 : 7}
+          strokeWidth={size === 168 ? 4 : 6}
           strokeDasharray={circ}
           strokeDashoffset={offset}
           strokeLinecap="round"
-          style={{ stroke: isBreak ? "var(--success)" : "var(--accent)", transition: "stroke-dashoffset 1s linear" }}
+          style={{ stroke: isBreak ? "rgba(34,197,94,0.3)" : "rgba(99,102,241,0.3)", transition: "stroke-dashoffset 1s linear" }}
         />
       </svg>
-      {/* dot indicator */}
+      
+      {/* dash indicator */}
       <div style={{
         position: "absolute",
-        width: size === 168 ? 8 : 10,
-        height: size === 168 ? 8 : 10,
-        borderRadius: "50%",
-        backgroundColor: isBreak ? "var(--success)" : "var(--accent)",
-        top: cx - r,
-        left: cx - (size === 168 ? 4 : 5),
+        top: 0, left: 0, width: "100%", height: "100%",
         transform: `rotate(${(1 - progress) * 360}deg)`,
-        transformOrigin: `${size === 168 ? 4 : 5}px ${r}px`,
         transition: "transform 1s linear"
-      }} />
+      }}>
+        <div style={{
+          position: "absolute",
+          top: cx - r - 4,
+          left: cx - 12,
+          width: 24,
+          height: 8,
+          borderRadius: 4,
+          backgroundColor: isBreak ? "var(--success)" : "var(--accent)",
+          boxShadow: `0 0 12px ${isBreak ? "var(--success)" : "var(--accent)"}`
+        }} />
+      </div>
+
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", zIndex: 10 }}>
-        <span style={{
-          fontSize: size === 168 ? "2.25rem" : "3.5rem",
-          fontWeight: 700,
-          letterSpacing: "-0.02em",
-          color: "var(--text)",
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: size === 168 ? "2.75rem" : "3.75rem",
+          fontWeight: 800,
+          letterSpacing: "-2px",
+          color: "white",
           fontVariantNumeric: "tabular-nums",
           lineHeight: 1,
         }}>
-          {String(minutes).padStart(2, "0")}
-          <span style={{ color: isBreak ? "var(--success)" : "var(--accent-text)", margin: "0 2px" }}>:</span>
-          {String(seconds).padStart(2, "0")}
-        </span>
+          <span>{String(minutes).padStart(2, "0")}</span>
+          <span style={{ color: isBreak ? "var(--success)" : "var(--accent)", margin: "0 -2px", transform: "translateY(-2px)" }}>:</span>
+          <span>{String(seconds).padStart(2, "0")}</span>
+        </div>
         <span style={{
-          fontSize: "0.7rem",
-          marginTop: 8,
-          padding: "3px 12px",
+          fontSize: "0.85rem",
+          marginTop: 12,
+          padding: "6px 18px",
           borderRadius: 99,
-          backgroundColor: running ? (isBreak ? "rgba(34,197,94,0.1)" : "var(--accent-bg)") : "transparent",
-          border: `1px solid ${running ? (isBreak ? "rgba(34,197,94,0.3)" : "rgba(108,99,255,0.3)") : "var(--border-strong)"}`,
-          color: running ? (isBreak ? "var(--success)" : "var(--accent-text)") : "var(--text-muted)",
+          backgroundColor: running ? (isBreak ? "rgba(34,197,94,0.15)" : "rgba(99,102,241,0.15)") : "transparent",
+          border: `1px solid ${running ? (isBreak ? "rgba(34,197,94,0.3)" : "rgba(99,102,241,0.3)") : "var(--border-strong)"}`,
+          color: running ? (isBreak ? "var(--success)" : "var(--accent)") : "var(--text-muted)",
         }}>
           {label}
         </span>
@@ -1092,7 +1100,7 @@ function SettingsModal({ onClose, onSave, initialFocus, initialBreak, initialRoo
 }
 
 // ─── Invite Modal ──────────────────────────────────────────────────────────────
-function InviteModal({ onClose }) {
+function InviteModal({ onClose, roomName, roomCode }) {
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 40, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)" }}>
       <div style={{ borderRadius: 16, width: 400, backgroundColor: "var(--surface-2)", border: "1px solid var(--border-strong)", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
@@ -1104,8 +1112,8 @@ function InviteModal({ onClose }) {
           <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 10, marginBottom: 20, backgroundColor: "var(--bg)", border: "1px solid var(--border)" }}>
             <span style={{ fontSize: "1.3rem" }}>📚</span>
             <div>
-              <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)" }}>try</p>
-              <p style={{ fontSize: "0.75rem", fontFamily: "monospace", color: "var(--text-muted)" }}>Code: ffaaae</p>
+              <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)" }}>{roomName}</p>
+              <p style={{ fontSize: "0.75rem", fontFamily: "monospace", color: "var(--text-muted)" }}>Code: {roomCode}</p>
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "32px 0", textAlign: "center" }}>
@@ -1319,7 +1327,7 @@ export default function App() {
           initialRoomName={roomName}
         />
       )}
-      {showInvite && <InviteModal onClose={() => setShowInvite(false)} roomName={roomName} />}
+      {showInvite && <InviteModal onClose={() => setShowInvite(false)} roomName={roomName} roomCode={roomId || "ffaaae"} />}
     </div>
   );
 }

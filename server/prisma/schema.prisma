@@ -47,9 +47,7 @@ model User {
   discussions     Discussion[]
   contestEntries  ContestParticipant[]
 
-  // BE4: Mock Interviews Relations
-  interviewsAsInterviewer InterviewSlot[] @relation("Interviewer")
-  interviewsAsCandidate   InterviewSlot[] @relation("Candidate")
+  mockInterviews MockInterview[]
 
   @@map("users")
 }
@@ -210,11 +208,16 @@ model Problem {
   createdAt      DateTime @default(now()) @db.Timestamptz @map("created_at")
   updatedAt      DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
 
+  // Mock Interview Relations (Day 5)
+  mockInterviewProblems MockInterviewProblem[]
+  mockInterviewResults  MockInterviewResult[]
+  
+  // Existing Relations
   submissions     Submission[]
   planProblems    StudyPlanProblem[]
   discussions     Discussion[]
   contestProblems ContestProblem[]
-  pairSessions    PairSession[]  // 👈 ADD THIS LINE
+  pairSessions    PairSession[]
 
   @@map("problems")
 }
@@ -322,20 +325,57 @@ model ContestParticipant {
 // MODULE 4: Peer Mock Interviews (BE2/BE3 Integration)
 // ============================================================
 
-model InterviewSlot {
-  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  interviewerId Int       @map("interviewer_id") // 👈 FIXED: Changed String @db.Uuid to Int
-  candidateId   Int?      @map("candidate_id")   // 👈 FIXED: Changed String @db.Uuid to Int?
-  scheduledAt   DateTime  @db.Timestamptz @map("scheduled_at")
-  status        String    @default("available")
-  feedbackScore Int?      @map("feedback_score")
-  feedbackNotes String?   @db.Text @map("feedback_notes")
-  createdAt     DateTime  @default(now()) @db.Timestamptz @map("created_at")
+// ============================================================
+// MODULE 4: Mock Interview Mode (BE3 Day 5)
+// ============================================================
 
-  interviewer   User      @relation("Interviewer", fields: [interviewerId], references: [id], onDelete: Cascade)
-  candidate     User?     @relation("Candidate", fields: [candidateId], references: [id], onDelete: Cascade)
+model MockInterview {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        Int      @map("user_id")
+  difficulty    String   // 'easy', 'medium', 'hard', 'mixed', 'random'
+  status        String   @default("in_progress") // 'in_progress', 'completed', 'timeout'
+  startedAt     DateTime @default(now()) @db.Timestamptz @map("started_at")
+  completedAt   DateTime? @db.Timestamptz @map("completed_at")
+  totalScore    Int?     @default(0) @map("total_score")
+  isPro         Boolean  @default(false) @map("is_pro")
+  weakTopics    String[] // Array of weak topics identified
+  problemCount  Int      @default(3) @map("problem_count")
+  
+  user          User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problems      MockInterviewProblem[]
+  results       MockInterviewResult[]
 
-  @@map("interview_slots")
+  @@map("mock_interviews")
+}
+
+model MockInterviewProblem {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  interviewId   String   @map("interview_id") @db.Uuid
+  problemId     Int      @map("problem_id")
+  orderIndex    Int      @map("order_index")
+  
+  interview     MockInterview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  problem       Problem      @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([interviewId, orderIndex])
+  @@map("mock_interview_problems")
+}
+
+model MockInterviewResult {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  interviewId   String   @map("interview_id") @db.Uuid
+  problemId     Int      @map("problem_id")
+  code          String   @db.Text
+  passed        Boolean
+  runtimeMs     Int?     @map("runtime_ms")
+  memoryKb      Int?     @map("memory_kb")
+  score         Int      @default(0)
+  submittedAt   DateTime @default(now()) @db.Timestamptz @map("submitted_at")
+  
+  interview     MockInterview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  problem       Problem      @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@map("mock_interview_results")
 }
 model PairSession {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid

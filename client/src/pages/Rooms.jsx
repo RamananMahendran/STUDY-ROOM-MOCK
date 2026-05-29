@@ -182,7 +182,7 @@ export default function Rooms() {
                   if (code) {
                     const joinedRoom = {
                       id: code,
-                      name: `Room ${code}`,
+                      name: "Focus Session",
                       icon: "🚪",
                       color: "#6366f1",
                       goal: "",

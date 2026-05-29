@@ -33,10 +33,11 @@ const IcoMoreHorizontal = ({s=16}) => <svg width={s} height={s} viewBox="0 0 24 
 const IcoCheck      = ({s=16}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
-function StatCard({ icon, label, value, unit, color }) {
+function StatCard({ icon, label, value, unit, color, gradient }) {
   return (
-    <div className="ui-card" style={{ padding: "18px 20px", borderTop: `3px solid ${color}`, backgroundColor: "var(--surface)", borderRight: "1px solid var(--border)", borderBottom: "1px solid var(--border)", borderLeft: "1px solid var(--border)", borderRadius: "var(--radius-lg)", boxShadow: "var(--card-shadow)" }}>
-      <div style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: color.replace('rgb', 'rgba').replace(')', ', 0.1)'), display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14, fontSize: 17, color: color }}>
+    <div className="ui-card" style={{ position: "relative", padding: "18px 20px", backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden", boxShadow: "var(--card-shadow)" }}>
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: gradient || color }}></div>
+      <div style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14, fontSize: 17, color: color }}>
         {icon}
       </div>
       <div style={{ fontSize: 28, fontWeight: 900, color: "var(--text)", lineHeight: 1, letterSpacing: "-0.5px" }}>
@@ -50,13 +51,13 @@ function StatCard({ icon, label, value, unit, color }) {
 // ── Badge Card ────────────────────────────────────────────────────────────────
 function BadgeCard({ icon, title, desc, earned }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: 12, borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--surface)", opacity: earned ? 1 : 0.4 }}>
-      <div style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: "var(--surface-2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.05)", backgroundColor: "rgba(255,255,255,0.02)", opacity: earned ? 1 : 0.4 }}>
+      <div style={{ fontSize: 22, display: "flex", alignItems: "center", justifyContent: "center", filter: earned ? "none" : "grayscale(100%) opacity(0.6)" }}>
         {icon}
       </div>
       <div className="min-w-0">
         <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>{title}</div>
-        <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{desc}</div>
+        <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2, whiteSpace: "nowrap" }}>{desc}</div>
       </div>
     </div>
   );
@@ -132,7 +133,7 @@ function ShareModal({ onClose }) {
             <div style={{ fontSize: 42, marginBottom: 12 }}>📚</div>
             
             <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 4 }}>
-              <span style={{ fontSize: 36, fontWeight: 800, letterSpacing: "-1px" }}>0</span>
+              <span style={{ fontSize: 36, fontWeight: 800, letterSpacing: "-1px" }}>1</span>
               <span style={{ fontSize: 18, fontWeight: 600 }}>day streak</span>
             </div>
             
@@ -141,11 +142,11 @@ function ShareModal({ onClose }) {
             {/* Stat Boxes */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, width: "100%", marginBottom: 32 }}>
               <div style={{ background: "rgba(255,255,255,0.15)", borderRadius: 12, padding: "16px 8px" }}>
-                <div style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>0h</div>
+                <div style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>0.4h</div>
                 <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.8)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Hours</div>
               </div>
               <div style={{ background: "rgba(255,255,255,0.15)", borderRadius: 12, padding: "16px 8px" }}>
-                <div style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>0</div>
+                <div style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>1</div>
                 <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.8)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Sessions</div>
               </div>
               <div style={{ background: "rgba(255,255,255,0.15)", borderRadius: 12, padding: "16px 8px" }}>
@@ -201,6 +202,7 @@ function ShareModal({ onClose }) {
 export default function Profile() {
   const [activeNav, setActiveNav] = useState("profile");
   const [activeTab, setActiveTab] = useState("Overview");
+  const [hoursRange, setHoursRange] = useState("14d");
   const [showShareModal, setShowShareModal] = useState(false);
   const navigate = useNavigate();
 
@@ -248,14 +250,17 @@ export default function Profile() {
             {/* Header Profile Info */}
             <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 32px 0px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 24 }}>
-                <div className="ui-avatar ui-avatar-lg" style={{ width: 80, height: 80, borderRadius: 20, border: "3px solid var(--bg)", boxShadow: "rgba(0, 0, 0, 0.3) 0px 4px 16px" }}>
-                  <img alt="Mayur K S" src="https://lh3.googleusercontent.com/a/ACg8ocJOHQ3CBE3KjE6jm37Rh6DZ1INAG8-i1M7xZZNfvCYrlZHgTg=s96-c" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }} />
+                <div className="ui-avatar ui-avatar-lg" style={{ width: 80, height: 80, borderRadius: 20, backgroundColor: "#0d9488", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36, fontWeight: 700, border: "none", boxShadow: "rgba(0, 0, 0, 0.3) 0px 4px 16px" }}>
+                  M
                 </div>
                 <div style={{ flex: "1 1 0%", minWidth: 0, paddingBottom: 4 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                    <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "var(--text)" }}>Mayur K S</h1>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
+                    <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "var(--text)" }}>Mayur K S</h1>
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 99, backgroundColor: "rgba(234, 179, 8, 0.15)", border: "1px solid rgba(234, 179, 8, 0.3)", color: "#eab308", fontSize: 11, fontWeight: 700 }}>
+                      <IcoFlame s={12} color="#eab308" /> 1-day streak
+                    </div>
                   </div>
-                  <p style={{ margin: "4px 0px 0px", fontSize: 12, color: "var(--text-muted)" }}>mayur2310574@ssn.edu.in</p>
+                  <p style={{ margin: "0px", fontSize: 12, color: "var(--text-muted)" }}>mayur2310574@ssn.edu.in</p>
                 </div>
                 <button onClick={() => setShowShareModal(true)} title="Share your stats" style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 9, fontSize: 12, fontWeight: 600, cursor: "pointer", backgroundColor: "var(--surface)", color: "var(--text-muted)", border: "1px solid var(--border)", transition: "0.15s", flexShrink: 0 }}>
                   <IcoShare s={13} /> Share
@@ -268,10 +273,10 @@ export default function Profile() {
               
               {/* Stats Grid */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 140px), 1fr))", gap: 12, marginBottom: 24 }}>
-                <StatCard icon="🔥" label="Current Streak" value="0" unit="days" color="rgb(249, 115, 22)" />
-                <StatCard icon={<IcoClock s={16}/>} label="Total Hours" value="0" unit="h" color="rgb(99, 102, 241)" />
-                <StatCard icon={<IcoTarget s={16}/>} label="Focus Sessions" value="0" color="rgb(16, 185, 129)" />
-                <StatCard icon={<IcoStar s={16}/>} label="Problems Solved" value="0" color="rgb(245, 158, 11)" />
+                <StatCard icon={<IcoFlame s={16}/>} label="Current Streak" value="1" unit="days" color="#f59e0b" gradient="linear-gradient(90deg, #f59e0b, #ef4444)" />
+                <StatCard icon={<IcoClock s={16}/>} label="Total Hours" value="0.4" unit="h" color="#6366f1" gradient="linear-gradient(90deg, #6366f1, #8b5cf6)" />
+                <StatCard icon={<IcoTarget s={16}/>} label="Focus Sessions" value="1" color="#10b981" gradient="linear-gradient(90deg, #10b981, #059669)" />
+                <StatCard icon={<IcoStar s={16}/>} label="Problems Solved" value="0" color="#facc15" gradient="linear-gradient(90deg, #facc15, #eab308)" />
               </div>
 
               {/* Tabs */}
@@ -307,25 +312,44 @@ export default function Profile() {
                   
                   {/* Study hours chart */}
                   <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "22px 24px" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-                      <div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>Study hours</span>
-                        <span style={{ marginLeft: 10, fontSize: 13, fontWeight: 700, color: "var(--accent)" }}>0.0h total</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "var(--accent)" }}>0.1h total</span>
                       </div>
                       <div style={{ display: "flex", gap: 4 }}>
-                        <button style={{ padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1px solid var(--accent)", backgroundColor: "var(--accent-bg)", color: "var(--accent)", transition: "0.12s" }}>7d</button>
-                        <button style={{ padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1px solid var(--border)", backgroundColor: "transparent", color: "var(--text-muted)", transition: "0.12s" }}>14d</button>
-                        <button style={{ padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1px solid var(--border)", backgroundColor: "transparent", color: "var(--text-muted)", transition: "0.12s" }}>30d</button>
+                        <button onClick={() => setHoursRange("7d")} style={{ padding: "4px 12px", borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: "pointer", border: hoursRange === "7d" ? "1px solid var(--accent)" : "1px solid var(--border)", backgroundColor: hoursRange === "7d" ? "rgba(99,102,241,0.1)" : "transparent", color: hoursRange === "7d" ? "var(--accent)" : "var(--text-muted)", transition: "0.12s" }}>7d</button>
+                        <button onClick={() => setHoursRange("14d")} style={{ padding: "4px 12px", borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: "pointer", border: hoursRange === "14d" ? "1px solid var(--accent)" : "1px solid var(--border)", backgroundColor: hoursRange === "14d" ? "rgba(99,102,241,0.1)" : "transparent", color: hoursRange === "14d" ? "var(--accent)" : "var(--text-muted)", transition: "0.12s" }}>14d</button>
+                        <button onClick={() => setHoursRange("30d")} style={{ padding: "4px 12px", borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: "pointer", border: hoursRange === "30d" ? "1px solid var(--accent)" : "1px solid var(--border)", backgroundColor: hoursRange === "30d" ? "rgba(99,102,241,0.1)" : "transparent", color: hoursRange === "30d" ? "var(--accent)" : "var(--text-muted)", transition: "0.12s" }}>30d</button>
                       </div>
                     </div>
                     
-                    <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 110 }}>
-                      {["Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu"].map((day, i) => (
-                        <div key={day} style={{ flex: "1 1 0%", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, height: "100%" }}>
+                    <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 110 }}>
+                      {hoursRange === "7d" && ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"].map((day, i) => (
+                        <div key={day} style={{ flex: "1 1 0%", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, height: "100%" }}>
                           <div style={{ flex: "1 1 0%", width: "100%", display: "flex", alignItems: "flex-end" }}>
-                            <div style={{ width: "100%", borderRadius: "5px 5px 0px 0px", background: day === "Thu" ? "linear-gradient(rgb(129, 140, 248), rgb(99, 102, 241))" : "var(--surface-2)", height: "4px", transition: "height 0.4s", boxShadow: "none" }}></div>
+                            <div style={{ width: "100%", borderRadius: "5px 5px 0px 0px", background: day === "Fri" ? "linear-gradient(rgb(129, 140, 248), rgb(99, 102, 241))" : "var(--surface-2)", height: day === "Fri" ? "10px" : "4px", boxShadow: day === "Fri" ? "0 -4px 12px rgba(99,102,241,0.3)" : "none", transition: "height 0.4s" }}></div>
                           </div>
-                          <span style={{ fontSize: 10, color: day === "Thu" ? "var(--accent)" : "var(--text-muted)", fontWeight: day === "Thu" ? 700 : 400, whiteSpace: "nowrap" }}>{day}</span>
+                          <span style={{ fontSize: 10, color: day === "Fri" ? "var(--accent)" : "var(--text-muted)", fontWeight: day === "Fri" ? 700 : 500, whiteSpace: "nowrap" }}>{day}</span>
+                        </div>
+                      ))}
+                      
+                      {hoursRange === "14d" && ["5/16", "5/17", "5/18", "5/19", "5/20", "5/21", "5/22", "5/23", "5/24", "5/25", "5/26", "5/27", "5/28", "5/29"].map((day, i) => (
+                        <div key={day} style={{ flex: "1 1 0%", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, height: "100%", position: "relative" }}>
+                          {day === "5/29" && <div style={{ position: "absolute", top: 10, fontSize: 10, color: "var(--accent)", fontWeight: 700 }}>0.1h</div>}
+                          <div style={{ flex: "1 1 0%", width: "100%", display: "flex", alignItems: "flex-end" }}>
+                            <div style={{ width: "100%", borderRadius: "5px 5px 0px 0px", background: day === "5/29" ? "linear-gradient(rgb(129, 140, 248), rgb(99, 102, 241))" : "var(--surface-2)", height: day === "5/29" ? "10px" : "4px", boxShadow: day === "5/29" ? "0 -4px 12px rgba(99,102,241,0.3)" : "none", transition: "height 0.4s" }}></div>
+                          </div>
+                          <span style={{ fontSize: 10, color: day === "5/29" ? "var(--accent)" : "var(--text-subtle)", fontWeight: day === "5/29" ? 700 : 400, whiteSpace: "nowrap" }}>{day}</span>
+                        </div>
+                      ))}
+
+                      {hoursRange === "30d" && ["2 May", "9 May", "16 May", "This wk"].map((day, i) => (
+                        <div key={day} style={{ flex: "1 1 0%", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, height: "100%", position: "relative" }}>
+                          <div style={{ flex: "1 1 0%", width: "100%", display: "flex", alignItems: "flex-end", padding: "0 4px" }}>
+                            <div style={{ width: "100%", borderRadius: "5px 5px 0px 0px", background: day === "This wk" ? "linear-gradient(rgb(129, 140, 248), rgb(99, 102, 241))" : "var(--surface-2)", height: day === "This wk" ? "10px" : "4px", boxShadow: day === "This wk" ? "0 -4px 12px rgba(99,102,241,0.3)" : "none", transition: "height 0.4s" }}></div>
+                          </div>
+                          <span style={{ fontSize: 10, color: day === "This wk" ? "var(--accent)" : "var(--text-muted)", fontWeight: day === "This wk" ? 700 : 500, whiteSpace: "nowrap" }}>{day}</span>
                         </div>
                       ))}
                     </div>
@@ -336,7 +360,8 @@ export default function Profile() {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
                       <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
                         <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>Activity</span>
-                        <span style={{ fontSize: 12, color: "var(--text-muted)" }}>0 active days</span>
+                        <span style={{ fontSize: 12, color: "var(--text-muted)" }}>1 active days</span>
+                        <span style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 4 }}><IcoFlame s={12} style={{ color: "#eab308" }} /> Longest: 1d</span>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                         <span style={{ fontSize: 10, color: "var(--text-subtle)" }}>Less</span>
@@ -364,9 +389,13 @@ export default function Profile() {
                         <div style={{ display: "flex", gap: 3 }}>
                           {Array.from({ length: heatmapCols }).map((_, cIndex) => (
                             <div key={cIndex} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                              {Array.from({ length: 7 }).map((_, rIndex) => (
-                                <div key={rIndex} style={{ width: 13, height: 13, borderRadius: 3, backgroundColor: "var(--surface-2)", opacity: 1, cursor: "default", transition: "background-color 0.1s" }}></div>
-                              ))}
+                              {Array.from({ length: 7 }).map((_, rIndex) => {
+                                // Light up the very last block for "1 active days"
+                                const isActive = cIndex === heatmapCols - 1 && rIndex === 1;
+                                return (
+                                  <div key={rIndex} style={{ width: 13, height: 13, borderRadius: 3, backgroundColor: isActive ? "rgb(99, 102, 241)" : "var(--surface-2)", opacity: 1, cursor: "default", transition: "background-color 0.1s" }}></div>
+                                );
+                              })}
                             </div>
                           ))}
                         </div>
@@ -383,7 +412,7 @@ export default function Profile() {
                       <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>Badges</span>
                       <span style={{ fontSize: 12, color: "var(--text-muted)" }}>— 0 / 12 earned</span>
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
                       {badges.map((b, i) => (
                         <BadgeCard key={i} icon={b.icon} title={b.title} desc={b.desc} earned={b.earned} />
                       ))}
