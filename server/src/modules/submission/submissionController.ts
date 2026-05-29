@@ -136,8 +136,8 @@ const processSubmissionInBackground = async (
     await submissionModel.updateStatus(submissionId, status, {
       runtimeMs: totalRuntime,
       memoryKb: maxMemory,
-      errorMessage: error_message || undefined,  // Changed
-      testResults: result.results,                // Changed
+      errorMessage: error_message || undefined,
+      testResults: result.results,
     });
 
     // EMIT SOCKET.IO EVENT IF FROM PAIR SESSION
@@ -288,9 +288,11 @@ export const getSubmissionResult = async (req: Request, res: Response): Promise<
         status: submission.status,
         runtimeMs: submission.runtimeMs,
         memoryKb: submission.memoryKb,
+        error_message: (submission as any).errorMessage,
+        test_results: (submission as any).testResults,
         createdAt: submission.createdAt,
-        submittedFrom: submission.submittedFrom,
-        pairSessionId: submission.pairSessionId,
+        submittedFrom: (submission as any).submittedFrom,
+        pairSessionId: (submission as any).pairSessionId,
       },
     });
   } catch (error: any) {
@@ -314,6 +316,49 @@ export const getUserSubmissions = async (req: Request, res: Response): Promise<a
     return res.json({
       success: true,
       data: submissions,
+    });
+  } catch (error: any) {
+    console.error('Error fetching submissions:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// 👇 NEW: GET /api/submissions/user/stats - Get user's submission statistics
+export const getUserStats = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const userId = (req as any).user?.id || 1;
+    const { userId: queryUserId } = req.query;
+    
+    const targetUserId = queryUserId ? parseInt(queryUserId as string) : userId;
+    
+    const stats = await submissionModel.getUserStats(targetUserId);
+    
+    return res.json({
+      success: true,
+      data: stats,
+    });
+  } catch (error: any) {
+    console.error('Error fetching user stats:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// 👇 NEW: GET /api/submissions/user/submissions - Get paginated submissions
+export const getUserSubmissionsPaginated = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const userId = (req as any).user?.id || 1;
+    const { userId: queryUserId, page = 1, limit = 20 } = req.query;
+    
+    const targetUserId = queryUserId ? parseInt(queryUserId as string) : userId;
+    const pageNum = parseInt(page as string);
+    const limitNum = parseInt(limit as string);
+    
+    const result = await submissionModel.getUserSubmissionsPaginated(targetUserId, pageNum, limitNum);
+    
+    return res.json({
+      success: true,
+      data: result.submissions,
+      pagination: result.pagination,
     });
   } catch (error: any) {
     console.error('Error fetching submissions:', error);

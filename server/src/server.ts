@@ -37,15 +37,27 @@ async function bootstrap() {
       console.log(`     POST   /api/submissions - Submit code for problem`);
       console.log(`     GET    /api/submissions/:id - Poll for results`);
       console.log(`     GET    /api/submissions/user/history - User history`);
+      console.log(`   Submission Stats (Day 5):`);
+      console.log(`     GET    /api/submissions/user/stats - User statistics`);
+      console.log(`     GET    /api/submissions/user/submissions - Paginated history`);
       console.log(`   Pair Coding (Day 4):`);
       console.log(`     POST   /api/pair/create - Create pair session`);
       console.log(`     POST   /api/pair/join - Join pair session`);
       console.log(`     GET    /api/pair/room/:roomCode - Get session details`);
       console.log(`     GET    /api/pair/user/sessions - User sessions`);
+      console.log(`     POST   /api/pair/:roomCode/submit - Submit from pair session`);
+      console.log(`     GET    /api/pair/:roomCode/submissions - Pair submissions`);
+      console.log(`   Mock Interviews (Day 5):`);
+      console.log(`     POST   /api/interviews - Schedule interview`);
+      console.log(`     GET    /api/interviews/upcoming - Upcoming interviews`);
+      console.log(`     GET    /api/interviews/history - Interview history`);
+      console.log(`     POST   /api/interviews/:id/complete - Complete interview`);
+      console.log(`     POST   /api/interviews/:id/cancel - Cancel interview`);
       console.log(`   Socket.io Events:`);
       console.log(`     join-pair-room - Join a pair coding room`);
       console.log(`     cursor-move - Broadcast cursor position`);
       console.log(`     code-change - Broadcast code changes`);
+      console.log(`     submission:result - Broadcast submission result`);
       console.log(`     leave-pair-room - Leave pair coding room`);
     });
 
