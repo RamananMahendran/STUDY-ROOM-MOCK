@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import TopBar from "./components/TopBar";
@@ -85,6 +85,28 @@ export default function Rooms() {
       { id: "f3e62f", name: "try", icon: "🟡", color: "#f59e0b", goal: "work should be completed", focusMin: 90, breakMin: 15, left: "23H 56M", members: 1 },
     ];
   });
+
+  const [currentTime, setCurrentTime] = useState(Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(Date.now()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const getRemainingTime = (room) => {
+    if (!room.createdAt || !room.expires) return room.left || "23H 59M";
+    const expiresHours = parseInt(room.expires);
+    if (isNaN(expiresHours)) return room.left || "23H 59M";
+    
+    const expiresMs = expiresHours * 60 * 60 * 1000;
+    const endMs = room.createdAt + expiresMs;
+    const diff = endMs - currentTime;
+    
+    if (diff <= 0) return "0H 0M";
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}H ${mins}M`;
+  };
 
   const modes = ["All", "Pair", "Solo+", "Study"];
 
@@ -384,7 +406,7 @@ export default function Rooms() {
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 6, borderTop: "1px solid var(--border)" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                           <span style={{ fontSize: 10, background: "rgba(16,185,129,0.12)", color: "#10b981", border: "1px solid rgba(16,185,129,0.25)", borderRadius: 999, padding: "2px 7px", fontWeight: 700 }}>
-                            ⏱ {room.left} LEFT
+                            ⏱ {getRemainingTime(room)} LEFT
                           </span>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 10, color: "var(--text-muted)" }}>

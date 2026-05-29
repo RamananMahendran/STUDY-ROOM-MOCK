@@ -305,7 +305,13 @@ export default function Login() {
 
             <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
               {/* Google */}
-              <button id="login-google-btn" type="button" style={{ width:"100%", display:"inline-flex", alignItems:"center", justifyContent:"center", gap:10, padding:"13px 16px", borderRadius:10, fontSize:14, fontWeight:600, background:"var(--surface)", color:"var(--text)", border:"1px solid var(--border)", cursor:"pointer", boxShadow:"0 1px 2px rgba(0,0,0,0.04)", transition:"border-color 0.15s, background 0.15s, box-shadow 0.15s", fontFamily:"inherit" }}>
+              <button id="login-google-btn" type="button" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (window.addNotification) window.addNotification("Logged in with Google successfully!");
+                  window.location.href = "/home"; 
+                }}
+                style={{ width:"100%", display:"inline-flex", alignItems:"center", justifyContent:"center", gap:10, padding:"13px 16px", borderRadius:10, fontSize:14, fontWeight:600, background:"var(--surface)", color:"var(--text)", border:"1px solid var(--border)", cursor:"pointer", boxShadow:"0 1px 2px rgba(0,0,0,0.04)", transition:"border-color 0.15s, background 0.15s, box-shadow 0.15s", fontFamily:"inherit" }}>
                 <GoogleIcon />
                 Continue with Google
               </button>
@@ -350,6 +356,11 @@ export default function Login() {
 
                 {/* Submit */}
                 <button id="login-submit-btn" type="submit"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (window.addNotification) window.addNotification("Logged in successfully!");
+                    window.location.href = "/home"; // simulate navigation since useNavigate is not imported here or we can use window.location
+                  }}
                   style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, width:"100%", height:42, padding:"0 24px", borderRadius:12, background:"linear-gradient(135deg, #6366f1, #8b5cf6)", color:"#fff", border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:14, fontWeight:700, boxShadow:"0 8px 32px rgba(99,102,241,0.45), inset 0 1px 0 rgba(255,255,255,0.18)", transition:"transform 0.15s, box-shadow 0.15s" }}
                   onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(99,102,241,0.6), inset 0 1px 0 rgba(255,255,255,0.18)"; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(99,102,241,0.45), inset 0 1px 0 rgba(255,255,255,0.18)"; }}

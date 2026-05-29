@@ -72,10 +72,136 @@ const SettingsSection = ({ title, children, noBg = false }) => (
   </div>
 );
 
+// ── Share Modal ───────────────────────────────────────────────────────────────
+function ShareModal({ onClose }) {
+  const [copied, setCopied] = useState(false);
+  
+  const handleCopy = () => {
+    setCopied(true);
+    if (window.addNotification) window.addNotification("Stats copied to clipboard!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 10000,
+        background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "16px",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%", maxWidth: 460,
+          background: "#12151c",
+          border: "1px solid #1e2433",
+          borderRadius: 16,
+          boxShadow: "0 24px 80px rgba(0,0,0,0.7)",
+          fontFamily: "inherit",
+          color: "#e2e8f0",
+          overflow: "hidden",
+          display: "flex", flexDirection: "column"
+        }}
+      >
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px 16px" }}>
+          <span style={{ fontSize: 15, fontWeight: 700, color: "#f1f5f9" }}>Share your stats</span>
+          <button
+            onClick={onClose}
+            style={{ background: "none", border: "none", cursor: "pointer", color: "#64748b", fontSize: 18, lineHeight: 1, padding: 4, borderRadius: 6, display: "flex", alignItems: "center" }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Content */}
+        <div style={{ padding: "0 24px 20px" }}>
+          {/* Gradient Card */}
+          <div style={{
+            background: "linear-gradient(135deg, rgb(99, 102, 241), rgb(139, 92, 246))",
+            borderRadius: 16,
+            padding: "36px 24px",
+            display: "flex", flexDirection: "column", alignItems: "center",
+            textAlign: "center",
+            color: "white",
+            boxShadow: "0 12px 32px rgba(99, 102, 241, 0.25)"
+          }}>
+            <div style={{ fontSize: 42, marginBottom: 12 }}>📚</div>
+            
+            <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 4 }}>
+              <span style={{ fontSize: 36, fontWeight: 800, letterSpacing: "-1px" }}>0</span>
+              <span style={{ fontSize: 18, fontWeight: 600 }}>day streak</span>
+            </div>
+            
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", marginBottom: 32 }}>Mayur K S on Study Room</div>
+            
+            {/* Stat Boxes */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, width: "100%", marginBottom: 32 }}>
+              <div style={{ background: "rgba(255,255,255,0.15)", borderRadius: 12, padding: "16px 8px" }}>
+                <div style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>0h</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.8)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Hours</div>
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.15)", borderRadius: 12, padding: "16px 8px" }}>
+                <div style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>0</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.8)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Sessions</div>
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.15)", borderRadius: 12, padding: "16px 8px" }}>
+                <div style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>0</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.8)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Solved</div>
+              </div>
+            </div>
+            
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", letterSpacing: "0.5px" }}>studyroom.co.in</div>
+          </div>
+          
+          <div style={{ marginTop: 24, fontSize: 12, color: "var(--text-muted)", textAlign: "center" }}>
+            Click "Copy stats" to copy your achievement text to clipboard.
+          </div>
+        </div>
+
+        {/* Footer Actions */}
+        <div style={{ display: "flex", gap: 12, padding: "16px 24px", borderTop: "1px solid #1e2433" }}>
+          <button
+            onClick={onClose}
+            style={{
+              flex: "0 0 auto", padding: "11px 24px", borderRadius: 10,
+              border: "1px solid #1e2433", background: "rgba(255,255,255,0.05)",
+              color: "#f1f5f9", fontSize: 13, fontWeight: 600,
+              cursor: "pointer", fontFamily: "inherit",
+              minWidth: 100
+            }}
+          >
+            Close
+          </button>
+          <button
+            onClick={handleCopy}
+            style={{
+              flex: 1, padding: "11px 24px", borderRadius: 10,
+              border: "none", background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+              color: "#fff", fontSize: 13, fontWeight: 700,
+              cursor: "pointer", fontFamily: "inherit",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            }}
+          >
+            {copied ? <IcoCheck s={14} /> : (
+              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            )}
+            {copied ? "Copied!" : "Copy stats"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── PROFILE PAGE ──────────────────────────────────────────────────────────────
 export default function Profile() {
   const [activeNav, setActiveNav] = useState("profile");
   const [activeTab, setActiveTab] = useState("Overview");
+  const [showShareModal, setShowShareModal] = useState(false);
   const navigate = useNavigate();
 
   function handleNav(id, path) {
@@ -113,6 +239,8 @@ export default function Profile() {
       {/* Main pane */}
       <div style={{ flex: "1 1 0%", display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0 }}>
         <TopBar title="Profile" />
+        
+        {showShareModal && <ShareModal onClose={() => setShowShareModal(false)} />}
 
         <main className="shell-main-content route-transition" style={{ flex: "1 1 0%", minHeight: 0, display: "flex", flexDirection: "column" }}>
           <div style={{ flex: "1 1 0%", overflowY: "auto", minHeight: 0, backgroundColor: "var(--bg)" }}>
@@ -129,7 +257,7 @@ export default function Profile() {
                   </div>
                   <p style={{ margin: "4px 0px 0px", fontSize: 12, color: "var(--text-muted)" }}>mayur2310574@ssn.edu.in</p>
                 </div>
-                <button title="Share your stats" style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 9, fontSize: 12, fontWeight: 600, cursor: "pointer", backgroundColor: "var(--surface)", color: "var(--text-muted)", border: "1px solid var(--border)", transition: "0.15s", flexShrink: 0 }}>
+                <button onClick={() => setShowShareModal(true)} title="Share your stats" style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 9, fontSize: 12, fontWeight: 600, cursor: "pointer", backgroundColor: "var(--surface)", color: "var(--text-muted)", border: "1px solid var(--border)", transition: "0.15s", flexShrink: 0 }}>
                   <IcoShare s={13} /> Share
                 </button>
               </div>

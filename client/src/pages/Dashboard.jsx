@@ -24,6 +24,7 @@ const IcoCheck = ({ s = 14 }) => <svg width={s} height={s} viewBox="0 0 24 24" f
 const IcoArrow = ({ s = 12 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>;
 const IcoMsg = ({ s = 20 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" /></svg>;
 const IcoBookOpen = ({ s = 13 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 7v14" /><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" /></svg>;
+const IcoSparkles = ({ s = 16 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M3 5h4"/></svg>;
 
 // ── Daily challenge banner ────────────────────────────────────────────────────
 function DailyChallenge() {
@@ -91,7 +92,7 @@ function DailyChallenge() {
 }
 
 // ── Hero greeting card ────────────────────────────────────────────────────────
-function HeroCard() {
+function HeroCard({ onStartFocus }) {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const day = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][new Date().getDay()];
@@ -124,19 +125,20 @@ function HeroCard() {
         </div>
 
         <h1 style={{ margin: 0, fontSize: "clamp(22px,3vw,30px)", fontWeight: 800, color: "var(--text)", letterSpacing: "-0.6px", lineHeight: 1.18 }}>
-          {greeting}, Mayur, let's start your first focus session.
+          {greeting}, Mayur, here's where you are this week.
         </h1>
         <p style={{ margin: "10px 0 0", fontSize: 13, color: "var(--text-muted)", maxWidth: 580, lineHeight: 1.55 }}>
-          A 25-minute Pomodoro is enough. We'll handle the setup.
+          1-day streak going. Start a session to keep it.
         </p>
 
         <div className="flex flex-wrap" style={{ gap: 10, marginTop: 20 }}>
           <button
+            onClick={onStartFocus}
             className="inline-flex items-center cursor-pointer"
             style={{ gap: 8, padding: "11px 18px", borderRadius: 10, background: "#6366f1", color: "#fff", border: "none", fontSize: 13, fontWeight: 700, letterSpacing: "-0.1px", boxShadow: "0 8px 20px rgba(99,102,241,0.267)", fontFamily: "inherit" }}
           >
-            <IcoTimer s={14} />
-            Start your first focus session
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            Resume · Focus session
           </button>
           <button
             className="inline-flex items-center cursor-pointer"
@@ -146,8 +148,53 @@ function HeroCard() {
           </button>
         </div>
       </div>
-      {/* Empty right column — intentional spacer that constrains text width */}
-      <div />
+      
+      {/* CURRENT STREAK CARD */}
+      <div style={{
+        padding: "18px 22px",
+        borderRadius: 14,
+        background: "linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.04))",
+        backgroundColor: "var(--surface)",
+        border: "1px solid rgba(245, 158, 11, 0.25)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 12,
+        boxShadow: "0 10px 30px rgba(0,0,0,0.2)"
+      }}>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <IcoFlame s={14} style={{ color: "#fbbf24" }} />
+          <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "1px", color: "#fbbf24", textTransform: "uppercase" }}>CURRENT STREAK</span>
+        </div>
+        
+        {/* Streak number */}
+        <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginTop: 4 }}>
+          <span style={{ 
+            fontSize: 46, fontWeight: 800, lineHeight: 1,
+            background: "linear-gradient(180deg, #fef08a, #fbbf24)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent"
+          }}>1</span>
+          <span style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", fontWeight: 600 }}>day</span>
+        </div>
+
+        {/* Milestone boxes */}
+        <div style={{ display: "flex", gap: 5, marginTop: 12 }}>
+          {Array.from({ length: 11 }).map((_, i) => (
+             <div key={i} style={{ flex: 1, height: 16, borderRadius: 4, background: "rgba(245, 158, 11, 0.35)" }} />
+          ))}
+          <div style={{ 
+            flex: 1, height: 16, borderRadius: 4, 
+            background: "linear-gradient(180deg, #fbbf24, #f43f5e)",
+            boxShadow: "0 0 12px rgba(244, 63, 94, 0.5)"
+          }} />
+        </div>
+
+        {/* Footer text */}
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontWeight: 500, marginTop: 4 }}>
+          Next milestone: <span style={{ color: "var(--text)", fontWeight: 700 }}>3 days</span> · 2 to go
+        </div>
+      </div>
     </div>
   );
 }
@@ -201,6 +248,36 @@ export default function Dashboard() {
     if (path) navigate(path);
   }
 
+  const handleStartFocus = () => {
+    const id = Math.random().toString(36).slice(2, 8);
+    const room = {
+      id,
+      name: "Focus session",
+      icon: "📚",
+      color: "#7c6fe0",
+      goal: "First focus block",
+      focusMin: 5,
+      breakMin: 5,
+      expires: "24h",
+      createdAt: Date.now(),
+      members: 1
+    };
+    sessionStorage.setItem("currentRoom", JSON.stringify(room));
+    const existingRooms = JSON.parse(localStorage.getItem("myRooms") || "null");
+    if (!existingRooms) {
+      const defaults = [
+        { id: "ffaaae", name: "try", icon: "📚", color: "#6366f1", goal: "", focusMin: 90, breakMin: 15, left: "23H 59M", members: 1 },
+        { id: "f3e62f", name: "try", icon: "🟡", color: "#f59e0b", goal: "work should be completed", focusMin: 90, breakMin: 15, left: "23H 56M", members: 1 },
+      ];
+      localStorage.setItem("myRooms", JSON.stringify([...defaults, room]));
+    } else {
+      existingRooms.push(room);
+      localStorage.setItem("myRooms", JSON.stringify(existingRooms));
+    }
+    if (window.addNotification) window.addNotification(`You successfully created the room "${room.name}".`);
+    navigate(`/room/${id}`);
+  };
+
   return (
     <div
       style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "row", backgroundColor: "var(--bg)" }}
@@ -215,7 +292,7 @@ export default function Dashboard() {
 
       {/* Main pane */}
       <div style={{ flex: "1 1 0%", display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0 }}>
-        <TopBar title="Home" subtitle="Your study analytics" />
+        <TopBar title="Home" subtitle="1-day streak · 0.1h this week" />
 
         <main
           className="shell-main-content route-transition"
@@ -236,7 +313,7 @@ export default function Dashboard() {
               <DailyChallenge />
 
               {/* Hero greeting */}
-              <HeroCard />
+              <HeroCard onStartFocus={handleStartFocus} />
 
               {/* KPI row */}
               <div className="kpi-row" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
@@ -248,7 +325,7 @@ export default function Dashboard() {
               {/* Charts row */}
               <div className="home-charts-row" style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr)", gap: 16 }}>
                 {/* When you study best */}
-                <div style={{ padding: 18, borderRadius: 14, backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--card-shadow)" }}>
+                <div style={{ padding: 18, borderRadius: 14, backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--card-shadow)", display: "flex", flexDirection: "column" }}>
                   <div className="flex items-baseline justify-between flex-wrap" style={{ marginBottom: 14, gap: 10 }}>
                     <div>
                       <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.1px" }}>When you study best</div>
@@ -257,21 +334,87 @@ export default function Dashboard() {
                     <div className="flex items-center" style={{ gap: 6, fontSize: 10, color: "var(--text-muted)" }}>
                       <span>less</span>
                       {[0.15, 0.35, 0.55, 0.75, 0.95].map((op, i) => (
-                        <span key={i} style={{ width: 12, height: 12, borderRadius: 3, background: `rgb(99,102,241)`, opacity: op, border: "1px solid var(--border)", display: "inline-block" }} />
+                        <span key={i} style={{ width: 12, height: 12, borderRadius: 3, background: `rgb(99,102,241)`, opacity: op, border: "1px solid rgba(255,255,255,0.05)", display: "inline-block" }} />
                       ))}
                       <span>more</span>
                     </div>
                   </div>
-                  <ChartEmpty msg="No focus minutes yet. Run a Pomodoro and your peak study window will show up here." />
+                  
+                  {/* Heatmap Grid */}
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", marginTop: 8 }}>
+                    <div style={{ display: "flex", paddingLeft: 30, marginBottom: 8 }}>
+                      {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => (
+                        <div key={d} style={{ flex: 1, textAlign: "center", fontSize: 10, color: "var(--text-muted)", fontWeight: 500 }}>{d}</div>
+                      ))}
+                    </div>
+                    <div style={{ display: "flex", flex: 1, gap: 4 }}>
+                      <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", width: 26, paddingBottom: 4, paddingTop: 4 }}>
+                        {["6a", "8a", "10a", "12p", "2p", "4p", "6p", "8p", "10p"].map(t => (
+                          <div key={t} style={{ fontSize: 10, color: "var(--text-muted)", height: 14, display: "flex", alignItems: "center" }}>{t}</div>
+                        ))}
+                      </div>
+                      <div style={{ display: "flex", flex: 1, gap: 4 }}>
+                        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d, colIdx) => (
+                          <div key={d} style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
+                            {Array.from({ length: 9 }).map((_, rowIdx) => {
+                              const isFriday = colIdx === 4;
+                              return (
+                                <div
+                                  key={rowIdx}
+                                  style={{
+                                    flex: 1,
+                                    borderRadius: 4,
+                                    border: "1px solid rgba(255,255,255,0.02)",
+                                    background: isFriday ? "rgba(99, 102, 241, 0.85)" : "var(--surface-2)"
+                                  }}
+                                />
+                              )
+                            })}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: 24, fontSize: 11, color: "var(--text-muted)", fontWeight: 500 }}>
+                    Peak window: <span style={{ color: "var(--text)", fontWeight: 700 }}>Fri · 6a–8a</span>
+                  </div>
                 </div>
 
                 {/* Subject mix */}
-                <div style={{ padding: 18, borderRadius: 14, backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--card-shadow)" }}>
+                <div style={{ padding: 18, borderRadius: 14, backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--card-shadow)", display: "flex", flexDirection: "column" }}>
                   <div style={{ marginBottom: 6 }}>
                     <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>Subject mix</div>
                     <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Where your hours go</div>
                   </div>
-                  <ChartEmpty msg="Your study rooms will appear here once you log a few sessions." py="26px 0" />
+                  
+                  {/* Doughnut Chart */}
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "16px 0" }}>
+                    <div style={{ position: "relative", width: 140, height: 140 }}>
+                      <svg width="140" height="140" viewBox="0 0 140 140" style={{ transform: "rotate(-90deg)" }}>
+                        <circle cx="70" cy="70" r="54" fill="none" stroke="var(--surface-2)" strokeWidth="16" />
+                        {/* 100% stroke */}
+                        <circle cx="70" cy="70" r="54" fill="none" stroke="#6366f1" strokeWidth="16" strokeDasharray="339.292" strokeDashoffset="0" strokeLinecap="round" />
+                      </svg>
+                      <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                        <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text)", lineHeight: 1.1 }}>0.1h</div>
+                        <div style={{ fontSize: 9, fontWeight: 800, color: "var(--text-muted)", letterSpacing: "1px", marginTop: 2 }}>RECORDED</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Legend */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto", paddingTop: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ width: 10, height: 10, borderRadius: 3, background: "#6366f1" }} />
+                      <span style={{ fontSize: 12 }}>📚</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>First focus block</span>
+                    </div>
+                    <div style={{ display: "flex", gap: 10, fontSize: 11 }}>
+                      <span style={{ color: "var(--text-muted)" }}>0.1h</span>
+                      <span style={{ color: "var(--text-muted)" }}>100%</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -294,6 +437,53 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <ChartEmpty msg="Solve a problem and your daily velocity curve starts here." py="40px 0" />
+              </div>
+
+              {/* Insights Section */}
+              <div style={{ marginTop: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--text)" }}>
+                    <IcoSparkles s={16} />
+                    <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: "-0.2px" }}>Insights for this week</span>
+                  </div>
+                  <div style={{
+                    padding: "2px 8px", borderRadius: 99, background: "rgba(99,102,241,0.15)",
+                    color: "#818cf8", fontSize: 10, fontWeight: 800, letterSpacing: "1px"
+                  }}>
+                    AUTO
+                  </div>
+                </div>
+                
+                <div style={{
+                  padding: 20, borderRadius: 14, backgroundColor: "var(--surface)", border: "1px solid var(--border)",
+                  boxShadow: "var(--card-shadow)", display: "flex", gap: 16, alignItems: "flex-start"
+                }}>
+                  <div style={{
+                    width: 36, height: 36, flexShrink: 0, borderRadius: 10,
+                    background: "rgba(99,102,241,0.1)", display: "flex", alignItems: "center", justifyContent: "center",
+                    color: "#818cf8"
+                  }}>
+                    <IcoSparkles s={18} />
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
+                      Afternoons are your superpower
+                    </div>
+                    <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5, maxWidth: 640 }}>
+                      You log most focus minutes in the afternoon. Locking in a 25-min block here clears today's plan in one sitting.
+                    </div>
+                    <button
+                      onClick={() => window.dispatchEvent(new Event("open-create-room-modal"))}
+                      style={{
+                        marginTop: 4, background: "transparent", border: "none", padding: 0,
+                        color: "#6366f1", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                        display: "inline-flex", alignItems: "center", gap: 4, alignSelf: "flex-start"
+                      }}
+                    >
+                      Schedule a focus block <IcoChevRight s={14} />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

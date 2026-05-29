@@ -161,14 +161,14 @@ const Icon = {
 };
 
 // ─── Timer Circle ──────────────────────────────────────────────────────────────
-function TimerCircle({ minutes, seconds, label, isBreak, running, size = 168 }) {
-  const total = isBreak ? 15 * 60 : 90 * 60;
-  const elapsed = (isBreak ? 15 : 90) * 60 - (minutes * 60 + seconds);
-  const progress = elapsed / total;
+function TimerCircle({ minutes, seconds, label, isBreak, running, size = 168, totalMins = 90 }) {
+  const total = totalMins * 60;
+  const remaining = minutes * 60 + seconds;
+  const progress = total > 0 ? remaining / total : 0;
   const r = size === 168 ? 72 : 108;
   const cx = size / 2;
   const circ = 2 * Math.PI * r;
-  const dash = circ * progress;
+  const offset = circ * (1 - progress);
 
   return (
     <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", width: size, height: size }}>
@@ -177,9 +177,10 @@ function TimerCircle({ minutes, seconds, label, isBreak, running, size = 168 }) 
         <circle
           cx={cx} cy={cx} r={r} fill="none"
           strokeWidth={size === 168 ? 5 : 7}
-          strokeDasharray={`${dash} ${circ}`}
+          strokeDasharray={circ}
+          strokeDashoffset={offset}
           strokeLinecap="round"
-          style={{ stroke: isBreak ? "var(--success)" : "var(--accent)", transition: "stroke-dasharray 1s linear" }}
+          style={{ stroke: isBreak ? "var(--success)" : "var(--accent)", transition: "stroke-dashoffset 1s linear" }}
         />
       </svg>
       {/* dot indicator */}
@@ -191,8 +192,9 @@ function TimerCircle({ minutes, seconds, label, isBreak, running, size = 168 }) 
         backgroundColor: isBreak ? "var(--success)" : "var(--accent)",
         top: cx - r,
         left: cx - (size === 168 ? 4 : 5),
-        transform: `rotate(${progress * 360}deg)`,
+        transform: `rotate(${(1 - progress) * 360}deg)`,
         transformOrigin: `${size === 168 ? 4 : 5}px ${r}px`,
+        transition: "transform 1s linear"
       }} />
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", zIndex: 10 }}>
         <span style={{
@@ -210,9 +212,10 @@ function TimerCircle({ minutes, seconds, label, isBreak, running, size = 168 }) 
         <span style={{
           fontSize: "0.7rem",
           marginTop: 8,
-          padding: "2px 10px",
+          padding: "3px 12px",
           borderRadius: 99,
-          border: `1px solid ${running ? (isBreak ? "var(--success)" : "var(--accent)") : "var(--border-strong)"}`,
+          backgroundColor: running ? (isBreak ? "rgba(34,197,94,0.1)" : "var(--accent-bg)") : "transparent",
+          border: `1px solid ${running ? (isBreak ? "rgba(34,197,94,0.3)" : "rgba(108,99,255,0.3)") : "var(--border-strong)"}`,
           color: running ? (isBreak ? "var(--success)" : "var(--accent-text)") : "var(--text-muted)",
         }}>
           {label}
@@ -296,7 +299,7 @@ function Sidebar({ mode, setMode, minutes, seconds, timerLabel, running, wasPaus
 
       {/* Timer */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 18, padding: "20px 0 0" }}>
-        <TimerCircle minutes={minutes} seconds={seconds} label={timerLabel} isBreak={isBreak} running={running} />
+        <TimerCircle minutes={minutes} seconds={seconds} label={timerLabel} isBreak={isBreak} running={running} totalMins={isBreak ? breakMins : focusMins} />
 
         {/* Controls */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -547,7 +550,15 @@ function TasksPanel() {
     setTasks(prev => [...prev, { id: Date.now(), text: newTask, done: false, priority }]);
     setNewTask(""); setAdding(false);
   };
-  const toggle = (id) => setTasks(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  const toggle = (id) => setTasks(tasks.map(t => {
+    if (t.id === id) {
+      if (!t.done && window.addNotification) {
+        window.addNotification(`You solved a problem: ${t.text}`);
+      }
+      return { ...t, done: !t.done };
+    }
+    return t;
+  }));
   const done = tasks.filter(t => t.done);
   const todo = tasks.filter(t => !t.done);
 
@@ -933,7 +944,7 @@ function FocusModeOverlay({ minutes, seconds, isBreak, running, onPlay, onReset,
           <button style={{ padding: "8px 28px", color: "var(--text-muted)", fontSize: "0.85rem", cursor: "pointer" }}>Break</button>
         </div>
 
-        <TimerCircle minutes={minutes} seconds={seconds} label={running ? (isBreak ? "Break..." : "Focusing...") : "Ready"} isBreak={isBreak} running={running} size={240} />
+        <TimerCircle minutes={minutes} seconds={seconds} label={running ? (isBreak ? "Break..." : "Focusing...") : "Ready"} isBreak={isBreak} running={running} size={240} totalMins={isBreak ? breakMins : focusMins} />
 
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <button onClick={onReset} style={{ width: 48, height: 48, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "var(--surface-2)", color: "var(--text-muted)", border: "1px solid var(--border)", cursor: "pointer" }}>
@@ -1123,11 +1134,30 @@ export default function App() {
   });
 
   const [tab, setTab] = useState("notes");
-  const [mode, setMode] = useState("focus");
+
+  const [mode, setMode] = useState(() => {
+    const active = sessionStorage.getItem("activeTimer");
+    if (active) {
+      const parsed = JSON.parse(active);
+      if (parsed.roomId === (roomId || "ffaaae")) return parsed.mode;
+    }
+    return "focus";
+  });
+
   const [running, setRunning] = useState(false);
   const [wasPaused, setWasPaused] = useState(false); // track explicit pause
-  const [seconds, setSeconds] = useState(0);
-  const [minutes, setMinutes] = useState(initialRoom.focusMin || 90);
+
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const active = sessionStorage.getItem("activeTimer");
+    if (active) {
+      const parsed = JSON.parse(active);
+      if (parsed.roomId === (roomId || "ffaaae")) return parsed.timeLeft;
+    }
+    return (initialRoom.focusMin || 90) * 60;
+  });
+
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
   const [focusMode, setFocusMode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
@@ -1149,19 +1179,13 @@ export default function App() {
   useEffect(() => {
     if (running) {
       intervalRef.current = setInterval(() => {
-        setSeconds(s => {
-          if (s === 0) {
-            setMinutes(m => {
-              if (m === 0) {
-                setRunning(false);
-                setWasPaused(false);
-                return isBreak ? breakMins : focusMins;
-              }
-              return m - 1;
-            });
-            return 59;
+        setTimeLeft(t => {
+          if (t <= 0) {
+            setRunning(false);
+            setWasPaused(false);
+            return (isBreak ? breakMins : focusMins) * 60;
           }
-          return s - 1;
+          return t - 1;
         });
       }, 1000);
     } else {
@@ -1169,6 +1193,26 @@ export default function App() {
     }
     return () => clearInterval(intervalRef.current);
   }, [running, isBreak, focusMins, breakMins]);
+
+  // Save active timer globally
+  useEffect(() => {
+    const state = { timeLeft, mode, running, roomName, roomId: roomId || "ffaaae" };
+    sessionStorage.setItem("activeTimer", JSON.stringify(state));
+    window.dispatchEvent(new CustomEvent("timerUpdated", { detail: state }));
+  }, [timeLeft, mode, running, roomName, roomId]);
+
+  // Pause timer on unmount
+  useEffect(() => {
+    return () => {
+      const saved = sessionStorage.getItem("activeTimer");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        parsed.running = false;
+        sessionStorage.setItem("activeTimer", JSON.stringify(parsed));
+        window.dispatchEvent(new CustomEvent("timerUpdated", { detail: parsed }));
+      }
+    };
+  }, []);
 
   const handlePlay = () => {
     const willRun = !running;
@@ -1184,8 +1228,7 @@ export default function App() {
   const reset = () => {
     setRunning(false);
     setWasPaused(false);
-    setMinutes(isBreak ? breakMins : focusMins);
-    setSeconds(0);
+    setTimeLeft((isBreak ? breakMins : focusMins) * 60);
   };
 
   const skip = () => {
@@ -1193,16 +1236,14 @@ export default function App() {
     setWasPaused(false);
     const next = mode === "focus" ? "break" : "focus";
     setMode(next);
-    setMinutes(next === "break" ? breakMins : focusMins);
-    setSeconds(0);
+    setTimeLeft((next === "break" ? breakMins : focusMins) * 60);
   };
 
   const handleModeChange = (m) => {
     setMode(m);
     setRunning(false);
     setWasPaused(false);
-    setMinutes(m === "break" ? breakMins : focusMins);
-    setSeconds(0);
+    setTimeLeft((m === "break" ? breakMins : focusMins) * 60);
   };
 
   const handleSettingsSave = ({ focusMins: fm, breakMins: bm, roomName: rn }) => {
@@ -1211,8 +1252,7 @@ export default function App() {
     setRoomName(rn);
     // Reset timer to new values only if not currently running
     if (!running) {
-      setMinutes(isBreak ? bm : fm);
-      setSeconds(0);
+      setTimeLeft((isBreak ? bm : fm) * 60);
     }
   };
 
