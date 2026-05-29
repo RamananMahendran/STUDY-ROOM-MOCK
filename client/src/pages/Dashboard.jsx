@@ -195,58 +195,14 @@ function ChartEmpty({ msg, py = "26px 12px" }) {
 export default function Dashboard() {
   const [activeNav, setActiveNav] = useState("home");
   const navigate = useNavigate();
-  const [theme, setTheme] = useState("dark");
 
   function handleNav(id, path) {
     setActiveNav(id);
     if (path) navigate(path);
   }
 
-  const toggleTheme = (event) => {
-    const nextTheme = theme === "dark" ? "light" : "dark";
-
-    // Fallback if browser doesn't support the View Transition API
-    if (!document.startViewTransition) {
-      setTheme(nextTheme);
-      return;
-    }
-
-    // Get click target geometry coordinates to calculate the expansion origin
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top + rect.height / 2;
-
-    // Calculate maximum radius distance to the furthest screen corner
-    const endRadius = Math.hypot(
-      Math.max(x, window.innerWidth - x),
-      Math.max(y, window.innerHeight - y)
-    );
-
-    const transition = document.startViewTransition(() => {
-      setTheme(nextTheme);
-    });
-
-    // Inject dynamic keyframes into the document execution loop
-    transition.ready.then(() => {
-      document.documentElement.animate(
-        {
-          clipPath: [
-            `circle(0px at ${x}px ${y}px)`,
-            `circle(${endRadius}px at ${x}px ${y}px)`,
-          ],
-        },
-        {
-          duration: 450,
-          easing: "cubic-bezier(0.4, 0, 0.2, 1)",
-          pseudoElement: "::view-transition-new(root)",
-        }
-      );
-    });
-  };
-
   return (
     <div
-      data-theme={theme}
       style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "row", backgroundColor: "var(--bg)" }}
     >
       {/* ── SIDEBAR ── */}
@@ -254,8 +210,6 @@ export default function Dashboard() {
         <Sidebar
           active={activeNav}
           onNav={handleNav}
-          theme={theme}
-          onToggleTheme={toggleTheme}
         />
       </div>
 
@@ -377,26 +331,7 @@ export default function Dashboard() {
         ))}
       </nav>
 
-      {/* Support FAB */}
-      <button
-        aria-label="Open support"
-        className="support-fab"
-        style={{
-          position: "fixed", right: 20, bottom: 20, zIndex: 999,
-          width: 52, height: 52, borderRadius: "50%",
-          border: "none", cursor: "pointer",
-          background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-          color: "#fff",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 4px 16px rgba(99,102,241,0.4)",
-          transform: "scale(1)",
-          transition: "transform 0.15s, box-shadow 0.15s",
-        }}
-        onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(99,102,241,0.5)"; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(99,102,241,0.4)"; }}
-      >
-        <IcoMsg s={20} />
-      </button>
+
 
       <style>{`
         .sidebar-desktop { display: flex; }

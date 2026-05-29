@@ -6,7 +6,6 @@ import TopBar from "./components/TopBar";
 export default function Community() {
   const [activeNav, setActiveNav] = useState("community");
   const navigate = useNavigate();
-  const [theme, setTheme] = useState("dark");
 
   function handleNav(id, path) {
     setActiveNav(id);
@@ -15,7 +14,6 @@ export default function Community() {
 
   return (
     <div
-      data-theme={theme}
       style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "row", backgroundColor: "var(--bg)" }}
     >
       {/* Sidebar */}
@@ -23,8 +21,6 @@ export default function Community() {
         <Sidebar
           active={activeNav}
           onNav={handleNav}
-          theme={theme}
-          onToggleTheme={() => setTheme(t => t === "dark" ? "light" : "dark")}
         />
       </div>
 

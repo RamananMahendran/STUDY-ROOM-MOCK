@@ -13,6 +13,7 @@ import Changelog from './pages/Changelog.jsx';
 import LeaderboardPage from './pages/leaderboard.jsx';
 import Community from './pages/Community.jsx';
 import Refer from './pages/Refer.jsx';
+import FloatingMessage from './pages/components/FloatingMessage.jsx';
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
         <Route path="/room/:roomId" element={<Room />} />
         <Route path="/practice/leaderboard" element={<LeaderboardPage />} />
       </Routes>
+      <FloatingMessage />
     </Router>
   );
 }

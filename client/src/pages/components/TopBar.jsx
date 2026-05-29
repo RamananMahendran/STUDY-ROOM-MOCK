@@ -7,13 +7,13 @@ const IcoBell    = ({s=15}) => <svg width={s} height={s} viewBox="0 0 24 24" fil
 const IcoPlus    = ({s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>;
 
 // ── Create Room Modal ─────────────────────────────────────────────────────────
-const ROOM_ICONS   = ["📚", "🗓", "🖨", "🦊", "🔬", "📝", "🌀", "🍎"];
+const ROOM_ICONS   = ["📚", "🧮", "💻", "🎨", "🔬", "📝", "🗣️", "🎯"];
 const ROOM_COLORS  = ["#7c6fe0", "#b060e0", "#40b8e0", "#22c55e", "#f59e0b", "#ef4444"];
 const QUICK_STARTS = [
-  { label: "Exam Sprint",    emoji: "🔴", focus: 50, brk: 10 },
-  { label: "Group Project",  emoji: "🟡", focus: 25, brk:  5 },
-  { label: "Deep Work",      emoji: "🟠", focus: 50, brk: 10 },
-  { label: "Quick Revision", emoji: "⚡", focus: 15, brk:  5 },
+  { label: "Exam Sprint",    emoji: "🎯", focus: 50, brk: 10 },
+  { label: "Group Project",  emoji: "🤝", focus: 25, brk:  5 },
+  { label: "Deep Work",      emoji: "🧘", focus: 90, brk: 15 },
+  { label: "Quick Revision", emoji: "⚡", focus: 15, brk:  3 },
 ];
 
 const pomoBtnStyle = {
@@ -158,29 +158,32 @@ function CreateRoomModal({ onClose, onNavigate }) {
             <div>
               <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>Quick Start</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                {QUICK_STARTS.map((qs) => (
-                  <button
-                    key={qs.label}
-                    onClick={() => applyQuick(qs)}
-                    style={{
-                      background: "#0d1117",
-                      border: "1px solid #1e2433",
-                      borderRadius: 8, padding: "10px 12px",
-                      cursor: "pointer", textAlign: "left",
-                      color: "#e2e8f0",
-                      transition: "border-color 0.15s, background 0.15s",
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.background = "#161b26"; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#1e2433"; e.currentTarget.style.background = "#0d1117"; }}
-                  >
-                    <div style={{ fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
-                      <span>{qs.emoji}</span> {qs.label}
-                    </div>
-                    <div style={{ fontSize: 10, color: "#64748b", marginTop: 3 }}>
-                      {qs.focus}m · {qs.brk}m break
-                    </div>
-                  </button>
-                ))}
+                {QUICK_STARTS.map((qs) => {
+                  const isActive = focus === qs.focus && brk === qs.brk;
+                  return (
+                    <button
+                      key={qs.label}
+                      onClick={() => applyQuick(qs)}
+                      style={{
+                        background: isActive ? "#161b26" : "#0d1117",
+                        border: isActive ? "1px solid #6366f1" : "1px solid #1e2433",
+                        borderRadius: 8, padding: "10px 12px",
+                        cursor: "pointer", textAlign: "left",
+                        color: "#e2e8f0",
+                        transition: "border-color 0.15s, background 0.15s",
+                      }}
+                      onMouseEnter={e => { if (!isActive) { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.background = "#161b26"; } }}
+                      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.borderColor = "#1e2433"; e.currentTarget.style.background = "#0d1117"; } }}
+                    >
+                      <div style={{ fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                        <span>{qs.emoji}</span> {qs.label}
+                      </div>
+                      <div style={{ fontSize: 10, color: "#64748b", marginTop: 3 }}>
+                        {qs.focus}m · {qs.brk}m break
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -267,7 +270,12 @@ function CreateRoomModal({ onClose, onNavigate }) {
                     <span style={{ fontSize: 11, color: "#94a3b8" }}>Focus</span>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <button onClick={() => setFocus(f => Math.max(5, f - 5))} style={pomoBtnStyle}>−</button>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#818cf8", minWidth: 30, textAlign: "center" }}>{focus}m</span>
+                      <div style={{
+                        background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.3)",
+                        borderRadius: 6, padding: "4px 0", width: 44, display: "flex", justifyContent: "center"
+                      }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "#818cf8" }}>{focus}m</span>
+                      </div>
                       <button onClick={() => setFocus(f => Math.min(120, f + 5))} style={pomoBtnStyle}>+</button>
                     </div>
                   </div>
@@ -276,7 +284,12 @@ function CreateRoomModal({ onClose, onNavigate }) {
                     <span style={{ fontSize: 11, color: "#94a3b8" }}>Break</span>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <button onClick={() => setBrk(b => Math.max(1, b - 1))} style={pomoBtnStyle}>−</button>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#818cf8", minWidth: 30, textAlign: "center" }}>{brk}m</span>
+                      <div style={{
+                        background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.3)",
+                        borderRadius: 6, padding: "4px 0", width: 44, display: "flex", justifyContent: "center"
+                      }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "#10b981" }}>{brk}m</span>
+                      </div>
                       <button onClick={() => setBrk(b => Math.min(30, b + 1))} style={pomoBtnStyle}>+</button>
                     </div>
                   </div>
@@ -311,8 +324,22 @@ function CreateRoomModal({ onClose, onNavigate }) {
                 focusMin: focus,
                 breakMin: brk,
                 expires,
+                left: "23H 59M",
+                members: 1
               };
               sessionStorage.setItem("currentRoom", JSON.stringify(room));
+              const existingRooms = JSON.parse(localStorage.getItem("myRooms") || "null");
+              if (!existingRooms) {
+                // Initialize with some defaults if empty
+                const defaults = [
+                  { id: "ffaaae", name: "try", icon: "📚", color: "#6366f1", goal: "", focusMin: 90, breakMin: 15, left: "23H 59M", members: 1 },
+                  { id: "f3e62f", name: "try", icon: "🟡", color: "#f59e0b", goal: "work should be completed", focusMin: 90, breakMin: 15, left: "23H 56M", members: 1 },
+                ];
+                localStorage.setItem("myRooms", JSON.stringify([...defaults, room]));
+              } else {
+                existingRooms.push(room);
+                localStorage.setItem("myRooms", JSON.stringify(existingRooms));
+              }
               onClose();
               if (onNavigate) onNavigate(`/room/${id}`);
             }}
@@ -389,16 +416,20 @@ function NotificationsPanel({ onClose }) {
 
 // ── Command Palette ────────────────────────────────────────────────────────────
 const PALETTE_ITEMS = [
-  { id: "home",        label: "Go to Home",          icon: "▩"  },
-  { id: "rooms",       label: "My Rooms",            icon: "🎧" },
+  { id: "home",        label: "Go to Home",          icon: "▩", path: "/home" },
+  { id: "rooms",       label: "My Rooms",            icon: "🎧", path: "/rooms" },
+  { id: "leaderboard", label: "Leaderboard",         icon: "🏆", path: "/practice/leaderboard" },
+  { id: "analytics",   label: "Profile / Analytics", icon: "📊", path: "/profile" },
+  { id: "community",   label: "Community / Friends", icon: "👥", path: "/community" },
+  { id: "invite",      label: "Invite friends",      icon: "✉️", path: "/refer" },
+  { id: "pricing",     label: "Pricing",             icon: "💰", path: "/pricing" },
+  { id: "promise",     label: "Our Promise",         icon: "🤝", path: "/promise" },
+  { id: "changelog",   label: "Changelog",           icon: "📜", path: "/changelog" },
+  { id: "landing",     label: "Landing Page",        icon: "🌍", path: "/" },
+  { id: "createRoom",  label: "Create a room",       icon: "➕" },
   { id: "problems",    label: "Problems",            icon: "🗒" },
   { id: "playground",  label: "Code Playground",     icon: "🧩" },
   { id: "pair",        label: "Start Pair Session",  icon: "⚿"  },
-  { id: "leaderboard", label: "Leaderboard",         icon: "🏆" },
-  { id: "analytics",   label: "Profile / Analytics", icon: "📊" },
-  { id: "community",   label: "Community / Friends", icon: "👥" },
-  { id: "createRoom",  label: "Create a room",       icon: "➕" },
-  { id: "invite",      label: "Invite friends",      icon: "✉️" },
   { id: "OpenProblem", label: "Open a problem",      icon: "🔍" },
 ];
 
@@ -447,6 +478,12 @@ export default function TopBar({ title, subtitle }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  useEffect(() => {
+    const handleOpenCreateRoom = () => setShowCreateRoom(true);
+    window.addEventListener("open-create-room-modal", handleOpenCreateRoom);
+    return () => window.removeEventListener("open-create-room-modal", handleOpenCreateRoom);
+  }, []);
+
   const handleListKeyDown = (e) => {
     if (!isOpen || filteredItems.length === 0) return;
     if (e.key === "ArrowDown") { e.preventDefault(); setSelectedIndex((prev) => (prev + 1) % filteredItems.length); }
@@ -455,7 +492,11 @@ export default function TopBar({ title, subtitle }) {
   };
 
   const handleItemTrigger = (item) => {
-    if (item.id === "createRoom") { setShowCreateRoom(true); }
+    if (item.id === "createRoom") { 
+      setShowCreateRoom(true); 
+    } else if (item.path) {
+      navigate(item.path);
+    }
     setIsOpen(false);
     setSearchQuery("");
   };

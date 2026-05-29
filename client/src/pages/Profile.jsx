@@ -104,7 +104,7 @@ export default function Profile() {
   ];
 
   return (
-    <div data-theme="dark" style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "row", backgroundColor: "var(--bg)" }}>
+    <div style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "row", backgroundColor: "var(--bg)" }}>
       {/* Sidebar */}
       <div className="sidebar-desktop">
         <Sidebar active={activeNav} onNav={handleNav} />
@@ -472,10 +472,7 @@ export default function Profile() {
         })}
       </nav>
 
-      {/* Support FAB */}
-      <button aria-label="Open support" className="support-fab" style={{ position: "fixed", right: 20, bottom: 20, zIndex: 999, width: 52, height: 52, borderRadius: "50%", border: "none", cursor: "pointer", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(99,102,241,0.4)", transform: "scale(1)", transition: "transform 0.15s, box-shadow 0.15s" }} onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(99,102,241,0.5)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)";    e.currentTarget.style.boxShadow = "0 4px 16px rgba(99,102,241,0.4)"; }}>
-        <IcoMsg s={20} />
-      </button>
+
 
       <style>{`
         .sidebar-desktop { display: flex; }

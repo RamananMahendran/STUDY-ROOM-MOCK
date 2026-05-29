@@ -77,6 +77,15 @@ export default function Rooms() {
   const [search, setSearch]       = useState("");
   const navigate = useNavigate();
 
+  const [myRooms, setMyRooms] = useState(() => {
+    const saved = localStorage.getItem("myRooms");
+    if (saved) return JSON.parse(saved);
+    return [
+      { id: "ffaaae", name: "try", icon: "📚", color: "#6366f1", goal: "", focusMin: 90, breakMin: 15, left: "23H 59M", members: 1 },
+      { id: "f3e62f", name: "try", icon: "🟡", color: "#f59e0b", goal: "work should be completed", focusMin: 90, breakMin: 15, left: "23H 56M", members: 1 },
+    ];
+  });
+
   const modes = ["All", "Pair", "Solo+", "Study"];
 
   function handleNav(id, path) {
@@ -86,7 +95,6 @@ export default function Rooms() {
 
   return (
     <div
-      data-theme="dark"
       style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "row", backgroundColor: "var(--bg)" }}
     >
       {/* Sidebar */}
@@ -146,7 +154,24 @@ export default function Rooms() {
                   </div>
                 </div>
 
-                <form className="flex" style={{ gap: 8 }} onSubmit={e => e.preventDefault()}>
+                <form className="flex" style={{ gap: 8 }} onSubmit={e => {
+                  e.preventDefault();
+                  const code = roomCode.trim();
+                  if (code) {
+                    const joinedRoom = {
+                      id: code,
+                      name: `Room ${code}`,
+                      icon: "🚪",
+                      color: "#6366f1",
+                      goal: "",
+                      focusMin: 50,
+                      breakMin: 10,
+                      expires: "24h"
+                    };
+                    sessionStorage.setItem("currentRoom", JSON.stringify(joinedRoom));
+                    navigate(`/room/${code}`);
+                  }
+                }}>
                   {/* Input */}
                   <div style={{ flex: "1 1 0%", position: "relative", display: "flex", alignItems: "center" }}>
                     <input
@@ -280,6 +305,7 @@ export default function Rooms() {
                   </p>
                   <button
                     type="button"
+                    onClick={() => window.dispatchEvent(new Event("open-create-room-modal"))}
                     style={{
                       display: "inline-flex", alignItems: "center", gap: 6,
                       padding: "8px 18px", borderRadius: "var(--radius-md)",
@@ -317,10 +343,7 @@ export default function Rooms() {
 
                 {/* Room cards grid */}
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
-                  {[
-                    { id: "ffaaae", name: "try", icon: "📚", color: "#6366f1", goal: "", focusMin: 90, breakMin: 15, left: "23H 59M", members: 1 },
-                    { id: "f3e62f", name: "try", icon: "🟡", color: "#f59e0b", goal: "work should be completed", focusMin: 90, breakMin: 15, left: "23H 56M", members: 1 },
-                  ].map(room => (
+                  {myRooms.map(room => (
                     <button
                       key={room.id}
                       onClick={() => {
@@ -418,25 +441,7 @@ export default function Rooms() {
         })}
       </nav>
 
-      {/* Support FAB */}
-      <button
-        aria-label="Open support"
-        className="support-fab"
-        style={{
-          position: "fixed", right: 20, bottom: 20, zIndex: 999,
-          width: 52, height: 52, borderRadius: "50%",
-          border: "none", cursor: "pointer",
-          background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-          color: "#fff",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 4px 16px rgba(99,102,241,0.4)",
-          transform: "scale(1)", transition: "transform 0.15s, box-shadow 0.15s",
-        }}
-        onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(99,102,241,0.5)"; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)";    e.currentTarget.style.boxShadow = "0 4px 16px rgba(99,102,241,0.4)"; }}
-      >
-        <IcoMsg s={20} />
-      </button>
+
 
       <style>{`
         .sidebar-desktop { display: flex; }

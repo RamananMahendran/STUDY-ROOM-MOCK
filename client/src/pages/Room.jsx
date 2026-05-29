@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 
 // ─── CSS Variables injected globally ─────────────────────────────────────────
 const GlobalStyles = () => (
@@ -1111,21 +1112,31 @@ function InviteModal({ onClose }) {
 
 // ─── Root App ──────────────────────────────────────────────────────────────────
 export default function App() {
+  const { roomId } = useParams();
+  const navigate = useNavigate();
+
+  // Load from sessionStorage or use defaults
+  const [initialRoom] = useState(() => {
+    const saved = sessionStorage.getItem("currentRoom");
+    if (saved) return JSON.parse(saved);
+    return { focusMin: 90, breakMin: 15, name: "try" };
+  });
+
   const [tab, setTab] = useState("notes");
   const [mode, setMode] = useState("focus");
   const [running, setRunning] = useState(false);
   const [wasPaused, setWasPaused] = useState(false); // track explicit pause
   const [seconds, setSeconds] = useState(0);
-  const [minutes, setMinutes] = useState(90);
+  const [minutes, setMinutes] = useState(initialRoom.focusMin || 90);
   const [focusMode, setFocusMode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
   const intervalRef = useRef(null);
 
   // ── Settings state (lifted so timer chips and header react) ─────────────────
-  const [focusMins, setFocusMins] = useState(90);
-  const [breakMins, setBreakMins] = useState(15);
-  const [roomName, setRoomName] = useState("try");
+  const [focusMins, setFocusMins] = useState(initialRoom.focusMin || 90);
+  const [breakMins, setBreakMins] = useState(initialRoom.breakMin || 15);
+  const [roomName, setRoomName] = useState(initialRoom.name || "try");
 
   // ── Activity log ─────────────────────────────────────────────────────────────
   const [activityLog, setActivityLog] = useState([]);
@@ -1229,7 +1240,7 @@ export default function App() {
       <GlobalStyles />
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
 
-      <Header roomCode="ffaaae" roomName={roomName} onSettings={() => setShowSettings(true)} onInvite={() => setShowInvite(true)} />
+      <Header roomCode={roomId || "ffaaae"} roomName={roomName} onSettings={() => setShowSettings(true)} onInvite={() => setShowInvite(true)} />
 
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         <Sidebar
