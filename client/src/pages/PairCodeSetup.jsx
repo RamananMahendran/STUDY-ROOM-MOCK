@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import Sidebar from "./components/Sidebar.jsx";
-import TopBar from "./components/TopBar.jsx";
 // ── CUSTOM REUSABLE SVG ICONS ────────────────────────────────────────────────
 const IcoPlus = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -39,26 +37,22 @@ export default function PairCodeSetup() {
   };
 
   return (
-    <div className="fixed inset-0 flex bg-[#060810] text-[#e2e8f0] font-sans overflow-hidden select-none">
-      
-      {/* LEFT SIDEBAR NAVIGATION COMPONENT INJECTION */}
-      <Sidebar active="practice" />
-
+    <>
       {/* CENTER STAGE VIEWPORT CANVAS WRAPPER */}
-      <div className="flex-1 flex items-center justify-center bg-[#060810] px-6">
+      <div className="flex-1 flex items-center justify-center px-6 h-full w-full py-12" style={{ backgroundColor: "var(--bg)" }}>
         
         
         <div className="w-full max-w-[840px] grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
           {/* LEFT OPTION CARD: START NEW ROOM INSTANCE */}
-          <div className="bg-[#0d1117] border border-[#1e2433]/60 rounded-xl p-6 flex flex-col gap-6 transition-all duration-200 hover:border-[#1e2433]" >
+          <div className="rounded-xl p-6 flex flex-col gap-6 transition-all duration-200" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
                 <div>
                     <div className="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-6">
                     <IcoPlus />
                     </div>
-                    <h2 className="text-base font-bold text-[#f1f5f9] mb-2 tracking-tight">
+                    <h2 className="text-base font-bold mb-2 tracking-tight" style={{ color: "var(--text)" }}>
                     Start a new session
                     </h2>
-                    <p className="text-[12px] text-gray-500 leading-relaxed max-w-[310px]">
+                    <p className="text-[12px] leading-relaxed max-w-[310px]" style={{ color: "var(--text-muted)" }}>
                     Get a fresh 6-character code. Share the link with one person and start writing code together.
                     </p>
                 </div>
@@ -74,15 +68,15 @@ export default function PairCodeSetup() {
 
 
           {/* RIGHT OPTION CARD: JOIN EXISTING CONSOLE CODE */}
-          <div className="bg-[#0d1117] border border-[#1e2433]/60 rounded-xl p-8 flex flex-col justify-between transition-all duration-200 hover:border-[#1e2433]">
+          <div className="rounded-xl p-8 flex flex-col justify-between transition-all duration-200" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
             <div>
               <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-6">
                 <IcoUsers />
               </div>
-              <h2 className="text-base font-bold text-[#f1f5f9] mb-2 tracking-tight">
+              <h2 className="text-base font-bold mb-2 tracking-tight" style={{ color: "var(--text)" }}>
                 Join with a code
               </h2>
-              <p className="text-[12px] text-gray-500 leading-relaxed max-w-[310px]">
+              <p className="text-[12px] leading-relaxed max-w-[310px]" style={{ color: "var(--text-muted)" }}>
                 Got a code from a friend? Type it in to drop straight into their active coding session.
               </p>
             </div>
@@ -95,13 +89,23 @@ export default function PairCodeSetup() {
                 value={sessionCode}
                 onChange={(e) => setSessionCode(e.target.value.toUpperCase())}
                 placeholder="A B C 1 2 3"
-                className="w-full bg-[#060810]/60 border border-[#1e2433] rounded-lg py-2.5 text-center font-mono text-sm tracking-[0.5em] text-[#fbbf24] font-bold outline-none placeholder-gray-700/60 focus:border-[#312e81] focus:bg-[#060810] transition-all"
+                className="w-full rounded-lg py-2.5 text-center font-mono text-sm tracking-[0.5em] text-[#fbbf24] font-bold outline-none transition-all"
+                style={{
+                  backgroundColor: "var(--surface-2)",
+                  border: "1px solid var(--border)",
+                  color: "var(--text)",
+                }}
               />
               
               <button
                 type="submit"
                 disabled={sessionCode.length !== 6}
-                className="w-full px-5 py-2.5 rounded-lg bg-[#161b26] border border-[#1e2433] text-gray-400 disabled:text-gray-600 font-bold text-[12px] flex items-center justify-center gap-2 transition-all duration-150 disabled:bg-[#11151e]/40 disabled:border-[#1e2433]/40 cursor-pointer disabled:cursor-not-allowed enabled:hover:bg-[#1f2638] enabled:hover:text-gray-200"
+                className="w-full px-5 py-2.5 rounded-lg font-bold text-[12px] flex items-center justify-center gap-2 transition-all duration-150 cursor-pointer disabled:cursor-not-allowed"
+                style={{
+                  backgroundColor: sessionCode.length === 6 ? "var(--surface-2)" : "rgba(0,0,0,0.1)",
+                  border: "1px solid var(--border)",
+                  color: sessionCode.length === 6 ? "var(--text)" : "var(--text-muted)",
+                }}
               >
                 <span>Join session</span>
                 <IcoArrowRight />
@@ -111,7 +115,6 @@ export default function PairCodeSetup() {
 
         </div>
       </div>
-
-    </div>
+    </>
   );
 }

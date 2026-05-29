@@ -16,6 +16,7 @@ import Refer from './pages/Refer.jsx';
 import FloatingMessage from './pages/components/FloatingMessage.jsx';
 import StudyPlans from './pages/StudyPlans.jsx';
 import PairCodeSetup from './pages/PairCodeSetup.jsx';
+import AppLayout from './pages/components/AppLayout.jsx';
 
 function App() {
   return (
@@ -26,19 +27,24 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/home" element={<Dashboard />} />
-        <Route path="/rooms" element={<Rooms />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/community" element={<Community />} />
-        <Route path="/refer" element={<Refer />} />
+        {/* Authenticated routes inside common layout */}
+        <Route element={<AppLayout />}>
+          <Route path="/home" element={<Dashboard />} />
+          <Route path="/rooms" element={<Rooms />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/community" element={<Community />} />
+          <Route path="/refer" element={<Refer />} />
+          <Route path="/practice/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/practice/study-plans" element={<StudyPlans />} />
+          <Route path="/practice/pair-code" element={<PairCodeSetup />} />
+        </Route>
+        
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/promise" element={<Promise />} />
         <Route path="/changelog" element={<Changelog />} />
         <Route path="/room/:roomId" element={<Room />} />
-        <Route path="/practice/leaderboard" element={<LeaderboardPage />} />
-        <Route path="/studyplans" element={<StudyPlans />} />
+
         <Route path="*" element={<Home />} /> {/* Fallback route for unmatched paths */}  
-        <Route path="/paircode" element={<PairCodeSetup />} />
       </Routes>
       <FloatingMessage />
     </Router>

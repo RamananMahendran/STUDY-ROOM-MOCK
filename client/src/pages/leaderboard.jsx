@@ -1,7 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Sidebar from "./components/Sidebar";
-import TopBar from "./components/TopBar";
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 const problems = [
@@ -82,31 +79,12 @@ const rankBadge = (i) => {
 
 // ── Leaderboard Page ──────────────────────────────────────────────────────────
 export default function LeaderboardPage() {
-  const navigate = useNavigate();
   const [selectedProblem, setSelectedProblem] = useState("Reverse a String");
-  const [activeNav,       setActiveNav]       = useState("practice");
 
   const entries = leaderboardData[selectedProblem] ?? [];
 
   return (
-    <div style={{
-      display: "flex", height: "100vh", width: "100%", overflow: "hidden",
-      backgroundColor: "var(--bg)",
-    }}>
-      {/* Sidebar */}
-      <Sidebar
-        active={activeNav}
-        onNav={(id, path) => {
-          setActiveNav(id);
-          if (path) navigate(path);
-        }}
-      />
-
-      {/* Main column */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        {/* TopBar */}
-        <TopBar title="Leaderboard" subtitle="See how you rank across problems" />
-
+    <>
         {/* Body */}
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
@@ -211,9 +189,6 @@ export default function LeaderboardPage() {
             )}
           </div>
         </div>
-      </div>
-
-
-    </div>
+    </>
   );
 }

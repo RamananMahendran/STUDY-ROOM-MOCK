@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "./components/Sidebar";
-import TopBar from "./components/TopBar";
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
 const IcoDashboard  = ({s=15}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>;
@@ -200,16 +198,10 @@ function ShareModal({ onClose }) {
 
 // ── PROFILE PAGE ──────────────────────────────────────────────────────────────
 export default function Profile() {
-  const [activeNav, setActiveNav] = useState("profile");
   const [activeTab, setActiveTab] = useState("Overview");
   const [hoursRange, setHoursRange] = useState("14d");
   const [showShareModal, setShowShareModal] = useState(false);
   const navigate = useNavigate();
-
-  function handleNav(id, path) {
-    setActiveNav(id);
-    if (path) navigate(path);
-  }
 
   // Days for heatmap
   const months = ["Dec", "Jan", "Feb", "Mar", "Apr", "May"];
@@ -232,16 +224,7 @@ export default function Profile() {
   ];
 
   return (
-    <div style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "row", backgroundColor: "var(--bg)" }}>
-      {/* Sidebar */}
-      <div className="sidebar-desktop">
-        <Sidebar active={activeNav} onNav={handleNav} />
-      </div>
-
-      {/* Main pane */}
-      <div style={{ flex: "1 1 0%", display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0 }}>
-        <TopBar title="Profile" />
-        
+    <>
         {showShareModal && <ShareModal onClose={() => setShowShareModal(false)} />}
 
         <main className="shell-main-content route-transition" style={{ flex: "1 1 0%", minHeight: 0, display: "flex", flexDirection: "column" }}>
@@ -608,36 +591,6 @@ export default function Profile() {
             </div>
           </div>
         </main>
-      </div>
-
-      {/* Mobile tab bar */}
-      <nav className="mobile-tabbar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, display: "none", height: 56, backgroundColor: "var(--surface)", borderTop: "1px solid var(--border)", paddingBottom: "env(safe-area-inset-bottom)" }}>
-        {[
-          { id: "home",      label: "Home",      Icon: IcoDashboard, path: "/home"  },
-          { id: "practice",  label: "Practice",  Icon: IcoCode                      },
-          { id: "community", label: "Community", Icon: IcoUsers                     },
-          { id: "profile",   label: "Profile",   Icon: IcoBar,       path: "/profile" },
-        ].map(({ id, label, Icon, path }) => {
-          const isActive = activeNav === id;
-          return (
-            <button key={id} aria-label={label} aria-current={isActive ? "page" : undefined} onClick={() => handleNav(id, path)} style={{ flex: 1, height: "100%", border: "none", cursor: "pointer", backgroundColor: "transparent", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, position: "relative", color: isActive ? "var(--accent)" : "var(--text-muted)", transition: "color var(--dur-fast)" }}>
-              <div style={{ position: "relative" }}><Icon s={20} /></div>
-              <span style={{ fontSize: 9, fontWeight: isActive ? 700 : 400, letterSpacing: "0.02em" }}>{label}</span>
-              {isActive && <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 24, height: 2, borderRadius: 1, backgroundColor: "var(--accent)" }} />}
-            </button>
-          );
-        })}
-      </nav>
-
-
-
-      <style>{`
-        .sidebar-desktop { display: flex; }
-        @media (max-width: 768px) {
-          .sidebar-desktop { display: none; }
-          .mobile-tabbar   { display: flex !important; }
-        }
-      `}</style>
-    </div>
+    </>
   );
 }

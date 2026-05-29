@@ -1,7 +1,55 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "./components/Sidebar";
-import TopBar from "./components/TopBar";
+
+const SolveVelocityChart = () => {
+  return (
+    <div style={{ position: "relative", height: 180, width: "100%", marginTop: 30, display: "flex", flexDirection: "column" }}>
+      {/* Y-axis labels */}
+      <div style={{ position: "absolute", left: 0, top: 0, bottom: 20, display: "flex", flexDirection: "column", justifyContent: "space-between", fontSize: 10, color: "var(--text-muted)", zIndex: 10 }}>
+        <span style={{ transform: "translateY(-50%)" }}>1</span>
+        <span style={{ transform: "translateY(50%)" }}>0</span>
+      </div>
+      
+      {/* SVG Chart Area */}
+      <div style={{ position: "absolute", left: 24, right: 8, top: 0, bottom: 20 }}>
+        {/* Horizontal grid lines */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, backgroundColor: "var(--border)" }} />
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 1, backgroundColor: "var(--border)" }} />
+        
+        <svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 100 100" style={{ overflow: "visible" }}>
+          <defs>
+            <linearGradient id="solve-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          
+          {/* Daily Line Area */}
+          <polygon points="0,100 95,100 100,0 100,100" fill="url(#solve-grad)" />
+          
+          {/* Daily Line (solid purple) */}
+          <polyline points="0,100 95,100 100,0" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+          
+          {/* 7-day Avg Line (dashed pink) */}
+          <polyline points="0,100 95,100 100,80" fill="none" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="3,3" strokeLinejoin="round" strokeLinecap="round" />
+          
+          {/* Peak Dot */}
+          <circle cx="100" cy="0" r="3" fill="#6366f1" />
+          <circle cx="100" cy="0" r="8" fill="#6366f1" opacity="0.25" />
+        </svg>
+      </div>
+
+      {/* X-axis labels */}
+      <div style={{ position: "absolute", left: 24, right: 8, bottom: -4, display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--text-muted)" }}>
+        <span>30d</span>
+        <span>23d</span>
+        <span>16d</span>
+        <span>9d</span>
+        <span>today</span>
+      </div>
+    </div>
+  );
+};
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
 const IcoDashboard = ({ s = 15 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}><rect width="7" height="9" x="3" y="3" rx="1" /><rect width="7" height="5" x="14" y="3" rx="1" /><rect width="7" height="9" x="14" y="12" rx="1" /><rect width="7" height="5" x="3" y="16" rx="1" /></svg>;
@@ -240,13 +288,7 @@ function ChartEmpty({ msg, py = "26px 12px" }) {
 
 // ── DASHBOARD PAGE ────────────────────────────────────────────────────────────
 export default function Dashboard() {
-  const [activeNav, setActiveNav] = useState("home");
   const navigate = useNavigate();
-
-  function handleNav(id, path) {
-    setActiveNav(id);
-    if (path) navigate(path);
-  }
 
   const handleStartFocus = () => {
     const id = Math.random().toString(36).slice(2, 8);
@@ -279,21 +321,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div
-      style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "row", backgroundColor: "var(--bg)" }}
-    >
-      {/* ── SIDEBAR ── */}
-      <div className="sidebar-desktop">
-        <Sidebar
-          active={activeNav}
-          onNav={handleNav}
-        />
-      </div>
-
-      {/* Main pane */}
-      <div style={{ flex: "1 1 0%", display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0 }}>
-        <TopBar title="Home" subtitle="1-day streak · 0.1h this week" />
-
+    <>
         <main
           className="shell-main-content route-transition"
           style={{ flex: "1 1 0%", minHeight: 0, display: "flex", flexDirection: "column" }}
@@ -436,7 +464,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-                <ChartEmpty msg="Solve a problem and your daily velocity curve starts here." py="40px 0" />
+                <SolveVelocityChart />
               </div>
 
               {/* Insights Section */}
@@ -488,52 +516,14 @@ export default function Dashboard() {
             </div>
           </div>
         </main>
-      </div>
-
-      {/* Mobile tab bar */}
-      <nav
-        className="mobile-tabbar"
-        style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, display: "none", height: 56, backgroundColor: "var(--surface)", borderTop: "1px solid var(--border)", paddingBottom: "env(safe-area-inset-bottom)" }}
-      >
-        {[
-          { id: "home", label: "Home", Icon: IcoDashboard },
-          { id: "practice", label: "Practice", Icon: IcoCode },
-          { id: "community", label: "Community", Icon: IcoUsers },
-          { id: "profile", label: "Profile", Icon: IcoBar },
-        ].map(({ id, label, Icon }) => (
-          <button
-            key={id}
-            aria-label={label}
-            onClick={() => setActiveNav(id)}
-            style={{
-              flex: 1, height: "100%", border: "none", cursor: "pointer", backgroundColor: "transparent",
-              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3,
-              position: "relative",
-              color: activeNav === id ? "var(--accent)" : "var(--text-muted)",
-              transition: "color var(--dur-fast)",
-            }}
-          >
-            <div style={{ position: "relative" }}>
-              <Icon s={20} />
-            </div>
-            <span style={{ fontSize: 9, fontWeight: 400, letterSpacing: "0.02em" }}>{label}</span>
-          </button>
-        ))}
-      </nav>
-
-
-
       <style>{`
-        .sidebar-desktop { display: flex; }
         .live-dot { animation: pulse-green 1.6s ease-in-out infinite; }
         @media (max-width: 768px) {
-          .sidebar-desktop { display: none; }
-          .mobile-tabbar   { display: flex !important; }
           .hero-analytics  { grid-template-columns: minmax(0,1fr) !important; }
           .kpi-row         { grid-template-columns: repeat(2,1fr) !important; }
           .home-charts-row { grid-template-columns: minmax(0,1fr) !important; }
         }
       `}</style>
-    </div>
+    </>
   );
 }

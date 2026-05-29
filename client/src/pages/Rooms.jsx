@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "./components/Sidebar";
-import TopBar from "./components/TopBar";
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
 const IcoDashboard  = ({s=15}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>;
@@ -71,7 +69,6 @@ function QuickCard({ icon: IconComp, iconBg, iconColor, label, sub }) {
 
 // ── ROOMS PAGE ────────────────────────────────────────────────────────────────
 export default function Rooms() {
-  const [activeNav, setActiveNav] = useState("rooms");
   const [roomCode, setRoomCode]   = useState("");
   const [modeFilter, setModeFilter] = useState("All");
   const [search, setSearch]       = useState("");
@@ -101,7 +98,7 @@ export default function Rooms() {
     const endMs = room.createdAt + expiresMs;
     const diff = endMs - currentTime;
     
-    if (diff <= 0) return "0H 0M";
+    if (diff <= 0) return "Expired";
     
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -110,24 +107,8 @@ export default function Rooms() {
 
   const modes = ["All", "Pair", "Solo+", "Study"];
 
-  function handleNav(id, path) {
-    setActiveNav(id);
-    if (path) navigate(path);
-  }
-
   return (
-    <div
-      style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "row", backgroundColor: "var(--bg)" }}
-    >
-      {/* Sidebar */}
-      <div className="sidebar-desktop">
-        <Sidebar active={activeNav} onNav={handleNav} />
-      </div>
-
-      {/* Main pane */}
-      <div style={{ flex: "1 1 0%", display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0 }}>
-        <TopBar title="Rooms" subtitle="Nothing live right now — kick off a session" />
-
+    <>
         <main
           className="shell-main-content route-transition"
           style={{ flex: "1 1 0%", minHeight: 0, display: "flex", flexDirection: "column" }}
@@ -180,7 +161,8 @@ export default function Rooms() {
                   e.preventDefault();
                   const code = roomCode.trim();
                   if (code) {
-                    const joinedRoom = {
+                    const existingRoom = myRooms.find(r => r.id === code);
+                    const joinedRoom = existingRoom || {
                       id: code,
                       name: "Focus Session",
                       icon: "🚪",
@@ -360,7 +342,9 @@ export default function Rooms() {
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
                   <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
                   <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>Active</span>
-                  <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 999, backgroundColor: "var(--surface-2)", color: "var(--text-muted)", border: "1px solid var(--border)" }}>2</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 999, backgroundColor: "var(--surface-2)", color: "var(--text-muted)", border: "1px solid var(--border)" }}>
+                    {myRooms.filter(r => getRemainingTime(r) !== "Expired").length}
+                  </span>
                 </div>
 
                 {/* Room cards grid */}
@@ -405,9 +389,15 @@ export default function Rooms() {
                       {/* Footer stats */}
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 6, borderTop: "1px solid var(--border)" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <span style={{ fontSize: 10, background: "rgba(16,185,129,0.12)", color: "#10b981", border: "1px solid rgba(16,185,129,0.25)", borderRadius: 999, padding: "2px 7px", fontWeight: 700 }}>
-                            ⏱ {getRemainingTime(room)} LEFT
-                          </span>
+                          {getRemainingTime(room) === "Expired" ? (
+                            <span style={{ fontSize: 10, background: "rgba(239, 68, 68, 0.12)", color: "#ef4444", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: 999, padding: "2px 7px", fontWeight: 700 }}>
+                              Expired
+                            </span>
+                          ) : (
+                            <span style={{ fontSize: 10, background: "rgba(16,185,129,0.12)", color: "#10b981", border: "1px solid rgba(16,185,129,0.25)", borderRadius: 999, padding: "2px 7px", fontWeight: 700 }}>
+                              ⏱ {getRemainingTime(room)} LEFT
+                            </span>
+                          )}
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 10, color: "var(--text-muted)" }}>
                           <span>👥 {room.members} member</span>
@@ -422,57 +412,11 @@ export default function Rooms() {
             </div>
           </div>
         </main>
-      </div>
-
-      {/* Mobile tab bar */}
-      <nav
-        className="mobile-tabbar"
-        style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, display: "none", height: 56, backgroundColor: "var(--surface)", borderTop: "1px solid var(--border)", paddingBottom: "env(safe-area-inset-bottom)" }}
-      >
-        {[
-          { id: "home",      label: "Home",      Icon: IcoDashboard, path: "/home"  },
-          { id: "practice",  label: "Practice",  Icon: IcoCode                      },
-          { id: "community", label: "Community", Icon: IcoUsers                     },
-          { id: "profile",   label: "Profile",   Icon: IcoBar                       },
-        ].map(({ id, label, Icon, path }) => {
-          const isActive = activeNav === id;
-          return (
-            <button
-              key={id}
-              aria-label={label}
-              aria-current={isActive ? "page" : undefined}
-              onClick={() => handleNav(id, path)}
-              style={{
-                flex: 1, height: "100%", border: "none", cursor: "pointer",
-                backgroundColor: "transparent",
-                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3,
-                position: "relative",
-                color: isActive ? "var(--accent)" : "var(--text-muted)",
-                transition: "color var(--dur-fast)",
-              }}
-            >
-              <div style={{ position: "relative" }}>
-                <Icon s={20} />
-              </div>
-              <span style={{ fontSize: 9, fontWeight: isActive ? 700 : 400, letterSpacing: "0.02em" }}>{label}</span>
-              {isActive && (
-                <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 24, height: 2, borderRadius: 1, backgroundColor: "var(--accent)" }} />
-              )}
-            </button>
-          );
-        })}
-      </nav>
-
-
-
       <style>{`
-        .sidebar-desktop { display: flex; }
         @media (max-width: 768px) {
-          .sidebar-desktop { display: none; }
-          .mobile-tabbar   { display: flex !important; }
           .quick-start-grid { grid-template-columns: repeat(2,1fr) !important; }
         }
       `}</style>
-    </div>
+    </>
   );
 }

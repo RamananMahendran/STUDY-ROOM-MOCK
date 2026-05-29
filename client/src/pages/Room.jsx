@@ -1,33 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-// ─── CSS Variables injected globally ─────────────────────────────────────────
-const GlobalStyles = () => (
-  <style>{`
-    :root {
-      --bg: #0d0d0f;
-      --surface: #141417;
-      --surface-2: #1a1a1f;
-      --border: rgba(255,255,255,0.08);
-      --border-strong: rgba(255,255,255,0.14);
-      --text: #e8e8ec;
-      --text-muted: #6b6b7a;
-      --text-subtle: #3f3f4e;
-      --accent: #6c63ff;
-      --accent-bg: rgba(108,99,255,0.1);
-      --accent-text: #a49bff;
-      --success: #22c55e;
-      --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: var(--font-sans); }
-    button { font-family: inherit; border: none; background: none; }
-    input, textarea { font-family: inherit; }
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
-  `}</style>
-);
+// ─── CSS Variables injected globally (Removed hardcoded styles to use index.css) ──────────
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const Icon = {
@@ -112,6 +86,11 @@ const Icon = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
   ),
+  Crown: () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 16l-2-8 5 3 4-6 4 6 5-3-2 8H5zM3 19h18v2H3v-2z" />
+    </svg>
+  ),
   Copy: () => (
     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -158,13 +137,34 @@ const Icon = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
     </svg>
   ),
+  Trash: () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+    </svg>
+  ),
+  Download: () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+    </svg>
+  ),
+  Document: () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+    </svg>
+  ),
+  Paperclip: () => (
+    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+    </svg>
+  ),
 };
 
 // ─── Timer Circle ──────────────────────────────────────────────────────────────
 function TimerCircle({ minutes, seconds, label, isBreak, running, size = 168, totalMins = 90 }) {
   const total = totalMins * 60;
   const remaining = minutes * 60 + seconds;
-  const progress = total > 0 ? remaining / total : 0;
+  const elapsed = Math.max(0, total - remaining);
+  const progress = total > 0 ? elapsed / total : 0;
   const r = size === 168 ? 72 : 108;
   const cx = size / 2;
   const circ = 2 * Math.PI * r;
@@ -184,37 +184,36 @@ function TimerCircle({ minutes, seconds, label, isBreak, running, size = 168, to
         />
       </svg>
       
-      {/* dash indicator */}
+      {/* dot indicator */}
       <div style={{
         position: "absolute",
         top: 0, left: 0, width: "100%", height: "100%",
-        transform: `rotate(${(1 - progress) * 360}deg)`,
+        transform: `rotate(${progress * 360}deg)`,
         transition: "transform 1s linear"
       }}>
         <div style={{
           position: "absolute",
-          top: cx - r - 4,
-          left: cx - 12,
-          width: 24,
-          height: 8,
-          borderRadius: 4,
-          backgroundColor: isBreak ? "var(--success)" : "var(--accent)",
-          boxShadow: `0 0 12px ${isBreak ? "var(--success)" : "var(--accent)"}`
+          top: cx - r - 3,
+          left: cx - 3,
+          width: 6,
+          height: 6,
+          borderRadius: "50%",
+          backgroundColor: isBreak ? "var(--success)" : "var(--accent-text)",
         }} />
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", zIndex: 10 }}>
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: size === 168 ? "2.75rem" : "3.75rem",
-          fontWeight: 800,
-          letterSpacing: "-2px",
-          color: "white",
-          fontVariantNumeric: "tabular-nums",
+          fontSize: size === 168 ? "1.85rem" : "2.5rem",
+          fontWeight: 700,
+          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+          color: "var(--text)",
+          letterSpacing: "2px",
           lineHeight: 1,
         }}>
           <span>{String(minutes).padStart(2, "0")}</span>
-          <span style={{ color: isBreak ? "var(--success)" : "var(--accent)", margin: "0 -2px", transform: "translateY(-2px)" }}>:</span>
+          <span style={{ margin: "0 4px", color: "var(--text-subtle)", transform: "translateY(-2px)" }}>:</span>
           <span>{String(seconds).padStart(2, "0")}</span>
         </div>
         <span style={{
@@ -433,7 +432,9 @@ function TabBar({ active, setActive, badge }) {
 
 // ─── Notes Panel ──────────────────────────────────────────────────────────────
 function NotesPanel() {
-  const [chars, setChars] = useState(0);
+  const [text, setText] = useState("");
+  const [viewMode, setViewMode] = useState("write"); // write, split, preview
+
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", borderBottom: "1px solid var(--border)" }}>
@@ -443,17 +444,42 @@ function NotesPanel() {
           Select text to format
         </span>
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10, color: "var(--text-muted)" }}>
-          <button style={{ color: "var(--text-muted)", cursor: "pointer" }}><Icon.Edit /></button>
-          <button style={{ color: "var(--text-muted)", cursor: "pointer" }}><Icon.Split /></button>
-          <button style={{ color: "var(--text-muted)", cursor: "pointer" }}><Icon.Eye /></button>
-          <span style={{ fontSize: "0.72rem", color: "var(--text-subtle)" }}>{chars} chars</span>
+          <div style={{ display: "flex", alignItems: "center", border: "1px solid var(--border)", borderRadius: 6, padding: 2, gap: 2 }}>
+            <button onClick={() => setViewMode("write")} style={{ width: 24, height: 24, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: viewMode === "write" ? "var(--accent)" : "var(--text-muted)", backgroundColor: viewMode === "write" ? "var(--accent-bg)" : "transparent", transition: "all 0.15s" }}><Icon.Edit /></button>
+            <button onClick={() => setViewMode("split")} style={{ width: 24, height: 24, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: viewMode === "split" ? "var(--accent)" : "var(--text-muted)", backgroundColor: viewMode === "split" ? "var(--accent-bg)" : "transparent", transition: "all 0.15s" }}><Icon.Split /></button>
+            <button onClick={() => setViewMode("preview")} style={{ width: 24, height: 24, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: viewMode === "preview" ? "var(--accent)" : "var(--text-muted)", backgroundColor: viewMode === "preview" ? "var(--accent-bg)" : "transparent", transition: "all 0.15s" }}><Icon.Eye /></button>
+          </div>
+          <span style={{ fontSize: "0.72rem", color: "var(--text-subtle)", width: 44, textAlign: "right" }}>{text.length} chars</span>
         </div>
       </div>
-      <textarea
-        style={{ flex: 1, fontSize: "0.85rem", padding: 20, resize: "none", outline: "none", backgroundColor: "transparent", color: "var(--text)", lineHeight: 1.7 }}
-        placeholder="Start typing shared notes..."
-        onChange={e => setChars(e.target.value.length)}
-      />
+      
+      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+        {(viewMode === "write" || viewMode === "split") && (
+          <textarea
+            style={{ 
+              flex: 1, fontSize: "0.85rem", padding: 20, resize: "none", outline: "none", 
+              backgroundColor: "transparent", color: "var(--text)", lineHeight: 1.7,
+              borderRight: viewMode === "split" ? "1px solid var(--border)" : "none",
+              fontFamily: "inherit"
+            }}
+            placeholder="Start typing shared notes..."
+            value={text}
+            onChange={e => setText(e.target.value)}
+          />
+        )}
+        
+        {(viewMode === "split" || viewMode === "preview") && (
+          <div style={{ 
+            flex: 1, padding: 20, overflowY: "auto", 
+            fontSize: "0.85rem", color: "var(--text)", lineHeight: 1.7,
+            whiteSpace: "pre-wrap", wordBreak: "break-word",
+            backgroundColor: "transparent",
+            fontFamily: "inherit"
+          }}>
+            {text ? text : <span style={{ color: "var(--text-muted)" }}>Nothing to preview</span>}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -540,11 +566,14 @@ function ChatPanel() {
 
 // ─── Tasks Panel ──────────────────────────────────────────────────────────────
 function TasksPanel() {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState([{ id: 1, text: "this", done: false, priority: "High", dueDate: "2024-06-05" }]);
   const [adding, setAdding] = useState(false);
   const [newTask, setNewTask] = useState("");
   const [priority, setPriority] = useState("Medium");
+  const [dueDate, setDueDate] = useState("");
   const [showPriority, setShowPriority] = useState(false);
+  const [sortBy, setSortBy] = useState("Added");
+  const [showSort, setShowSort] = useState(false);
 
   const priorities = [
     { label: "High", color: "#ef4444" },
@@ -555,8 +584,8 @@ function TasksPanel() {
 
   const addTask = () => {
     if (!newTask.trim()) return;
-    setTasks(prev => [...prev, { id: Date.now(), text: newTask, done: false, priority }]);
-    setNewTask(""); setAdding(false);
+    setTasks(prev => [...prev, { id: Date.now(), text: newTask, done: false, priority, dueDate }]);
+    setNewTask(""); setAdding(false); setDueDate("");
   };
   const toggle = (id) => setTasks(tasks.map(t => {
     if (t.id === id) {
@@ -567,8 +596,22 @@ function TasksPanel() {
     }
     return t;
   }));
-  const done = tasks.filter(t => t.done);
-  const todo = tasks.filter(t => !t.done);
+  const sortedTasks = [...tasks].sort((a, b) => {
+    if (sortBy === "Added") return a.id - b.id;
+    if (sortBy === "Priority") {
+      const p = { "High": 3, "Medium": 2, "Low": 1 };
+      return p[b.priority] - p[a.priority];
+    }
+    if (sortBy === "Due Date") {
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+      return new Date(a.dueDate) - new Date(b.dueDate);
+    }
+    return 0;
+  });
+
+  const done = sortedTasks.filter(t => t.done);
+  const todo = sortedTasks.filter(t => !t.done);
 
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -588,14 +631,56 @@ function TasksPanel() {
           )}
         </div>
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>Added Tu</span>
+          <div style={{ position: "relative" }}>
+            <button 
+              onClick={() => setShowSort(!showSort)}
+              style={{ 
+                display: "flex", alignItems: "center", gap: 6,
+                padding: "5px 12px", borderRadius: 8, 
+                border: "1px solid var(--border-strong)", backgroundColor: "transparent",
+                color: "var(--text-muted)", fontSize: "0.75rem", cursor: "pointer" 
+              }}
+            >
+              {sortBy} <span style={{ fontSize: "0.6rem" }}>↑↓</span>
+            </button>
+            {showSort && (
+              <div style={{
+                position: "absolute", top: 34, right: 0, zIndex: 30,
+                borderRadius: 10, padding: "6px", minWidth: 130,
+                backgroundColor: "var(--surface)", border: "1px solid var(--border)",
+                boxShadow: "0 8px 30px rgba(0,0,0,0.5)",
+                display: "flex", flexDirection: "column", gap: 2,
+              }}>
+                {["Added", "Priority", "Due Date"].map(opt => (
+                  <button
+                    key={opt}
+                    onClick={() => { setSortBy(opt); setShowSort(false); }}
+                    style={{
+                      width: "100%", display: "flex", alignItems: "center", gap: 8,
+                      padding: "6px 10px", fontSize: "0.8rem", color: "var(--text)", 
+                      borderRadius: 6, cursor: "pointer",
+                      backgroundColor: "transparent", border: "none",
+                      transition: "background-color 0.15s",
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.backgroundColor = "var(--success)"; e.currentTarget.style.color = "#fff"; }}
+                    onMouseLeave={e => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "var(--text)"; }}
+                  >
+                    <span style={{ width: 14, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {sortBy === opt && <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                    </span>
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button
             onClick={() => setAdding(true)}
             style={{
-              display: "flex", alignItems: "center", gap: 4,
-              padding: "6px 12px", borderRadius: 8,
-              backgroundColor: "var(--accent)", color: "#fff",
-              fontSize: "0.78rem", fontWeight: 600, cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "5px 14px", borderRadius: 8,
+              border: "1px solid var(--accent)", backgroundColor: "var(--accent-bg)", color: "var(--text)",
+              fontSize: "0.8rem", fontWeight: 500, cursor: "pointer",
             }}
           >
             <Icon.Plus /> Add
@@ -661,6 +746,8 @@ function TasksPanel() {
               </div>
               <input
                 type="date"
+                value={dueDate}
+                onChange={e => setDueDate(e.target.value)}
                 style={{
                   flex: 1, fontSize: "0.78rem", padding: "4px 10px", borderRadius: 7,
                   outline: "none", backgroundColor: "var(--surface)", color: "var(--text-muted)",
@@ -717,10 +804,22 @@ function TasksPanel() {
                 style={{
                   width: 20, height: 20, borderRadius: 5,
                   border: "1px solid var(--border-strong)", cursor: "pointer", flexShrink: 0,
-                  display: "flex", alignItems: "center", justifyContent: "center",
+                  display: "flex", alignItems: "center", justifyContent: "center", marginTop: 2,
                 }}
               />
-              <span style={{ fontSize: "0.85rem", color: "var(--text)" }}>{t.text}</span>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+                <span style={{ fontSize: "0.9rem", color: "var(--text)" }}>{t.text}</span>
+                {t.dueDate && (
+                  <div style={{ display: "flex" }}>
+                    <span style={{ 
+                      fontSize: "0.65rem", color: "var(--text-muted)", 
+                      padding: "3px 6px", borderRadius: 4, border: "1px solid var(--border-strong)" 
+                    }}>
+                      Due {new Date(t.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}
@@ -760,20 +859,97 @@ function TasksPanel() {
 }
 
 // ─── Files Panel ──────────────────────────────────────────────────────────────
-function FilesPanel() {
+function FilesPanel({ onUpload, showToast }) {
+  const [files, setFiles] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    showToast("Uploading...", "loading");
+
+    // Simulate upload delay
+    setTimeout(() => {
+      const fileUrl = URL.createObjectURL(file);
+      const newFile = {
+        id: Date.now(),
+        name: file.name,
+        author: "Mayur K S",
+        url: fileUrl,
+      };
+
+      setFiles(prev => [newFile, ...prev]);
+      setIsUploading(false);
+      showToast("File shared", "success");
+      if (onUpload) {
+        onUpload(file.name);
+      }
+    }, 1000);
+  };
+
+  const handleDelete = (id) => {
+    setFiles(prev => prev.filter(f => f.id !== id));
+    showToast("File deleted", "success");
+  };
+
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: 16, gap: 16 }}>
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "24px 20px", gap: 20, overflowY: "auto" }}>
+      {/* Upload Area */}
       <label style={{
         display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-        border: "1.5px dashed var(--border-strong)", borderRadius: 10,
-        padding: "12px 0",
-        fontSize: "0.82rem", color: "var(--text-muted)", cursor: "pointer",
-      }}>
+        border: "1px dashed rgba(148, 163, 184, 0.3)", borderRadius: 100,
+        padding: "14px 0",
+        fontSize: "0.82rem", color: "var(--text-muted)", cursor: isUploading ? "not-allowed" : "pointer",
+        transition: "all 0.15s",
+        opacity: isUploading ? 0.5 : 1,
+      }}
+      onMouseEnter={e => { if (!isUploading) { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.color = "var(--accent)"; } }}
+      onMouseLeave={e => { if (!isUploading) { e.currentTarget.style.borderColor = "var(--border-strong)"; e.currentTarget.style.color = "var(--text-muted)"; } }}
+      >
         <Icon.Upload /> Upload PDF or Image
-        <input type="file" style={{ display: "none" }} accept=".pdf,image/*" />
+        <input type="file" style={{ display: "none" }} accept=".pdf,image/*" onChange={handleUpload} disabled={isUploading} />
       </label>
-      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.82rem", color: "var(--text-subtle)" }}>
-        No files shared yet.
+
+      {/* File List */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {files.map(f => (
+          <div key={f.id} style={{
+            display: "flex", alignItems: "center", gap: 14,
+            padding: "16px 20px", borderRadius: 12,
+            backgroundColor: "var(--surface)", border: "1px solid var(--border)",
+            boxShadow: "var(--card-shadow)"
+          }}>
+            <div style={{
+              width: 40, height: 40, borderRadius: 8, flexShrink: 0,
+              backgroundColor: "var(--accent-bg)", color: "var(--accent)",
+              display: "flex", alignItems: "center", justifyContent: "center"
+            }}>
+              <Icon.Document />
+            </div>
+            
+            <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+              <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.2 }}>
+                {f.name}
+              </div>
+              <div style={{ fontSize: "0.75rem", color: "var(--text-subtle)", marginTop: 4, lineHeight: 1 }}>
+                by {f.author}
+              </div>
+            </div>
+            
+            <div style={{ display: "flex", alignItems: "center", gap: 12, color: "var(--text-muted)" }}>
+              <a href={f.url} target="_blank" rel="noopener noreferrer" style={{ cursor: "pointer", color: "inherit", textDecoration: "none", display: "flex", transition: "color 0.15s" }} onMouseEnter={e => e.currentTarget.style.color="var(--text)"} onMouseLeave={e => e.currentTarget.style.color="var(--text-muted)"}><Icon.Eye /></a>
+              <a href={f.url} download={f.name} style={{ cursor: "pointer", color: "inherit", textDecoration: "none", display: "flex", transition: "color 0.15s" }} onMouseEnter={e => e.currentTarget.style.color="var(--text)"} onMouseLeave={e => e.currentTarget.style.color="var(--text-muted)"}><Icon.Download /></a>
+              <button onClick={() => handleDelete(f.id)} style={{ cursor: "pointer", color: "inherit", background: "none", border: "none", padding: 0, display: "flex", transition: "color 0.15s" }} onMouseEnter={e => e.currentTarget.style.color="#ef4444"} onMouseLeave={e => e.currentTarget.style.color="var(--text-muted)"}><Icon.Trash /></button>
+            </div>
+          </div>
+        ))}
+        {files.length === 0 && (
+          <div style={{ padding: "40px 20px", textAlign: "center", fontSize: "0.85rem", color: "var(--text-subtle)" }}>
+            No files shared yet.
+          </div>
+        )}
       </div>
     </div>
   );
@@ -806,9 +982,11 @@ function ActivityPanel({ items = [] }) {
             <div style={{
               width: 30, height: 30, borderRadius: "50%",
               display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-              backgroundColor: "var(--accent-bg)", border: "1px solid rgba(108,99,255,0.2)", color: "var(--accent)",
+              backgroundColor: item.type === "file" ? "rgba(217, 119, 6, 0.15)" : "var(--accent-bg)", 
+              border: item.type === "file" ? "1px solid rgba(217, 119, 6, 0.25)" : "1px solid rgba(108,99,255,0.2)", 
+              color: item.type === "file" ? "#d97706" : "var(--accent)",
             }}>
-              <Icon.Clock />
+              {item.type === "file" ? <Icon.Paperclip /> : <Icon.Clock />}
             </div>
             <span style={{ flex: 1, fontSize: "0.85rem", color: "var(--text)" }}>{item.label}</span>
             <span style={{ fontSize: "0.72rem", color: "var(--text-subtle)" }}>{formatAgo(item.ts)}</span>
@@ -820,7 +998,7 @@ function ActivityPanel({ items = [] }) {
 }
 
 // ─── Members Panel ────────────────────────────────────────────────────────────
-function MembersPanel() {
+function MembersPanel({ showToast }) {
   return (
     <div style={{ flex: 1, overflowY: "auto" }}>
       {/* Voice & Video */}
@@ -832,12 +1010,15 @@ function MembersPanel() {
           <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)" }}>Voice & Video</p>
           <p style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Study together on camera — join the call</p>
         </div>
-        <button style={{
-          display: "flex", alignItems: "center", gap: 6,
-          padding: "6px 14px", borderRadius: 8,
-          border: "1px solid rgba(108,99,255,0.3)", color: "var(--accent)",
-          fontSize: "0.78rem", cursor: "pointer",
-        }}>
+        <button 
+          onClick={() => showToast("Microphone access was blocked. Allow it in your browser settings to join the call.", "error")}
+          style={{
+            display: "flex", alignItems: "center", gap: 6,
+            padding: "6px 14px", borderRadius: 8,
+            border: "1px solid rgba(108,99,255,0.3)", color: "var(--accent)",
+            fontSize: "0.78rem", cursor: "pointer",
+          }}
+        >
           <Icon.Camera /> Join Call
         </button>
       </div>
@@ -879,6 +1060,33 @@ function MembersPanel() {
 
 // ─── Top Header Bar ────────────────────────────────────────────────────────────
 function Header({ roomCode, onSettings, onInvite, roomName }) {
+  const [copied, setCopied] = useState(false);
+  const [theme, setTheme] = useState(
+    () => document.documentElement.getAttribute("data-theme") || "dark"
+  );
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+      if (currentTheme) setTheme(currentTheme);
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
+
+  const handleToggleTheme = () => {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
+    document.documentElement.setAttribute("data-theme", nextTheme);
+    localStorage.setItem("theme", nextTheme);
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(roomCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <header style={{
       display: "flex", alignItems: "center", gap: 10, padding: "0 16px",
@@ -886,17 +1094,21 @@ function Header({ roomCode, onSettings, onInvite, roomName }) {
       flexShrink: 0,
     }}>
       {/* Room name — left side */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{
-          width: 26, height: 26, borderRadius: 7,
-          display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.85rem",
-          backgroundColor: "var(--accent-bg)", border: "1px solid rgba(108,99,255,0.2)",
+          width: 30, height: 30, borderRadius: 8,
+          display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1rem",
+          backgroundColor: "var(--surface-2)", border: "1px solid var(--border-strong)",
         }}>📚</div>
-        <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)" }}>{roomName}</span>
-        <span style={{
-          fontSize: "0.68rem", padding: "1px 7px", borderRadius: 5,
-          color: "var(--text-muted)", border: "1px solid var(--border)",
-        }}>Host</span>
+        <span style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--text)" }}>{roomName}</span>
+        <div style={{
+          display: "flex", alignItems: "center", gap: 3,
+          fontSize: "0.6rem", fontWeight: 600, padding: "2px 6px", borderRadius: 99,
+          color: "var(--accent-text)", backgroundColor: "var(--surface-2)", border: "1px solid var(--border)",
+          marginLeft: 2,
+        }}>
+          <Icon.Crown /> Host
+        </div>
       </div>
 
       {/* Right side */}
@@ -906,8 +1118,8 @@ function Header({ roomCode, onSettings, onInvite, roomName }) {
           fontFamily: "monospace", color: "var(--text-muted)",
           backgroundColor: "var(--surface)", border: "1px solid var(--border)",
         }}>{roomCode}</span>
-        <button onClick={onInvite} style={{ width: 30, height: 30, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "var(--surface)", color: "var(--text-muted)", border: "1px solid var(--border)", cursor: "pointer" }}>
-          <Icon.Copy />
+        <button onClick={handleCopy} style={{ width: 30, height: 30, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "var(--surface)", color: copied ? "var(--success)" : "var(--text-muted)", border: "1px solid var(--border)", cursor: "pointer", transition: "color 0.2s" }}>
+          {copied ? <Icon.Check /> : <Icon.Copy />}
         </button>
         <button onClick={onInvite} style={{ width: 30, height: 30, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "var(--surface)", color: "var(--text-muted)", border: "1px solid var(--border)", cursor: "pointer" }}>
           <Icon.AddUser />
@@ -924,11 +1136,29 @@ function Header({ roomCode, onSettings, onInvite, roomName }) {
         <button onClick={onSettings} style={{ width: 30, height: 30, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "var(--surface)", color: "var(--text-muted)", border: "1px solid var(--border)", cursor: "pointer" }}>
           <Icon.Settings />
         </button>
-        {/* Theme dot — accent color swatch */}
-        <div style={{ width: 20, height: 20, borderRadius: "50%", backgroundColor: "var(--accent)", border: "2px solid rgba(255,255,255,0.15)", cursor: "pointer" }} title="Room theme" />
-        <div style={{ width: 30, height: 30, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "var(--accent)", color: "#fff", fontSize: "0.75rem", fontWeight: 700 }}>
-          M
-        </div>
+        {/* Theme toggle */}
+        <button
+          title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          onClick={handleToggleTheme}
+          style={{
+            flexShrink: 0, display: "flex", alignItems: "center",
+            width: 40, height: 22, borderRadius: 99,
+            border: "1px solid var(--border)",
+            backgroundColor: theme === "dark" ? "rgb(26,26,26)" : "rgb(241,245,249)",
+            padding: 2, cursor: "pointer",
+          }}
+        >
+          <span style={{
+            width: 16, height: 16, borderRadius: "50%",
+            backgroundColor: "rgb(99,102,241)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 9, boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+            transform: theme === "dark" ? "translateX(0px)" : "translateX(18px)",
+            transition: "transform 0.3s cubic-bezier(0.34,1.56,0.64,1)",
+          }}>
+            {theme === "dark" ? "🌙" : "☀️"}
+          </span>
+        </button>
       </div>
     </header>
   );
@@ -990,7 +1220,7 @@ function FocusModeOverlay({ minutes, seconds, isBreak, running, onPlay, onReset,
 }
 
 // ─── Settings Modal ────────────────────────────────────────────────────────────
-function SettingsModal({ onClose, onSave, initialFocus, initialBreak, initialRoomName }) {
+function SettingsModal({ onClose, onSave, onDeleteRoom, initialFocus, initialBreak, initialRoomName }) {
   const [focus, setFocus] = useState(initialFocus);
   const [brk, setBrk] = useState(initialBreak);
   const [roomName, setRoomName] = useState(initialRoomName);
@@ -1093,6 +1323,26 @@ function SettingsModal({ onClose, onSave, initialFocus, initialBreak, initialRoo
           >
             💾 Save Changes
           </button>
+
+          {/* Members List */}
+          <p style={{ fontSize: "0.68rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-subtle)", marginTop: 12 }}>Members (1)</p>
+          <div style={{ padding: "12px 16px", borderRadius: 10, backgroundColor: "var(--bg)", display: "flex", alignItems: "center", gap: 12, border: "1px solid var(--border)" }}>
+            <div style={{ width: 36, height: 36, borderRadius: "50%", backgroundColor: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.85rem", fontWeight: 700, color: "var(--text-muted)" }}>M</div>
+            <div>
+              <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)", display: "flex", alignItems: "center", gap: 6 }}>Mayur K S <span style={{ fontSize: "0.65rem", padding: "2px 6px", borderRadius: 4, backgroundColor: "var(--accent-bg)", color: "var(--accent)", border: "1px solid rgba(108,99,255,0.2)" }}>👑 Admin</span></p>
+              <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: 2 }}>mayur2310574@ssn.edu.in</p>
+            </div>
+          </div>
+
+          {/* Danger Zone */}
+          <div style={{ padding: 20, borderRadius: 10, border: "1px solid rgba(239, 68, 68, 0.3)", backgroundColor: "rgba(239, 68, 68, 0.05)", marginTop: 12 }}>
+            <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "#ef4444", marginBottom: 4 }}>Danger Zone</p>
+            <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: 16 }}>Deleting the room removes all messages and files permanently.</p>
+            <button onClick={onDeleteRoom} style={{ padding: "8px 16px", borderRadius: 8, backgroundColor: "transparent", border: "1px solid rgba(239, 68, 68, 0.3)", color: "#ef4444", fontSize: "0.8rem", fontWeight: 600, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", transition: "all 0.2s" }}>
+              <Icon.Trash /> Delete Room
+            </button>
+          </div>
+
         </div>
       </div>
     </div>
@@ -1176,10 +1426,26 @@ export default function App() {
   const [breakMins, setBreakMins] = useState(initialRoom.breakMin || 15);
   const [roomName, setRoomName] = useState(initialRoom.name || "try");
 
+  // ── Toast Notifications ──────────────────────────────────────────────────────
+  const [toast, setToast] = useState(null);
+  const showToast = (message, type = "success") => {
+    setToast({ message, type, id: Date.now() });
+    if (type !== "loading") {
+      setTimeout(() => setToast(null), 3000);
+    }
+  };
+
   // ── Activity log ─────────────────────────────────────────────────────────────
   const [activityLog, setActivityLog] = useState([]);
-  const addActivity = (label) => {
-    setActivityLog(prev => [{ id: Date.now(), label, ts: Date.now() }, ...prev]);
+  const [lastSeenActivityCount, setLastSeenActivityCount] = useState(0);
+
+  useEffect(() => {
+    if (tab === "activity") {
+      setLastSeenActivityCount(activityLog.length);
+    }
+  }, [tab, activityLog.length]);
+  const addActivity = (label, type = "info") => {
+    setActivityLog(prev => [{ id: Date.now(), label, ts: Date.now(), type }, ...prev]);
   };
 
   const isBreak = mode === "break";
@@ -1264,6 +1530,18 @@ export default function App() {
     }
   };
 
+  const handleDeleteRoom = () => {
+    const saved = localStorage.getItem("myRooms");
+    if (saved) {
+      const rooms = JSON.parse(saved);
+      const updated = rooms.filter(r => r.id !== roomId);
+      localStorage.setItem("myRooms", JSON.stringify(updated));
+    }
+    sessionStorage.removeItem("currentRoom");
+    sessionStorage.removeItem("activeTimer");
+    navigate("/rooms");
+  };
+
   // Timer label: Focusing... / On break / Paused / Ready
   const timerLabel = running
     ? (isBreak ? "On break" : "Focusing...")
@@ -1272,21 +1550,49 @@ export default function App() {
       : "Ready";
 
   // Activity badge = count since last visit (simple: total)
-  const activityBadge = activityLog.length;
+  const activityBadge = activityLog.length - lastSeenActivityCount;
 
   const tabContent = {
     notes: <NotesPanel />,
     chat: <ChatPanel />,
     tasks: <TasksPanel />,
-    files: <FilesPanel />,
+    files: <FilesPanel 
+      showToast={showToast}
+      onUpload={(name) => addActivity(`Mayur K S shared ${name}`, "file")} 
+    />,
     activity: <ActivityPanel items={activityLog} />,
-    members: <MembersPanel />,
+    members: <MembersPanel showToast={showToast} />,
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", backgroundColor: "var(--bg)", color: "var(--text)", fontFamily: "var(--font-sans)" }}>
-      <GlobalStyles />
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+
+      {toast && (
+        <div style={{
+          position: "fixed", top: 24, right: 24, zIndex: 9999,
+          display: "flex", alignItems: "center", gap: 10,
+          background: "var(--surface)", border: "1px solid var(--border)",
+          padding: "10px 16px", borderRadius: 12, boxShadow: "0 8px 30px rgba(0,0,0,0.4)",
+          color: "var(--text)", fontSize: "0.85rem", fontWeight: 500,
+          animation: "slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
+        }}>
+          {toast.type === "success" && (
+            <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#22c55e", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0 }}>
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+            </div>
+          )}
+          {toast.type === "loading" && (
+            <div style={{ width: 16, height: 16, borderRadius: "50%", border: "2px solid #6366f1", borderTopColor: "transparent", animation: "spin 1s linear infinite", flexShrink: 0 }} />
+          )}
+          {toast.type === "error" && (
+            <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0 }}>
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </div>
+          )}
+          <div style={{ flex: 1, lineHeight: 1.4 }}>{toast.message}</div>
+        </div>
+      )}
 
       <Header roomCode={roomId || "ffaaae"} roomName={roomName} onSettings={() => setShowSettings(true)} onInvite={() => setShowInvite(true)} />
 
@@ -1305,7 +1611,24 @@ export default function App() {
 
         <main style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", backgroundColor: "var(--bg)" }}>
           <TabBar active={tab} setActive={setTab} badge={activityBadge} />
-          {tabContent[tab]}
+          <div style={{ display: tab === "notes" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "hidden" }}>
+            {tabContent.notes}
+          </div>
+          <div style={{ display: tab === "chat" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "hidden" }}>
+            {tabContent.chat}
+          </div>
+          <div style={{ display: tab === "tasks" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "hidden" }}>
+            {tabContent.tasks}
+          </div>
+          <div style={{ display: tab === "files" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "hidden" }}>
+            {tabContent.files}
+          </div>
+          <div style={{ display: tab === "activity" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "hidden" }}>
+            {tabContent.activity}
+          </div>
+          <div style={{ display: tab === "members" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "hidden" }}>
+            {tabContent.members}
+          </div>
         </main>
       </div>
 
@@ -1322,6 +1645,7 @@ export default function App() {
         <SettingsModal
           onClose={() => setShowSettings(false)}
           onSave={handleSettingsSave}
+          onDeleteRoom={handleDeleteRoom}
           initialFocus={focusMins}
           initialBreak={breakMins}
           initialRoomName={roomName}

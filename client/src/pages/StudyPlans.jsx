@@ -1,39 +1,7 @@
 import React from "react";
-import Sidebar from "./components/Sidebar.jsx";
-import TopBar from "./components/TopBar.jsx";
+import { useNavigate } from "react-router-dom";
 
 // ── CUSTOM EMBEDDED ICONS FOR STUDY CARDS ─────────────────────────────────────
-const IcoRocket = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M4.5 16.5c-1.5 1.26-2.5 3.19-2.5 5.5h20c0-2.31-1-4.24-2.5-5.5" />
-    <path d="M12 2C7.5 2 4 5.5 4 10c0 4.5 3.5 8 8 8s8-3.5 8-8c0-4.5-3.5-8-8-8z" />
-    <path d="M12 6v8" />
-  </svg>
-);
-
-const IcoBolt = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-  </svg>
-);
-
-const IcoTarget = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" />
-    <circle cx="12" cy="12" r="6" />
-    <circle cx="12" cy="12" r="2" />
-  </svg>
-);
-
-const IcoTrophy = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-    <path d="M4 22h16" />
-    <path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34" />
-    <path d="M12 2a5 5 0 0 0-5 5v4c0 2.76 2.24 5 5 5s5-2.24 5-5V7a5 5 0 0 0-5-5z" />
-  </svg>
-);
 
 const IcoCalendar = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -71,140 +39,154 @@ const PLANS = [
     isPro: false,
     tag: "FREE",
     tagBg: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
-    meta: "Free · Beginner-friendly",
-    desc: "A daily curriculum built to take you from zero to campus-placement ready in a month. Breadth-focused on core arrays, hashes, and sorting tracks.",
+    meta: "Free • Beginner-friendly",
+    desc: "A daily curriculum built to take you from zero to campus-placement ready in a month....",
     duration: "30 days",
     problemsCount: "59 problems",
     footerText: "Not started",
     borderColor: "hover:border-indigo-500/50 border-t-4 border-t-indigo-500",
-    Icon: IcoRocket,
-    iconContainerBg: "bg-rose-500/10 border border-rose-500/20",
+    gradientColor: "rgba(99, 102, 241, 0.06)",
+    Icon: () => <span className="text-2xl group-hover:scale-110 transition-transform duration-300">🚀</span>,
+    iconContainerBg: "bg-white/5 border border-white/10",
   },
   {
     title: "FAANG Prep Intensive",
     isPro: true,
     tag: "PRO",
-    tagBg: "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30",
-    meta: "Pro · Medium-Hard · 45 days",
-    desc: "45 days of medium + hard problems laser-focused on the patterns FAANG loops actually look for across graphs, trees, and optimizations.",
+    tagBg: "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30",
+    meta: "Pro • Medium-Hard • 45 days",
+    desc: "45 days of medium + hard problems laser-focused on the patterns FAANG loops...",
     duration: "45 days",
     problemsCount: "76 problems",
     footerText: "Pro required",
     borderColor: "hover:border-purple-500/50 border-t-4 border-t-purple-500",
-    Icon: IcoBolt,
-    iconContainerBg: "bg-amber-500/10 border border-amber-500/20",
+    gradientColor: "rgba(168, 85, 247, 0.06)",
+    Icon: () => <span className="text-2xl group-hover:scale-110 transition-transform duration-300">⚡</span>,
+    iconContainerBg: "bg-white/5 border border-white/10",
   },
   {
     title: "Arrays & Strings Mastery",
     isPro: true,
     tag: "PRO",
-    tagBg: "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30",
-    meta: "Pro · 14 days · Array + String only",
-    desc: "14-day deep dive into the single topic that shows up in ~60% of interviews. By day 14, window sliding and two-pointer solutions become second nature.",
+    tagBg: "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30",
+    meta: "Pro • 14 days • Array + String only",
+    desc: "14-day deep dive into the single topic that shows up in ~60% of interviews. By day 14...",
     duration: "14 days",
     problemsCount: "37 problems",
     footerText: "Pro required",
     borderColor: "hover:border-amber-500/50 border-t-4 border-t-amber-500",
-    Icon: IcoTarget,
-    iconContainerBg: "bg-pink-500/10 border border-pink-500/20",
+    gradientColor: "rgba(245, 158, 11, 0.06)",
+    Icon: () => <span className="text-2xl group-hover:scale-110 transition-transform duration-300">🎯</span>,
+    iconContainerBg: "bg-white/5 border border-white/10",
   },
   {
     title: "Weekly Challenge",
     isPro: true,
     tag: "PRO",
-    tagBg: "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30",
-    meta: "Pro · 7 days · 1 problem/day",
-    desc: "One carefully chosen problem per day for 7 days — a mix of difficulties and topics to maintain algorithmic acuity without structural prep load.",
+    tagBg: "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30",
+    meta: "Pro • 7 days • 1 problem/day",
+    desc: "One carefully chosen problem per day for 7 days — a mix of difficulties and topics....",
     duration: "7 days",
     problemsCount: "7 problems",
     footerText: "Pro required",
     borderColor: "hover:border-emerald-500/50 border-t-4 border-t-emerald-500",
-    Icon: IcoTrophy,
-    iconContainerBg: "bg-emerald-500/10 border border-emerald-500/20",
+    gradientColor: "rgba(16, 185, 129, 0.06)",
+    Icon: () => <span className="text-2xl group-hover:scale-110 transition-transform duration-300">🏆</span>,
+    iconContainerBg: "bg-white/5 border border-white/10",
   },
 ];
 
 export default function StudyPlans() {
+  const navigate = useNavigate();
+
   return (
-    <div className="fixed inset-0 flex bg-[#060810] text-[#e2e8f0] font-sans overflow-hidden">
-      
-      {/* LEFT SIDEBAR INJECTION */}
-      <Sidebar active="practice" />
-
-      {/* MAIN VIEWPORT INTERFACE CONTAINER */}
-      <div className="flex-1 flex flex-col min-w-0 h-full">
-        
-        {/* TOPBAR NAVIGATION INJECTION */}
-        <TopBar title="Study Plans" subtitle="Curated multi-day tracks" />
-
+    <>
         {/* MAIN BODY SCROLL ZONE - Fixed: Removed items-center */}
-        <div className="flex-1 overflow-y-auto min-h-0 bg-[#060810] flex justify-center w-full">
-          <div className="w-full max-w-[900px] mx-auto px-6 py-10 md:py-12 flex flex-col gap-10">
+        <div className="flex-1 overflow-y-auto min-h-0 flex justify-center w-full" style={{ backgroundColor: "var(--bg)" }}>
+          <div className="w-full max-w-[980px] mx-auto px-8 py-10 md:py-12 flex flex-col gap-10">
             
             {/* HERO TYPOGRAPHY HEADER */}
-            <div className="max-w-3xl">
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[#f1f5f9] mb-3">
+            <div className="max-w-4xl">
+              <h1 className="text-[22px] font-bold tracking-tight mb-3" style={{ color: "var(--text)" }}>
                 Structured Study Plans — 30-Day Placement Sprint, FAANG Prep, and more
               </h1>
-              <p className="text-[13px] md:text-sm text-gray-500 leading-relaxed font-normal">
+              <p className="text-[13px] md:text-sm leading-relaxed font-normal" style={{ color: "var(--text-muted)" }}>
                 Hand-picked daily curricula. Each plan is a sequenced tour of the problems that actually matter — no more wondering what to solve next.
               </p>
             </div>
 
             {/* CURATED REPOSITORY MATRIX GRID */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {PLANS.map((plan, idx) => {
                 const PlanIcon = plan.Icon;
                 return (
                   <div
                     key={idx}
-                    className={`bg-[#0d1117] border border-[#1e2433]/70 rounded-xl px-5 py-3 flex flex-col gap-2 justify-between transition-all duration-200 cursor-pointer ${plan.borderColor}`}
+                    className={`group rounded-2xl p-6 flex flex-col gap-2 justify-between transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-[#000000]/30 cursor-pointer border border-[var(--border)] ${plan.borderColor}`}
+                    style={{ 
+                      background: `linear-gradient(180deg, ${plan.gradientColor} 0%, transparent 35%), var(--surface)`
+                    }}
                   >
                     <div>
                       {/* CARD HEAD ROW */}
-                      <div className="flex gap-3 items-start mb-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${plan.iconContainerBg}`}>
+                      <div className="flex gap-4 items-start mb-4">
+                        <div className={`w-[52px] h-[52px] rounded-xl flex items-center justify-center flex-shrink-0 ${plan.iconContainerBg}`}>
                           <PlanIcon />
                         </div>
-                        <div className="flex flex-col gap-1">
-                          <h2 className="text-[15px] font-bold text-[#f1f5f9] tracking-tight">
-                            {plan.title}
-                          </h2>
-                          <span className={`w-fit text-[9px] font-black px-1.5 py-0.5 rounded-md tracking-wider ${plan.tagBg}`}>
-                            {plan.tag}
-                          </span>
-                          <div className="text-[11px] text-gray-500 mb-1 font-medium">
+                        <div className="flex flex-col gap-2 mt-0.5">
+                          {plan.tag === "PRO" ? (
+                            <div className="flex items-center gap-2">
+                              <h2 className="text-[17px] font-bold tracking-tight text-white">
+                                {plan.title}
+                              </h2>
+                              <span className={`w-fit text-[10px] font-bold px-2 py-0.5 rounded-md tracking-wider ${plan.tagBg}`}>
+                                {plan.tag}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col gap-1.5">
+                              <h2 className="text-[17px] font-bold tracking-tight text-white">
+                                {plan.title}
+                              </h2>
+                              {plan.tag && (
+                                <span className={`w-fit text-[10px] font-bold px-2 py-0.5 rounded-md tracking-wider ${plan.tagBg}`}>
+                                  {plan.tag}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          <div className="text-[13px] text-gray-500 font-medium">
                             {plan.meta}
                           </div>
                         </div>
                       </div>
 
                       {/* CARD CONTENT LAYER */}
-                      <p className="text-[12px] text-gray-400/80 leading-relaxed font-normal mb-5 line-clamp-3 mt-2">
+                      <p className="text-[14px] leading-relaxed text-gray-400 mb-6 line-clamp-2 mt-4">
                         {plan.desc}
                       </p>
                     </div>
 
                     {/* CARD METADATA METRICS FOOTER */}
                     <div>
-                      <div className="flex items-center gap-4 text-[11px] text-gray-500 border-b border-[#1e2433]/50 pb-4 mb-3.5">
-                        <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-5 text-[13px] pb-4 mb-4" style={{ color: "var(--text-muted)", borderBottom: "1px solid var(--border)" }}>
+                        <div className="flex items-center gap-2 text-gray-400">
                           <IcoCalendar />
                           <span>{plan.duration}</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2 text-gray-400">
                           <IcoBookOpen />
                           <span>{plan.problemsCount}</span>
                         </div>
                       </div>
 
                       {/* CARD INTERACTIVE NAVIGATION CHEVRONS */}
-                      <div className="flex items-center justify-between text-gray-400 font-medium text-[12px] group">
-                        <div className="flex items-center gap-1.5 text-gray-500 group-hover:text-gray-300 transition-colors">
+                      <div className="flex items-center justify-between text-gray-500 font-bold text-[13px] group-hover:text-gray-300 transition-colors">
+                        <div className="flex items-center gap-1.5">
                           {plan.isPro && <IcoLock />}
-                          <span className="text-[11px] tracking-wide">{plan.footerText}</span>
+                          <span>{plan.footerText}</span>
                         </div>
-                        <span className="text-gray-600 group-hover:text-gray-300 transition-colors">
+                        <span className="text-gray-600 group-hover:translate-x-1 group-hover:text-white transition-all duration-300">
                           <IcoArrowRight />
                         </span>
                       </div>
@@ -216,22 +198,28 @@ export default function StudyPlans() {
             </div>
 
             {/* UPGRADE CALL TO ACTION FOOTER BANNER */}
-            <div className="bg-gradient-to-r from-[#0d1117] via-[#0d1324] to-[#111129] border border-[#1e2433] rounded-xl p-5 md:px-6 md:py-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
-              <div className="flex gap-4 items-start">
-                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 flex-shrink-0 mt-0.5">
+            <div 
+              className="mt-4 rounded-2xl p-6 md:px-8 md:py-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 border border-indigo-500/20 shadow-2xl"
+              style={{ background: "linear-gradient(90deg, rgba(49, 46, 129, 0.15) 0%, transparent 100%), var(--surface)" }}
+            >
+              <div className="flex gap-4 items-center">
+                <div className="text-indigo-400">
                   <IcoSparkles />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-[#f1f5f9] mb-0.5 tracking-tight">
+                  <h3 className="text-[16px] font-bold tracking-tight text-white mb-1">
                     Unlock every plan with Pro
                   </h3>
-                  <p className="text-[11px] text-gray-500 leading-normal">
-                    FAANG Prep, Arrays Mastery, Weekly Challenge — plus mock interview modules and advanced performance analytics scorecards.
+                  <p className="text-[13px] text-gray-400">
+                    FAANG Prep, Arrays Mastery, Weekly Challenge — plus mock interview and advanced analytics.
                   </p>
                 </div>
               </div>
               
-              <button className="w-full sm:w-auto px-5 py-2 rounded-lg bg-[#6366f1] text-white text-[12px] font-bold hover:bg-[#4f46e5] transition-all duration-150 flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-600/10 cursor-pointer">
+              <button 
+                onClick={() => navigate('/pricing')}
+                className="flex-shrink-0 w-full sm:w-auto px-5 py-2 rounded-[10px] bg-[#6366f1] text-white text-[13px] font-bold hover:bg-[#4f46e5] transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
                 Upgrade
                 <IcoArrowRight />
               </button>
@@ -239,8 +227,6 @@ export default function StudyPlans() {
 
           </div>
         </div>
-
-      </div>
-    </div>
+    </>
   );
 }
