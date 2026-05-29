@@ -5,6 +5,8 @@ export interface SubmissionData {
   problemId: number;
   code: string;
   language: string;
+  submittedFrom?: string;   // 👈 ADDED: 'solo' or 'pair'
+  pairSessionId?: string;   // 👈 ADDED: UUID of the pair session
 }
 
 class SubmissionModel {
@@ -16,52 +18,68 @@ class SubmissionModel {
         code: data.code,
         language: data.language,
         status: 'pending',
+        submittedFrom: data.submittedFrom || 'solo',  // 👈 ADDED
+        pairSessionId: data.pairSessionId || null,   // 👈 ADDED
       },
     });
   }
 
   async updateStatus(
-    id: string,
-    status: string,
+  id: string,
+  status: string,
+  data: {
+    runtimeMs?: number;
+    memoryKb?: number;
+    errorMessage?: string;  // Changed from error_message
+    testResults?: any;       // Changed from test_results
+  } = {}
+) {
+  return await prisma.submission.update({
+    where: { id },
     data: {
-      runtimeMs?: number;
-      memoryKb?: number;
-      error_message?: string;
-      test_results?: any;
-    } = {}
-  ) {
-    return await prisma.submission.update({
-      where: { id },
-      data: {
-        status,
-        runtimeMs: data.runtimeMs,
-        memoryKb: data.memoryKb,
-        // Note: You may need to add these fields to your schema if not present
-        // error_message: data.error_message,
-        // test_results: data.test_results,
-      },
-    });
-  }
+      status,
+      runtimeMs: data.runtimeMs,
+      memoryKb: data.memoryKb,
+      errorMessage: data.errorMessage,  // Changed
+      testResults: data.testResults,     // Changed
+      updatedAt: new Date(),
+    },
+  });
+}
 
   async findById(id: string) {
     return await prisma.submission.findUnique({
-        where: { id },  // id is String (UUID) from your schema
-        include: {
+      where: { id },
+      include: {
         problem: {
-            select: { title: true, difficulty: true }
+          select: { id: true, title: true, difficulty: true, testCases: true }
         },
         user: {
-            select: { name: true, email: true }
+          select: { id: true, name: true, email: true, avatarUrl: true }
+        },
+        pairSession: {  // 👈 ADDED: include pair session info
+          select: {
+            id: true,
+            roomCode: true,
+            hostId: true,
+            guestId: true,
+            status: true
+          }
         }
-        }
+      }
     });
-}
+  }
 
   async getPendingSubmissions(limit: number = 10) {
     return await prisma.submission.findMany({
       where: { status: 'pending' },
       orderBy: { createdAt: 'asc' },
       take: limit,
+      include: {
+        pairSession: {  // 👈 ADDED: include pair session for worker to know room code
+          select: { roomCode: true }
+        }
+      }
     });
   }
 
@@ -77,8 +95,44 @@ class SubmissionModel {
       take: limit,
       include: {
         problem: {
-          select: { title: true, difficulty: true }
+          select: { id: true, title: true, difficulty: true }
+        },
+        pairSession: {  // 👈 ADDED: include pair session info in history
+          select: {
+            id: true,
+            roomCode: true,
+            host: { select: { id: true, name: true } },
+            guest: { select: { id: true, name: true } }
+          }
         }
+      }
+    });
+  }
+
+  // 👈 ADDED: Get latest submission for a pair session (for reconnecting users)
+  async getLatestPairSubmission(pairSessionId: string) {
+    return await prisma.submission.findFirst({
+      where: {
+        pairSessionId: pairSessionId,
+        status: { not: 'pending' }
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        problem: { select: { id: true, title: true, difficulty: true } },
+        user: { select: { id: true, name: true, avatarUrl: true } }
+      }
+    });
+  }
+
+  // 👈 ADDED: Get submissions for a specific pair session
+  async getPairSessionSubmissions(pairSessionId: string, limit: number = 50) {
+    return await prisma.submission.findMany({
+      where: { pairSessionId: pairSessionId },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      include: {
+        problem: { select: { title: true } },
+        user: { select: { id: true, name: true, avatarUrl: true } }
       }
     });
   }

@@ -1,19 +1,18 @@
 import { Router } from 'express';
 import { 
   submitProblem, 
-  getSubmissionResult,
-  getUserSubmissions 
+  getSubmissionResult, 
+  getUserSubmissions,
+  getLatestPairSubmission,
+  getPairSessionSubmissions
 } from './submissionController.js';
 
 const router = Router();
 
-// Submit code for a problem
 router.post('/', submitProblem);
-
-// Poll submission result
 router.get('/:id', getSubmissionResult);
-
-// Get user's submission history
 router.get('/user/history', getUserSubmissions);
+router.get('/pair/latest', getLatestPairSubmission);
+router.get('/pair/:pairSessionId', getPairSessionSubmissions);
 
 export default router;
