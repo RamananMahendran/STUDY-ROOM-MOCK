@@ -9,7 +9,9 @@ import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import Pricing from './pages/Pricing.jsx';
 import Promise from './pages/Promise.jsx';
 import Changelog from './pages/Changelog.jsx';
-
+import StudyPlans from './pages/StudyPlans.jsx';
+import PairCodeSetup from './pages/PairCodeSetup.jsx';
+import Community from './pages/community.jsx';
 function App() {
   return (
     <Router>
@@ -25,6 +27,10 @@ function App() {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/promise" element={<Promise />} />
         <Route path="/changelog" element={<Changelog />} />
+        <Route path="/studyplans" element={<StudyPlans />} />
+        <Route path="*" element={<Home />} /> {/* Fallback route for unmatched paths */}  
+        <Route path="/paircode" element={<PairCodeSetup />} />
+        <Route path="/community" element={<Community />} />
       </Routes>
     </Router>
   );
