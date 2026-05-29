@@ -16,6 +16,7 @@ import Refer from './pages/Refer.jsx';
 import FloatingMessage from './pages/components/FloatingMessage.jsx';
 import StudyPlans from './pages/practice/StudyPlans.jsx';
 import PairCodeSetup from './pages/practice/PairCodeSetup.jsx';
+import PlacementSprintDetails from './pages/practice/plans/placement-sprint-30.jsx';
 
 function App() {
   return (
@@ -36,9 +37,10 @@ function App() {
         <Route path="/changelog" element={<Changelog />} />
         <Route path="/room/:roomId" element={<Room />} />
         <Route path="/practice/leaderboard" element={<LeaderboardPage />} />
-        <Route path="/studyplans" element={<StudyPlans />} />
+        <Route path="/practice/studyplans" element={<StudyPlans />} />
         <Route path="*" element={<Home />} /> {/* Fallback route for unmatched paths */}  
-        <Route path="/paircode" element={<PairCodeSetup />} />
+        <Route path="/practice/paircode" element={<PairCodeSetup />} />
+        <Route path="/practice/plans/placement-sprint-30" element={<PlacementSprintDetails />} />
       </Routes>
       <FloatingMessage />
     </Router>
