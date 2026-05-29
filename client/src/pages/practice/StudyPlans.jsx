@@ -1,6 +1,6 @@
 import React from "react";
-import Sidebar from "./components/Sidebar.jsx";
-import TopBar from "./components/TopBar.jsx";
+import Sidebar from "../components/Sidebar.jsx";
+import TopBar from "../components/TopBar.jsx";
 
 // ── CUSTOM EMBEDDED ICONS FOR STUDY CARDS ─────────────────────────────────────
 const IcoRocket = () => (

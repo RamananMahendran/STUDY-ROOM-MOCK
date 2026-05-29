@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import Sidebar from "./components/Sidebar.jsx";
-import TopBar from "./components/TopBar.jsx";
+import Sidebar from "../components/Sidebar.jsx";
+import TopBar from "../components/TopBar.jsx";
 // ── CUSTOM REUSABLE SVG ICONS ────────────────────────────────────────────────
 const IcoPlus = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

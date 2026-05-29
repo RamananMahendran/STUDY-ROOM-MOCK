@@ -10,12 +10,12 @@ import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import Pricing from './pages/Pricing.jsx';
 import Promise from './pages/Promise.jsx';
 import Changelog from './pages/Changelog.jsx';
-import LeaderboardPage from './pages/leaderboard.jsx';
+import LeaderboardPage from './pages/practice/leaderboard.jsx';
 import Community from './pages/Community.jsx';
 import Refer from './pages/Refer.jsx';
 import FloatingMessage from './pages/components/FloatingMessage.jsx';
-import StudyPlans from './pages/StudyPlans.jsx';
-import PairCodeSetup from './pages/PairCodeSetup.jsx';
+import StudyPlans from './pages/practice/StudyPlans.jsx';
+import PairCodeSetup from './pages/practice/PairCodeSetup.jsx';
 
 function App() {
   return (

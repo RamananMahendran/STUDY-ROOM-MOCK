@@ -34,12 +34,30 @@ const NAV_ITEMS = [
   { id: "refer",     label: "Refer & earn", Icon: IcoGift,       path: "/refer" },
 ];
 
+const QUICK_PRESETS = [
+  { id: "exam",   label: "Exam Sprint",   sub: "50m · 10m break", emoji: "🎯", focus: 50, break: 10 },
+  { id: "group",  label: "Group Project", sub: "25m · 5m break",  emoji: "🤝", focus: 25, break: 5 },
+  { id: "deep",   label: "Deep Work",     sub: "90m · 15m break", emoji: "🧘", focus: 90, break: 15 },
+  { id: "rev",    label: "Quick Revision",sub: "15m · 3m break",  emoji: "⚡", focus: 15, break: 3 },
+];
+
+const ICONS = ["📚", "🧮", "💻", "🎨", "🔬", "📝", "🗣️", "🎯"];
+const COLORS = [
+  "rgb(99,102,241)",  // Indigo
+  "rgb(139,92,246)", // Purple
+  "rgb(14,165,233)",  // Sky Blue
+  "rgb(16,185,129)",  // Emerald Green
+  "rgb(245,158,11)",  // Amber Gold
+  "rgb(239,68,68)"    // Coral Red
+];
+
+
 // ── Quick-start card ──────────────────────────────────────────────────────────
-function QuickCard({ icon: IconComp, iconBg, iconColor, label, sub }) {
+function QuickCard({ icon: IconComp, iconBg, iconColor, label, sub, link }) {
   const [hov, setHov] = useState(false);
   return (
     <button
-      className="lift-card flex items-center text-left cursor-pointer"
+      className="w-full lift-card flex items-center text-left cursor-pointer"
       style={{
         gap: 12, padding: 16, borderRadius: 12,
         backgroundColor: "var(--surface)",
@@ -76,6 +94,7 @@ export default function Rooms() {
   const [modeFilter, setModeFilter] = useState("All");
   const [search, setSearch]       = useState("");
   const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = useState(false);
 
   const [myRooms, setMyRooms] = useState(() => {
     const saved = localStorage.getItem("myRooms");
@@ -114,6 +133,8 @@ export default function Rooms() {
     setActiveNav(id);
     if (path) navigate(path);
   }
+
+  
 
   return (
     <div
@@ -156,12 +177,20 @@ export default function Rooms() {
                   className="quick-start-grid"
                   style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}
                 >
-                  <QuickCard icon={IcoTimer}      iconBg="rgba(99,102,241,0.12)"  iconColor="rgb(99,102,241)"  label="Solo focus"      sub="25-min Pomodoro"      />
-                  <QuickCard icon={IcoCode}        iconBg="rgba(14,165,233,0.12)"  iconColor="rgb(14,165,233)"  label="Pair up"         sub="Live coding session"  />
+                  <div onClick={() => window.dispatchEvent(new Event("open-create-room-modal"))}>
+                    <QuickCard icon={IcoTimer}      iconBg="rgba(99,102,241,0.12)"  iconColor="rgb(99,102,241)"  label="Solo focus"      sub="25-min Pomodoro"      />
+                  </div>  
+                  <div href="/paircode" onClick={() => navigate("/paircode")}>
+                    <QuickCard icon={IcoCode}        iconBg="rgba(14,165,233,0.12)"  iconColor="rgb(14,165,233)"  label="Pair up"         sub="Live coding session"  />
+                  </div>
                   <QuickCard icon={IcoHeadphones}  iconBg="rgba(139,92,246,0.12)" iconColor="rgb(139,92,246)" label="Mock interview"   sub="FAANG playbook"       />
-                  <QuickCard icon={IcoSearch}      iconBg="rgba(16,185,129,0.12)" iconColor="rgb(16,185,129)" label="Browse rooms"     sub="Find your floor"      />
+                  <div href="#your-rooms" onClick={() => document.getElementById("your-rooms").scrollIntoView({ behavior: "smooth" })}>
+                    <QuickCard icon={IcoSearch}      iconBg="rgba(16,185,129,0.12)" iconColor="rgb(16,185,129)" label="Browse rooms"     sub="Find your floor"      />
+                  </div>
                 </div>
               </section>
+
+              
 
               {/* ── Join with a code ── */}
               <section>
