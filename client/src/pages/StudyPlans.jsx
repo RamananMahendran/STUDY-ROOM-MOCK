@@ -1,6 +1,7 @@
 import React from "react";
 import Sidebar from "./components/Sidebar.jsx";
 import TopBar from "./components/TopBar.jsx";
+
 // ── CUSTOM EMBEDDED ICONS FOR STUDY CARDS ─────────────────────────────────────
 const IcoRocket = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -64,7 +65,6 @@ const IcoSparkles = () => (
   </svg>
 );
 
-// ── STUDY PLANS DATA STRUCTURE ────────────────────────────────────────────────
 const PLANS = [
   {
     title: "30-Day Placement Sprint",
@@ -124,7 +124,6 @@ const PLANS = [
   },
 ];
 
-// ── COMPONENT SHELL ───────────────────────────────────────────────────────────
 export default function StudyPlans() {
   return (
     <div className="fixed inset-0 flex bg-[#060810] text-[#e2e8f0] font-sans overflow-hidden">
@@ -138,8 +137,8 @@ export default function StudyPlans() {
         {/* TOPBAR NAVIGATION INJECTION */}
         <TopBar title="Study Plans" subtitle="Curated multi-day tracks" />
 
-        {/* MAIN BODY SCROLL ZONE */}
-        <div className="flex-1 overflow-y-auto min-h-0 bg-[#060810] flex items-center justify-center w-full">
+        {/* MAIN BODY SCROLL ZONE - Fixed: Removed items-center */}
+        <div className="flex-1 overflow-y-auto min-h-0 bg-[#060810] flex justify-center w-full">
           <div className="w-full max-w-[900px] mx-auto px-6 py-10 md:py-12 flex flex-col gap-10">
             
             {/* HERO TYPOGRAPHY HEADER */}
@@ -159,27 +158,29 @@ export default function StudyPlans() {
                 return (
                   <div
                     key={idx}
-                    className={`bg-[#0d1117] border border-[#1e2433]/70 rounded-xl p-5 flex flex-col justify-between transition-all duration-200 cursor-pointer ${plan.borderColor}`}
+                    className={`bg-[#0d1117] border border-[#1e2433]/70 rounded-xl px-5 py-3 flex flex-col gap-2 justify-between transition-all duration-200 cursor-pointer ${plan.borderColor}`}
                   >
                     <div>
                       {/* CARD HEAD ROW */}
-                      <div className="flex justify-between items-start mb-4">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${plan.iconContainerBg}`}>
+                      <div className="flex gap-3 items-start mb-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${plan.iconContainerBg}`}>
                           <PlanIcon />
                         </div>
-                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-md tracking-wider ${plan.tagBg}`}>
-                          {plan.tag}
-                        </span>
+                        <div className="flex flex-col gap-1">
+                          <h2 className="text-[15px] font-bold text-[#f1f5f9] tracking-tight">
+                            {plan.title}
+                          </h2>
+                          <span className={`w-fit text-[9px] font-black px-1.5 py-0.5 rounded-md tracking-wider ${plan.tagBg}`}>
+                            {plan.tag}
+                          </span>
+                          <div className="text-[11px] text-gray-500 mb-1 font-medium">
+                            {plan.meta}
+                          </div>
+                        </div>
                       </div>
 
                       {/* CARD CONTENT LAYER */}
-                      <h2 className="text-[15px] font-bold text-[#f1f5f9] mb-1 tracking-tight">
-                        {plan.title}
-                      </h2>
-                      <div className="text-[11px] text-gray-500 mb-3 font-medium">
-                        {plan.meta}
-                      </div>
-                      <p className="text-[12px] text-gray-400/80 leading-relaxed font-normal mb-5 line-clamp-3">
+                      <p className="text-[12px] text-gray-400/80 leading-relaxed font-normal mb-5 line-clamp-3 mt-2">
                         {plan.desc}
                       </p>
                     </div>

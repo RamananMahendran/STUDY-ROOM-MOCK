@@ -15,7 +15,7 @@ import Community from './pages/Community.jsx';
 import Refer from './pages/Refer.jsx';
 import StudyPlans from './pages/StudyPlans.jsx';
 import PairCodeSetup from './pages/PairCodeSetup.jsx';
-import Community from './pages/community.jsx';
+
 function App() {
   return (
     <Router>
@@ -38,7 +38,6 @@ function App() {
         <Route path="/studyplans" element={<StudyPlans />} />
         <Route path="*" element={<Home />} /> {/* Fallback route for unmatched paths */}  
         <Route path="/paircode" element={<PairCodeSetup />} />
-        <Route path="/community" element={<Community />} />
       </Routes>
     </Router>
   );
