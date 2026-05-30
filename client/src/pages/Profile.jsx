@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
@@ -135,7 +135,7 @@ function ShareModal({ onClose }) {
               <span style={{ fontSize: 18, fontWeight: 600 }}>day streak</span>
             </div>
             
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", marginBottom: 32 }}>Mayur K S on Study Room</div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", marginBottom: 32 }}>{username} on Study Room</div>
             
             {/* Stat Boxes */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, width: "100%", marginBottom: 32 }}>
@@ -202,6 +202,38 @@ export default function Profile() {
   const [hoursRange, setHoursRange] = useState("14d");
   const [showShareModal, setShowShareModal] = useState(false);
   const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  
+  useEffect(() => {
+    // 1. Fetch the stringified user object from localStorage
+    const storedUser = localStorage.getItem("user");
+ 
+    const token = localStorage.getItem("token");
+    console.log("Fetched from localStorage:", { storedUser, token });
+    // 2. Security Check: If no token exists, boot them back to login
+    if (!token || !storedUser) {
+      console.warn("Unauthorized access attempt. Redirecting...");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      // 3. Parse the JSON string back into a JavaScript object
+      const userObj = JSON.parse(storedUser);
+      // const emailObj = JSON.parse(storedEmail);
+
+      // 4. Update state with user info
+      if (userObj && userObj.username && userObj.email) {
+        setUsername(userObj.username);
+        setEmail(userObj.email);
+      }
+
+      console.log("User data loaded successfully:", { username: userObj.username, email: userObj.email });
+    } catch (error) {
+      console.error("Error parsing user data from localStorage:", error);
+    }
+  }, [navigate]);
 
   // Days for heatmap
   const months = ["Dec", "Jan", "Feb", "Mar", "Apr", "May"];
@@ -238,12 +270,12 @@ export default function Profile() {
                 </div>
                 <div style={{ flex: "1 1 0%", minWidth: 0, paddingBottom: 4 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
-                    <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "var(--text)" }}>Mayur K S</h1>
+                    <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "var(--text)" }}>{username}</h1>
                     <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 99, backgroundColor: "rgba(234, 179, 8, 0.15)", border: "1px solid rgba(234, 179, 8, 0.3)", color: "#eab308", fontSize: 11, fontWeight: 700 }}>
                       <IcoFlame s={12} color="#eab308" /> 1-day streak
                     </div>
                   </div>
-                  <p style={{ margin: "0px", fontSize: 12, color: "var(--text-muted)" }}>mayur2310574@ssn.edu.in</p>
+                  <p style={{ margin: "0px", fontSize: 12, color: "var(--text-muted)" }}>{email}</p>
                 </div>
                 <button onClick={() => setShowShareModal(true)} title="Share your stats" style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 9, fontSize: 12, fontWeight: 600, cursor: "pointer", backgroundColor: "var(--surface)", color: "var(--text-muted)", border: "1px solid var(--border)", transition: "0.15s", flexShrink: 0 }}>
                   <IcoShare s={13} /> Share
@@ -513,11 +545,11 @@ export default function Profile() {
                   <SettingsSection title="ACCOUNT">
                     <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                       <div className="ui-avatar ui-avatar-lg" style={{ width: 56, height: 56, borderRadius: 16, border: "2px solid var(--bg)" }}>
-                        <img alt="Mayur K S" src="https://lh3.googleusercontent.com/a/ACg8ocJOHQ3CBE3KjE6jm37Rh6DZ1INAG8-i1M7xZZNfvCYrlZHgTg=s96-c" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }} />
+                        <img alt={username} src="https://lh3.googleusercontent.com/a/ACg8ocJOHQ3CBE3KjE6jm37Rh6DZ1INAG8-i1M7xZZNfvCYrlZHgTg=s96-c" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }} />
                       </div>
                       <div>
-                        <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>Mayur K S</div>
-                        <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 6 }}>mayur2310574@ssn.edu.in</div>
+                        <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>{username}</div>
+                        <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 6 }}>{email}</div>
                         <div style={{ fontSize: 11, color: "var(--text-subtle)" }}>Cannot change email — see sign-in methods below</div>
                       </div>
                     </div>
@@ -546,7 +578,7 @@ export default function Profile() {
                           <div style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "var(--surface-2)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", color: "#4285F4" }}>G</div>
                           <div>
                             <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)", marginBottom: 2 }}>Google</div>
-                            <div style={{ fontSize: 12, color: "var(--text-muted)" }}>mayur2310574@ssn.edu.in</div>
+                            <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{email}</div>
                           </div>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 99, fontSize: 11, fontWeight: 600, backgroundColor: "rgba(16, 185, 129, 0.1)", color: "rgb(16, 185, 129)", border: "1px solid rgba(16, 185, 129, 0.2)" }}>

@@ -301,7 +301,7 @@ export default function Dashboard() {
     // 2. Security Check: If no token exists, boot them back to login
     if (!token || !storedUser) {
       console.warn("Unauthorized access attempt. Redirecting...");
-      navigate("/login");
+      //navigate("/login");
       return;
     }
 
