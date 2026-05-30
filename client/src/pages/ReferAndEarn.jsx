@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Sidebar from "./components/Sidebar.jsx";
+import TopBar from "./components/TopBar.jsx";
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 const IcoGift = () => (
@@ -103,31 +104,10 @@ export default function ReferAndEarn() {
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
 
-        {/* Top bar */}
-        <div className="flex items-center justify-between px-6 py-3.5 border-b border-[#1e2433]/70 flex-shrink-0">
-          <div>
-            <h1 className="text-[15px] font-bold text-[#f1f5f9] tracking-tight">Referrals</h1>
-            <p className="text-[11px] text-gray-500 mt-0.5">Earn Pro by inviting friends</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#1e2433] bg-[#0d1117] text-gray-500 text-[12px] hover:border-[#2e3448] transition-all">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-              </svg>
-              <span className="text-[11px] text-gray-600">⌘K</span>
-            </button>
-            <button className="relative w-8 h-8 flex items-center justify-center rounded-lg border border-[#1e2433] bg-[#0d1117] text-gray-500 hover:border-[#2e3448] transition-all">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
-              </svg>
-            </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-all">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-            </button>
-          </div>
-        </div>
+        <TopBar
+        title="Referrals"
+        subtitle="Earn Pro by inviting friends"
+        />
 
         {/* Scrollable body */}
         <div className="flex-1 overflow-auto px-6 py-6">
