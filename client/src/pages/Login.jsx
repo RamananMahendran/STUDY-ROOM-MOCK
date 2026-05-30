@@ -350,7 +350,9 @@ export default function Login() {
                     }
                     localStorage.setItem("user", JSON.stringify({
                       username: data.username,
-                      email: data.email
+                      email: data.email,
+                      userId: data.userId,
+                      streak: data.streak || 10
                     }));
 
                     if (window.addNotification) {

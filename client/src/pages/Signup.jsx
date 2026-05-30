@@ -161,7 +161,9 @@ export default function Signup() {
      localStorage.setItem("token", data.token);
      localStorage.setItem("user", JSON.stringify({
         username: data.username,
-        email: data.email
+        email: data.email,
+        userId: data.id,
+        streak: data.streak || 0
      }));
   })
   .catch((err) => {

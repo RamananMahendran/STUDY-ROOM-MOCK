@@ -204,6 +204,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [userId, setUserId] = useState("");
   
   useEffect(() => {
     // 1. Fetch the stringified user object from localStorage
@@ -214,7 +215,7 @@ export default function Profile() {
     // 2. Security Check: If no token exists, boot them back to login
     if (!token || !storedUser) {
       console.warn("Unauthorized access attempt. Redirecting...");
-      navigate("/login");
+      //navigate("/login");
       return;
     }
 
@@ -224,12 +225,13 @@ export default function Profile() {
       // const emailObj = JSON.parse(storedEmail);
 
       // 4. Update state with user info
-      if (userObj && userObj.username && userObj.email) {
+      if (userObj && userObj.username && userObj.email && userObj.userId) {
         setUsername(userObj.username);
         setEmail(userObj.email);
+        setUserId(userObj.userId);
       }
 
-      console.log("User data loaded successfully:", { username: userObj.username, email: userObj.email });
+      console.log("User data loaded successfully:", { username: userObj.username, email: userObj.email, userId: userObj.userId });
     } catch (error) {
       console.error("Error parsing user data from localStorage:", error);
     }

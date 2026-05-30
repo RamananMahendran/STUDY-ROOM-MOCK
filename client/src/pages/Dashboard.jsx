@@ -141,7 +141,7 @@ function DailyChallenge() {
 
 
 // ── Hero greeting card ────────────────────────────────────────────────────────
-function HeroCard({ onStartFocus, username }) {
+function HeroCard({ onStartFocus, username, streak }) {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const day = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][new Date().getDay()];
@@ -177,7 +177,7 @@ function HeroCard({ onStartFocus, username }) {
           {greeting}, {username}! here's where you are this week.
         </h1>
         <p style={{ margin: "10px 0 0", fontSize: 13, color: "var(--text-muted)", maxWidth: 580, lineHeight: 1.55 }}>
-          1-day streak going. Start a session to keep it.
+          {streak}-day streak going. Start a session to keep it.
         </p>
 
         <div className="flex flex-wrap" style={{ gap: 10, marginTop: 20 }}>
@@ -223,7 +223,7 @@ function HeroCard({ onStartFocus, username }) {
             background: "linear-gradient(180deg, #fef08a, #fbbf24)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent"
-          }}>1</span>
+          }}>{streak}</span>
           <span style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", fontWeight: 600 }}>day</span>
         </div>
 
@@ -290,14 +290,17 @@ function ChartEmpty({ msg, py = "26px 12px" }) {
 // ── DASHBOARD PAGE ────────────────────────────────────────────────────────────
 export default function Dashboard() {
   const [username, setUsername] = useState("Guest");
-  const [name,setNAme] = useState("Hiiiiii");
+  const [email, setEmail] = useState("");
+  const [userId, setUserId] = useState("");
+  const [streak, setStreak] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
     // 1. Fetch the stringified user object from localStorage
     const storedUser = localStorage.getItem("user");
     const token = localStorage.getItem("token");
-
+    console.log("Raw user data from localStorage:", storedUser);
+    console.log("Token from localStorage:", token);
     // 2. Security Check: If no token exists, boot them back to login
     if (!token || !storedUser) {
       console.warn("Unauthorized access attempt. Redirecting...");
@@ -312,6 +315,16 @@ export default function Dashboard() {
       if (userObj && userObj.username) {
         setUsername(userObj.username);
       }
+      if (userObj && userObj.email) {
+        setEmail(userObj.email);
+      }
+      if (userObj && userObj.userId) {
+        setUserId(userObj.userId);
+      }
+      if (userObj && userObj.streak){
+        setStreak(userObj.streak);
+      }
+      console.log("User data loaded successfully:", { username: userObj.username, email: userObj.email, userId: userObj.userId, streak: userObj.streak });
     } catch (error) {
       console.error("Error parsing user data from localStorage:", error);
     }
@@ -370,7 +383,7 @@ export default function Dashboard() {
               <DailyChallenge />
 
               {/* Hero greeting */}
-              <HeroCard onStartFocus={handleStartFocus} username={username} />
+              <HeroCard onStartFocus={handleStartFocus} username={username} streak={streak} />
 
               {/* KPI row */}
               <div className="kpi-row" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
