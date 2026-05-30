@@ -1,5 +1,6 @@
 import Sidebar from "../components/Sidebar.jsx";
 
+
 // ── Icons ─────────────────────────────────────────────────────────────────────
 const IcoLock = () => (
   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
