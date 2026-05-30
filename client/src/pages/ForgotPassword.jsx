@@ -23,10 +23,28 @@ function BrandMark({ size = 28 }) {
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (email) setSent(true);
+    if (!email) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("http://localhost:5001/api/auth/forgotpassword", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Something went wrong.");
+      setSent(true);
+    } catch (err) {
+      setError(err.message || "Unable to send reset email. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -375,10 +393,18 @@ export default function ForgotPassword() {
                     </div>
                   </div>
 
+                  {/* Error message */}
+                  {error && (
+                    <div style={{ padding: "10px 14px", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 10, fontSize: 13, color: "#f87171", lineHeight: 1.5 }}>
+                      ⚠️ {error}
+                    </div>
+                  )}
+
                   {/* Submit */}
                   <button
                     id="forgot-submit-btn"
                     type="submit"
+                    disabled={loading}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -388,26 +414,21 @@ export default function ForgotPassword() {
                       height: 42,
                       padding: "0 24px",
                       borderRadius: 12,
-                      background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                      background: loading ? "rgba(99,102,241,0.5)" : "linear-gradient(135deg, #6366f1, #8b5cf6)",
                       color: "#fff",
                       border: "none",
-                      cursor: "pointer",
+                      cursor: loading ? "not-allowed" : "pointer",
                       fontFamily: "inherit",
                       fontSize: 14,
                       fontWeight: 700,
                       boxShadow: "0 8px 32px rgba(99,102,241,0.45), inset 0 1px 0 rgba(255,255,255,0.18)",
-                      transition: "transform 0.15s, box-shadow 0.15s",
+                      transition: "transform 0.15s, box-shadow 0.15s, background 0.2s",
+                      opacity: loading ? 0.7 : 1,
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "translateY(-1px)";
-                      e.currentTarget.style.boxShadow = "0 12px 40px rgba(99,102,241,0.6), inset 0 1px 0 rgba(255,255,255,0.18)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "translateY(0)";
-                      e.currentTarget.style.boxShadow = "0 8px 32px rgba(99,102,241,0.45), inset 0 1px 0 rgba(255,255,255,0.18)";
-                    }}
+                    onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(99,102,241,0.6), inset 0 1px 0 rgba(255,255,255,0.18)"; } }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(99,102,241,0.45), inset 0 1px 0 rgba(255,255,255,0.18)"; }}
                   >
-                    Send reset link
+                    {loading ? "Sending…" : "Send reset link"}
                   </button>
                 </form>
               )}

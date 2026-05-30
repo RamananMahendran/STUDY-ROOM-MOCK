@@ -2,6 +2,7 @@ import Home from './pages/Home.jsx';
 import Login from './pages/Login.jsx';
 import Signup from './pages/Signup.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
+import ResetPassword from './pages/ResetPassword.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Rooms from './pages/Rooms.jsx';
 import Profile from './pages/Profile.jsx';
@@ -29,6 +30,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         {/* Authenticated routes inside common layout */}
         <Route element={<AppLayout />}>
           <Route path="/home" element={<Dashboard />} />
