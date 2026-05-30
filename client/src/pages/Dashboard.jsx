@@ -146,6 +146,9 @@ function HeroCard({ onStartFocus, username, streak }) {
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const day = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][new Date().getDay()];
 
+  // Mock global state (replace with real Auth/API context later)
+  const currentUser = { name: "Mayur" };
+
   return (
     <div
       className="hero-analytics rounded-[18px] relative overflow-hidden"
@@ -174,7 +177,7 @@ function HeroCard({ onStartFocus, username, streak }) {
         </div>
 
         <h1 style={{ margin: 0, fontSize: "clamp(22px,3vw,30px)", fontWeight: 800, color: "var(--text)", letterSpacing: "-0.6px", lineHeight: 1.18 }}>
-          {greeting}, {username}! here's where you are this week.
+          {greeting}, {username || currentUser.name}! here's where you are this week.
         </h1>
         <p style={{ margin: "10px 0 0", fontSize: 13, color: "var(--text-muted)", maxWidth: 580, lineHeight: 1.55 }}>
           {streak}-day streak going. Start a session to keep it.

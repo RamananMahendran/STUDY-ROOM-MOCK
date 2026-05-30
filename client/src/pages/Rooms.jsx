@@ -77,9 +77,15 @@ export default function Rooms() {
   const [myRooms, setMyRooms] = useState(() => {
     const saved = localStorage.getItem("myRooms");
     if (saved) return JSON.parse(saved);
+    const now = Date.now();
     return [
-      { id: "ffaaae", name: "try", icon: "📚", color: "#6366f1", goal: "", focusMin: 90, breakMin: 15, left: "23H 59M", members: 1 },
-      { id: "f3e62f", name: "try", icon: "🟡", color: "#f59e0b", goal: "work should be completed", focusMin: 90, breakMin: 15, left: "23H 56M", members: 1 },
+      { id: "11ab6b", name: "Focus session", icon: "📚", color: "#6366f1", goal: "First focus block", focusMin: 50, breakMin: 10, members: 1, createdAt: now, expires: "2h" },
+      { id: "a07088", name: "Focus session", icon: "📚", color: "#6366f1", goal: "First focus block", focusMin: 50, breakMin: 10, members: 1, createdAt: now - (3 * 60000), expires: "2h" },
+      { id: "7b3c4c", name: "Focus session", icon: "📚", color: "#6366f1", goal: "First focus block", focusMin: 50, breakMin: 10, members: 1, createdAt: now - (7 * 60000), expires: "2h" },
+      { id: "563548", name: "w", icon: "📚", color: "#6366f1", goal: "", focusMin: 50, breakMin: 10, members: 1, createdAt: now - (92 * 60000), expires: "2h" },
+      { id: "df92ad", name: "tryysss", icon: "📚", color: "#6366f1", goal: "", focusMin: 50, breakMin: 10, members: 1, createdAt: now - (3 * 60 * 60000), expires: "2h" },
+      { id: "ffaaae", name: "try", icon: "📚", color: "#6366f1", goal: "", focusMin: 90, breakMin: 15, members: 1, createdAt: now - (3 * 60 * 60000), expires: "2h" },
+      { id: "f3e62f", name: "try", icon: "🤝", color: "#f59e0b", goal: "work should be completed", focusMin: 90, breakMin: 15, members: 1, createdAt: now - (3 * 60 * 60000), expires: "2h" },
     ];
   });
 
@@ -90,9 +96,9 @@ export default function Rooms() {
   }, []);
 
   const getRemainingTime = (room) => {
-    if (!room.createdAt || !room.expires) return room.left || "23H 59M";
+    if (!room.createdAt || !room.expires) return "Expired";
     const expiresHours = parseInt(room.expires);
-    if (isNaN(expiresHours)) return room.left || "23H 59M";
+    if (isNaN(expiresHours)) return "Expired";
     
     const expiresMs = expiresHours * 60 * 60 * 1000;
     const endMs = room.createdAt + expiresMs;
@@ -102,7 +108,12 @@ export default function Rooms() {
     
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    return `${hours}H ${mins}M`;
+    
+    if (hours > 0) {
+      return `${hours}H ${mins}M`;
+    } else {
+      return `${mins}M`;
+    }
   };
 
   const modes = ["All", "Pair", "Solo+", "Study"];
@@ -344,18 +355,11 @@ export default function Rooms() {
                   </div>
                 </div>
 
-                {/* Active badge */}
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
-                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
-                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>Active</span>
-                  <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 999, backgroundColor: "var(--surface-2)", color: "var(--text-muted)", border: "1px solid var(--border)" }}>
-                    {myRooms.filter(r => getRemainingTime(r) !== "Expired").length}
-                  </span>
-                </div>
+                {(() => {
+                  const activeRooms = myRooms.filter(r => getRemainingTime(r) !== "Expired");
+                  const expiredRooms = myRooms.filter(r => getRemainingTime(r) === "Expired");
 
-                {/* Room cards grid */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
-                  {myRooms.map(room => (
+                  const renderRoomCard = (room, isExpired) => (
                     <button
                       key={room.id}
                       onClick={() => {
@@ -371,6 +375,7 @@ export default function Rooms() {
                         fontFamily: "inherit", color: "var(--text)",
                         transition: "border-color 0.15s, box-shadow 0.15s, transform 0.15s",
                         boxShadow: "var(--card-shadow)",
+                        opacity: isExpired ? 0.6 : 1,
                       }}
                       onMouseEnter={e => { e.currentTarget.style.borderColor = room.color; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 6px 20px ${room.color}30`; }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = `${room.color}44`; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--card-shadow)"; }}
@@ -395,9 +400,9 @@ export default function Rooms() {
                       {/* Footer stats */}
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 6, borderTop: "1px solid var(--border)" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          {getRemainingTime(room) === "Expired" ? (
+                          {isExpired ? (
                             <span style={{ fontSize: 10, background: "rgba(239, 68, 68, 0.12)", color: "#ef4444", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: 999, padding: "2px 7px", fontWeight: 700 }}>
-                              Expired
+                              EXPIRED
                             </span>
                           ) : (
                             <span style={{ fontSize: 10, background: "rgba(16,185,129,0.12)", color: "#10b981", border: "1px solid rgba(16,185,129,0.25)", borderRadius: 999, padding: "2px 7px", fontWeight: 700 }}>
@@ -411,8 +416,44 @@ export default function Rooms() {
                         </div>
                       </div>
                     </button>
-                  ))}
-                </div>
+                  );
+
+                  return (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                      {/* Active Section */}
+                      {activeRooms.length > 0 && (
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                            <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
+                            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>Active</span>
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 999, backgroundColor: "var(--surface-2)", color: "var(--text-muted)", border: "1px solid var(--border)" }}>
+                              {activeRooms.length}
+                            </span>
+                          </div>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
+                            {activeRooms.map(room => renderRoomCard(room, false))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Expired Section */}
+                      {expiredRooms.length > 0 && (
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                            <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--text-muted)", display: "inline-block" }} />
+                            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>Expired</span>
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 999, backgroundColor: "var(--surface-2)", color: "var(--text-muted)", border: "1px solid var(--border)" }}>
+                              {expiredRooms.length}
+                            </span>
+                          </div>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
+                            {expiredRooms.map(room => renderRoomCard(room, true))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </section>
 
             </div>
