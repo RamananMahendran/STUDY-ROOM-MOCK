@@ -1,4 +1,4 @@
-import { useState} from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar.jsx";
 import Editor from "@monaco-editor/react";
 
@@ -40,6 +40,7 @@ const LANGUAGES = [
     abbr: "JS",
     color: "#f7df1e",
     bgColor: "#f7df1e22",
+    judge0Id: 63,
     defaultCode: `console.log("Hello, World!");`,
   },
   {
@@ -48,6 +49,7 @@ const LANGUAGES = [
     abbr: "PY",
     color: "#3572A5",
     bgColor: "#3572A522",
+    judge0Id: 71,
     defaultCode: `print("Hello, World!")`,
   },
   {
@@ -56,6 +58,7 @@ const LANGUAGES = [
     abbr: "C",
     color: "#555555",
     bgColor: "#55555522",
+    judge0Id: 50,
     defaultCode: `#include <stdio.h>
 
 int main() {
@@ -69,6 +72,7 @@ int main() {
     abbr: "C+",
     color: "#f34b7d",
     bgColor: "#f34b7d22",
+    judge0Id: 54,
     defaultCode: `#include <iostream>
 
 int main() {
@@ -82,6 +86,7 @@ int main() {
     abbr: "JV",
     color: "#b07219",
     bgColor: "#b0721922",
+    judge0Id: 62,
     defaultCode: `public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, World!");
@@ -111,25 +116,55 @@ export default function Playground() {
 
  
 
-  const handleRun = () => {
+  const handleRun = async () => {
     setRunning(true);
     setOutput("");
-    setTimeout(() => {
-      if (activeLang.id === "javascript") {
-        try {
-          const logs = [];
-          const fakeConsole = { log: (...args) => logs.push(args.map(String).join(" ")) };
-          // eslint-disable-next-line no-new-func
-          new Function("console", code)(fakeConsole);
-          setOutput(logs.join("\n") || "(no output)");
-        } catch (e) {
-          setOutput(`Error: ${e.message}`);
-        }
-      } else {
-        setOutput(`// ${activeLang.label} execution is simulated.\n// Output: Hello, World!`);
+    
+    try {
+      const response = await fetch("http://localhost:5001/api/code/run", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sourceCode: code,
+          languageId: activeLang.judge0Id,
+          stdin: stdin || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to execute code");
       }
+
+      const result = await response.json();
+      const data = result.data;
+
+      let output = "";
+      if (data.compile_output) {
+        output = `[Compile Error]\n${data.compile_output}`;
+      } else if (data.stderr) {
+        output = `[Runtime Error]\n${data.stderr}`;
+      } else if (data.stdout) {
+        output = data.stdout;
+      } else {
+        output = "(no output)";
+      }
+
+      if (data.time) {
+        output += `\n\n[Execution time: ${(parseFloat(data.time) * 1000).toFixed(2)}ms]`;
+      }
+      if (data.memory) {
+        output += `\n[Memory: ${data.memory}KB]`;
+      }
+
+      setOutput(output);
+    } catch (err) {
+      console.error("Error executing code:", err);
+      setOutput(`Error: ${err.message}`);
+    } finally {
       setRunning(false);
-    }, 600);
+    }
   };
 
   const handleReset = () => {

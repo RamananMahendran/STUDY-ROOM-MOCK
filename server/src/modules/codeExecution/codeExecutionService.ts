@@ -5,8 +5,10 @@ type Judge0SubmissionRequest = {
   expectedOutput?: string;  // Optional - we don't send it for submissions
 };
 
-// Change this line to use the public Judge0 CE API
+// Use public Judge0 API by default, but allow override via env
 const judge0Url = (process.env.JUDGE0_URL || 'https://ce.judge0.com').replace(/\/$/, '');
+
+console.log(`Using Judge0 API at: ${judge0Url}`);
 
 const judge0Headers = () => {
   const headers: Record<string, string> = {
@@ -22,13 +24,17 @@ const judge0Headers = () => {
 
 const parseJudge0Response = async (response: Response) => {
   const text = await response.text();
-  const body = text ? JSON.parse(text) : null;
-
+  
   if (!response.ok) {
-    throw new Error(`Judge0 returned HTTP ${response.status}: ${JSON.stringify(body)}`);
+    throw new Error(`Judge0 returned HTTP ${response.status}: ${text}`);
   }
 
-  return body;
+  try {
+    const body = text ? JSON.parse(text) : null;
+    return body;
+  } catch (e) {
+    throw new Error(`Failed to parse Judge0 response: ${text}`);
+  }
 };
 
 export async function getJudge0Languages() {

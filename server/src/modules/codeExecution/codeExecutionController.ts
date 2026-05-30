@@ -21,15 +21,27 @@ export const runCode = async (req: Request, res: Response): Promise<any> => {
       });
     }
 
-    const result = await runJudge0Submission({
-      sourceCode,
-      languageId: Number(languageId),
-      stdin,
-      expectedOutput,
-    });
+    try {
+      const result = await runJudge0Submission({
+        sourceCode,
+        languageId: Number(languageId),
+        stdin,
+        expectedOutput,
+      });
 
-    return res.json({ success: true, data: result });
+      return res.json({ success: true, data: result });
+    } catch (judge0Error: any) {
+      console.error('Judge0 Error:', judge0Error.message);
+      return res.status(502).json({ 
+        success: false, 
+        error: `Code execution failed: ${judge0Error.message}` 
+      });
+    }
   } catch (error: any) {
-    return res.status(502).json({ success: false, error: error.message });
+    console.error('Unexpected error in runCode:', error);
+    return res.status(500).json({ 
+      success: false, 
+      error: `Server error: ${error.message}` 
+    });
   }
 };
