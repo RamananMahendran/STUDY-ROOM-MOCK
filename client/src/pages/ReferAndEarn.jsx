@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar.jsx";
 import TopBar from "./components/TopBar.jsx";
 
@@ -96,6 +97,8 @@ export default function ReferAndEarn() {
     { n: "10 activations", reward: "1 year Pro bonus" },
     { n: "25 activations", reward: "Lifetime Pro" },
   ];
+
+  const navigate = useNavigate();
 
   return (
     <div className="fixed inset-0 flex bg-[#060810] text-[#e2e8f0] font-sans overflow-hidden select-none">
@@ -216,7 +219,9 @@ export default function ReferAndEarn() {
                   Founder pricing is still open — ₹199/month locked forever.
                 </p>
               </div>
-              <button className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[12px] font-bold flex-shrink-0 transition-all">
+              <button 
+                onClick={() => navigate("/pricing")}
+                className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[12px] font-bold flex-shrink-0 transition-all">
                 <span>See pricing</span>
                 <IcoArrowRight />
               </button>
