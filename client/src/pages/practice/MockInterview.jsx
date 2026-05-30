@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+import TopBar from "../components/TopBar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
 
 
@@ -48,6 +50,7 @@ const FEATURES = [
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function MockInterview() {
+  const navigate = useNavigate();
   return (
     <div className="fixed inset-0 flex bg-[#060810] text-[#e2e8f0] font-sans overflow-hidden select-none">
       <Sidebar active="mock-interview" />
@@ -55,31 +58,9 @@ export default function MockInterview() {
       {/* Center stage */}
       <div className="flex-1 flex flex-col overflow-hidden">
 
-        {/* Top bar */}
-        <div className="flex items-center justify-between px-6 py-3.5 border-b border-[#1e2433]/70 flex-shrink-0">
-          <h1 className="text-[15px] font-bold text-[#f1f5f9] tracking-tight">Mock Interview</h1>
-          <div className="flex items-center gap-3">
-            {/* Search shortcut */}
-            <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#1e2433] bg-[#0d1117] text-gray-500 text-[12px] hover:border-[#2e3448] transition-all">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-              </svg>
-              <span className="text-[11px] text-gray-600">⌘K</span>
-            </button>
-            {/* Bell */}
-            <button className="relative w-8 h-8 flex items-center justify-center rounded-lg border border-[#1e2433] bg-[#0d1117] text-gray-500 hover:border-[#2e3448] transition-all">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
-              </svg>
-            </button>
-            {/* Plus */}
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-all">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-            </button>
-          </div>
-        </div>
+        <TopBar
+        title="Mock Interview"
+        />
 
         {/* Main content */}
         <div className="flex-1 flex items-center justify-center px-6 overflow-auto">
@@ -120,6 +101,7 @@ export default function MockInterview() {
 
             {/* CTA */}
             <button
+              onClick={() => navigate("/pricing")}
               className="mt-2 flex items-center gap-2 px-7 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[14px] font-bold shadow-lg shadow-indigo-600/25 transition-all"
             >
               <span>Upgrade to Pro</span>
