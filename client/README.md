@@ -40,7 +40,9 @@ Collaborative EdTech frontend for the Study Room project.
   - `/practice/pair-code` → practice/PairCodeSetup
 
 ## Local development
-> Prerequisite: backend API should be running (the frontend is built to call backend endpoints).
+> Prerequisite: backend API should be running.
+> Server setup is documented in `../SETUP_SUMMARY.md`.
+
 
 ### Start
 1. Install dependencies:

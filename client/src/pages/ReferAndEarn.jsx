@@ -91,6 +91,25 @@ export default function ReferAndEarn() {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+  const handleShare = async () => {
+  if (navigator.share) {
+    console.log("Share supported");
+  } else {
+    console.log("Share NOT supported");
+  }
+
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: "Study Room",
+        text: "Join me on Study Room",
+        url: referralLink,
+      });
+    }
+  } catch (err) {
+    console.log("Share cancelled", err);
+  }
+};
 
   const milestones = [
     { n: "1 activation",  reward: "1 month Pro" },
@@ -147,7 +166,9 @@ export default function ReferAndEarn() {
                   {copied ? <IcoCheck /> : <IcoCopy />}
                   <span>{copied ? "Copied!" : "Copy"}</span>
                 </button>
-                <button className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[12px] font-bold transition-all flex-shrink-0">
+                <button 
+                  onClick={handleShare}
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[12px] font-bold transition-all flex-shrink-0">
                   <IcoShare />
                   <span>Share</span>
                 </button>
