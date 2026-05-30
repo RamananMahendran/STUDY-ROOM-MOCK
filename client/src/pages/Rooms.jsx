@@ -37,7 +37,7 @@ function QuickCard({ icon: IconComp, iconBg, iconColor, label, sub }) {
   const [hov, setHov] = useState(false);
   return (
     <button
-      className="lift-card flex items-center text-left cursor-pointer"
+      className="w-full lift-card flex items-center text-left cursor-pointer"
       style={{
         gap: 12, padding: 16, borderRadius: 12,
         backgroundColor: "var(--surface)",
@@ -137,10 +137,16 @@ export default function Rooms() {
                   className="quick-start-grid"
                   style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}
                 >
-                  <QuickCard icon={IcoTimer}      iconBg="rgba(99,102,241,0.12)"  iconColor="rgb(99,102,241)"  label="Solo focus"      sub="25-min Pomodoro"      />
-                  <QuickCard icon={IcoCode}        iconBg="rgba(14,165,233,0.12)"  iconColor="rgb(14,165,233)"  label="Pair up"         sub="Live coding session"  />
+                  <div onClick={() => window.dispatchEvent(new Event("open-create-room-modal"))}>
+                    <QuickCard icon={IcoTimer}      iconBg="rgba(99,102,241,0.12)"  iconColor="rgb(99,102,241)"  label="Solo focus"      sub="25-min Pomodoro"      />
+                  </div>
+                  <div onClick={() => navigate("/practice/pair-code")}>
+                    <QuickCard icon={IcoCode}        iconBg="rgba(14,165,233,0.12)"  iconColor="rgb(14,165,233)"  label="Pair up"         sub="Live coding session"  />
+                  </div>
                   <QuickCard icon={IcoHeadphones}  iconBg="rgba(139,92,246,0.12)" iconColor="rgb(139,92,246)" label="Mock interview"   sub="FAANG playbook"       />
+                  <div onClick={() => document.getElementById("your-rooms").scrollIntoView({ behavior: "smooth" })}>
                   <QuickCard icon={IcoSearch}      iconBg="rgba(16,185,129,0.12)" iconColor="rgb(16,185,129)" label="Browse rooms"     sub="Find your floor"      />
+                  </div>
                 </div>
               </section>
 

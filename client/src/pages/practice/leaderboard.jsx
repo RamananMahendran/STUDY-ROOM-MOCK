@@ -93,19 +93,10 @@ export default function LeaderboardPage() {
       display: "flex", height: "100vh", width: "100%", overflow: "hidden",
       backgroundColor: "var(--bg)",
     }}>
-      {/* Sidebar */}
-      <Sidebar
-        active={activeNav}
-        onNav={(id, path) => {
-          setActiveNav(id);
-          if (path) navigate(path);
-        }}
-      />
+
 
       {/* Main column */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        {/* TopBar */}
-        <TopBar title="Leaderboard" subtitle="See how you rank across problems" />
 
         {/* Body */}
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
