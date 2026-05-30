@@ -139,8 +139,9 @@ function DailyChallenge() {
   );
 }
 
+
 // ── Hero greeting card ────────────────────────────────────────────────────────
-function HeroCard({ onStartFocus }) {
+function HeroCard({ onStartFocus, username }) {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const day = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][new Date().getDay()];
@@ -173,7 +174,7 @@ function HeroCard({ onStartFocus }) {
         </div>
 
         <h1 style={{ margin: 0, fontSize: "clamp(22px,3vw,30px)", fontWeight: 800, color: "var(--text)", letterSpacing: "-0.6px", lineHeight: 1.18 }}>
-          {greeting}, Mayur, here's where you are this week.
+          {greeting}, {username}! here's where you are this week.
         </h1>
         <p style={{ margin: "10px 0 0", fontSize: 13, color: "var(--text-muted)", maxWidth: 580, lineHeight: 1.55 }}>
           1-day streak going. Start a session to keep it.
@@ -288,7 +289,35 @@ function ChartEmpty({ msg, py = "26px 12px" }) {
 
 // ── DASHBOARD PAGE ────────────────────────────────────────────────────────────
 export default function Dashboard() {
+  const [username, setUsername] = useState("Guest");
+  const [name,setNAme] = useState("Hiiiiii");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // 1. Fetch the stringified user object from localStorage
+    const storedUser = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+
+    // 2. Security Check: If no token exists, boot them back to login
+    if (!token || !storedUser) {
+      console.warn("Unauthorized access attempt. Redirecting...");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      // 3. Parse the JSON string back into a JavaScript object
+      const userObj = JSON.parse(storedUser);
+      
+      if (userObj && userObj.username) {
+        setUsername(userObj.username);
+      }
+    } catch (error) {
+      console.error("Error parsing user data from localStorage:", error);
+    }
+  }, [navigate]);
+
+
 
   const handleStartFocus = () => {
     const id = Math.random().toString(36).slice(2, 8);
@@ -341,7 +370,7 @@ export default function Dashboard() {
               <DailyChallenge />
 
               {/* Hero greeting */}
-              <HeroCard onStartFocus={handleStartFocus} />
+              <HeroCard onStartFocus={handleStartFocus} username={username} />
 
               {/* KPI row */}
               <div className="kpi-row" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // ── Brand Mark ────────────────────────────────────────────────────────────────
 function BrandMark({ size = 28 }) {
@@ -222,7 +222,7 @@ export default function Login() {
   const [showPw, setShowPw] = useState(false);
   const [email, setEmail]     = useState("");
   const [password, setPassword] = useState("");
-
+  const navigate = useNavigate();
   return (
     <div
       data-theme="dark"
@@ -324,12 +324,62 @@ export default function Login() {
               </div>
 
               {/* Form */}
-              <form style={{ display:"flex", flexDirection:"column", gap:14 }}>
+              <form 
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  console.log("Attempting sign in with:", { email, password });
+
+                  try {
+                    const response = await fetch("http://localhost:5001/api/auth/login", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email, password }),
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                      throw new Error(data.message || "Invalid credentials. Please try again.");
+                    }
+
+                    console.log("Login successful! Token and profile payload:", data);
+                    
+                    // Persist the authentication signature globally for subsequent session validations
+                    if (data.token) {
+                      localStorage.setItem("token", data.token);
+                    }
+                    localStorage.setItem("user", JSON.stringify({
+                      username: data.username,
+                      email: data.email
+                    }));
+
+                    if (window.addNotification) {
+                      window.addNotification("Logged in successfully!");
+                    }
+                    
+                    // Perform SPA transition without forcing a harsh browser window context reload
+                    navigate("/home");
+
+                  } catch (err) {
+                    console.error("Sign in error:", err);
+                    alert(err.message || "An unexpected error occurred during login.");
+                  }
+                }}
+                style={{ display: "flex", flexDirection: "column", gap: 14 }}
+              >
                 {/* Email */}
                 <div>
-                  <label style={{ display:"block", fontSize:11, fontWeight:600, letterSpacing:"0.5px", textTransform:"uppercase", color:"var(--text-muted)", marginBottom:6 }}>Email</label>
-                  <input id="login-email" type="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)}
-                    style={{ width:"100%", background:"var(--surface)", border:"1px solid var(--border)", borderRadius:10, padding:"10px 14px", fontSize:14, color:"var(--text)", fontFamily:"inherit", outline:"none" }}
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 6 }}>
+                    Email
+                  </label>
+                  <input 
+                    id="login-email" 
+                    type="email" 
+                    placeholder="you@example.com" 
+                    autoComplete="email" 
+                    value={email} 
+                    onChange={e => setEmail(e.target.value)}
+                    style={{ width: "100%", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "10px 14px", fontSize: 14, color: "var(--text)", fontFamily: "inherit", outline: "none" }}
                     onFocus={e => { e.target.style.borderColor = "rgba(99,102,241,0.7)"; e.target.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.12)"; }}
                     onBlur={e => { e.target.style.borderColor = "var(--border)"; e.target.style.boxShadow = "none"; }}
                   />
@@ -337,38 +387,48 @@ export default function Login() {
 
                 {/* Password */}
                 <div>
-                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:6 }}>
-                    <label style={{ fontSize:11, fontWeight:600, letterSpacing:"0.5px", textTransform:"uppercase", color:"var(--text-muted)" }}>Password</label>
-                    <Link to="/forgot-password" style={{ fontSize:12, color:"var(--text-muted)", fontWeight:500, textDecoration:"none" }}>Forgot password?</Link>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 6 }}>
+                    <label style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", textTransform: "uppercase", color: "var(--text-muted)" }}>
+                      Password
+                    </label>
+                    <Link to="/forgot-password" style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500, textDecoration: "none" }}>
+                      Forgot password?
+                    </Link>
                   </div>
-                  <div style={{ position:"relative", display:"flex", alignItems:"center" }}>
-                    <input id="login-password" type={showPw ? "text" : "password"} placeholder="At least 8 characters" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)}
-                      style={{ width:"100%", background:"var(--surface)", border:"1px solid var(--border)", borderRadius:10, padding:"10px 14px", paddingRight:32, fontSize:14, color:"var(--text)", fontFamily:"inherit", outline:"none" }}
+                  <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                    <input 
+                      id="login-password" 
+                      type={showPw ? "text" : "password"} 
+                      placeholder="At least 8 characters" 
+                      autoComplete="current-password" 
+                      value={password} 
+                      onChange={e => setPassword(e.target.value)}
+                      style={{ width: "100%", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "10px 14px", paddingRight: 32, fontSize: 14, color: "var(--text)", fontFamily: "inherit", outline: "none" }}
                       onFocus={e => { e.target.style.borderColor = "rgba(99,102,241,0.7)"; e.target.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.12)"; }}
                       onBlur={e => { e.target.style.borderColor = "var(--border)"; e.target.style.boxShadow = "none"; }}
                     />
-                    <button type="button" aria-label="Toggle password visibility" onClick={() => setShowPw(v => !v)}
-                      style={{ position:"absolute", right:0, width:32, height:32, borderRadius:6, display:"inline-flex", alignItems:"center", justifyContent:"center", background:"transparent", border:"none", color:"var(--text-muted)", cursor:"pointer" }}>
+                    <button 
+                      type="button" 
+                      aria-label="Toggle password visibility" 
+                      onClick={() => setShowPw(v => !v)}
+                      style={{ position: "absolute", right: 0, width: 32, height: 32, borderRadius: 6, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
+                    >
                       <EyeIcon open={showPw} />
                     </button>
                   </div>
                 </div>
 
-                {/* Submit */}
-                <button id="login-submit-btn" type="submit"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (window.addNotification) window.addNotification("Logged in successfully!");
-                    window.location.href = "/home"; // simulate navigation since useNavigate is not imported here or we can use window.location
-                  }}
-                  style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, width:"100%", height:42, padding:"0 24px", borderRadius:12, background:"linear-gradient(135deg, #6366f1, #8b5cf6)", color:"#fff", border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:14, fontWeight:700, boxShadow:"0 8px 32px rgba(99,102,241,0.45), inset 0 1px 0 rgba(255,255,255,0.18)", transition:"transform 0.15s, box-shadow 0.15s" }}
+                {/* Submit Button */}
+                <button 
+                  id="login-submit-btn" 
+                  type="submit"
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, width: "100%", height: 42, padding: "0 24px", borderRadius: 12, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "#fff", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 700, boxShadow: "0 8px 32px rgba(99,102,241,0.45), inset 0 1px 0 rgba(255,255,255,0.18)", transition: "transform 0.15s, box-shadow 0.15s" }}
                   onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(99,102,241,0.6), inset 0 1px 0 rgba(255,255,255,0.18)"; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(99,102,241,0.45), inset 0 1px 0 rgba(255,255,255,0.18)"; }}
                 >
                   Sign in
                 </button>
               </form>
-
               {/* Google note */}
               <p style={{ margin:"4px 0 0", padding:"10px 12px", background:"var(--surface-2)", borderRadius:8, fontSize:12, color:"var(--text-muted)", lineHeight:1.5, textAlign:"center" }}>
                 Signed up with Google? You don't have a password — just use <strong style={{ color:"var(--text)" }}>Continue with Google</strong> above.

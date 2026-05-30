@@ -115,6 +115,37 @@ const BOTTOM_NAV = [
 // ── Sidebar ────────────────────────────────────────────────────────────────────
 export default function Sidebar({ active, onNav }) {
   const navigate = useNavigate();
+  const [username, setUsername] = useState("Guest");
+
+  useEffect(() => {
+    // 1. Fetch the stringified user object from localStorage
+    const storedUser = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+
+    // 2. Security Check: If no token exists, boot them back to login
+    if (!token || !storedUser) {
+      console.warn("Unauthorized access attempt. Redirecting...");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      // 3. Parse the JSON string back into a JavaScript object
+      const userObj = JSON.parse(storedUser);
+      
+      if (userObj && userObj.username) {
+        setUsername(userObj.username);
+      }
+    } catch (error) {
+      console.error("Error parsing user data from localStorage:", error);
+    }
+  }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
 
   const [theme, setTheme] = useState(
     () => document.documentElement.getAttribute("data-theme") || "dark"
@@ -299,7 +330,7 @@ export default function Sidebar({ active, onNav }) {
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {/* Avatar */}
           <img
-            alt="Mayur K S"
+            alt={username}
             src="https://lh3.googleusercontent.com/a/ACg8ocJOHQ3CBE3KjE6jm37Rh6DZ1INAG8-i1M7xZZNfvCYrlZHgTg=s96-c"
             style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0, objectFit: "cover" }}
             onError={e => { e.currentTarget.style.display = "none"; e.currentTarget.nextSibling.style.display = "flex"; }}
@@ -313,7 +344,7 @@ export default function Sidebar({ active, onNav }) {
 
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-              Mayur K S
+              {username}
             </div>
           </div>
 
@@ -344,7 +375,7 @@ export default function Sidebar({ active, onNav }) {
 
         {/* Sign out */}
         <button 
-          onClick={() => navigate('/login')}
+          onClick={handleLogout}
           onMouseEnter={(e) => {
             e.currentTarget.style.color = "#ef4444";
             e.currentTarget.style.borderColor = "rgba(239,68,68,0.3)";
