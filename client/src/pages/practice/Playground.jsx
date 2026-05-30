@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState} from "react";
 import Sidebar from "../components/Sidebar.jsx";
+import Editor from "@monaco-editor/react";
 
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
@@ -34,62 +35,63 @@ const IcoTerminal = () => (
 // ── Language config ───────────────────────────────────────────────────────────
 const LANGUAGES = [
   {
-    id: "javascript", label: "JavaScript", abbr: "JS",
-    color: "#f7df1e", bgColor: "#f7df1e22",
-    defaultCode: `// JavaScript\nconsole.log("Hello, World!");`,
+    id: "javascript",
+    label: "JavaScript",
+    abbr: "JS",
+    color: "#f7df1e",
+    bgColor: "#f7df1e22",
+    defaultCode: `console.log("Hello, World!");`,
   },
   {
-    id: "python", label: "Python", abbr: "PY",
-    color: "#3572A5", bgColor: "#3572A522",
-    defaultCode: `# Python\nprint("Hello, World!")`,
+    id: "python",
+    label: "Python",
+    abbr: "PY",
+    color: "#3572A5",
+    bgColor: "#3572A522",
+    defaultCode: `print("Hello, World!")`,
   },
   {
-    id: "c", label: "C", abbr: "C",
-    color: "#555555", bgColor: "#55555522",
-    defaultCode: `// C\n#include <stdio.h>\nint main() {\n    printf("Hello, World!\\n");\n    return 0;\n}`,
+    id: "c",
+    label: "C",
+    abbr: "C",
+    color: "#555555",
+    bgColor: "#55555522",
+    defaultCode: `#include <stdio.h>
+
+int main() {
+    printf("Hello, World!\\n");
+    return 0;
+}`,
   },
   {
-    id: "cpp", label: "C++", abbr: "C+",
-    color: "#f34b7d", bgColor: "#f34b7d22",
-    defaultCode: `// C++\n#include <iostream>\nint main() {\n    std::cout << "Hello, World!" << std::endl;\n    return 0;\n}`,
+    id: "cpp",
+    label: "C++",
+    abbr: "C+",
+    color: "#f34b7d",
+    bgColor: "#f34b7d22",
+    defaultCode: `#include <iostream>
+
+int main() {
+    std::cout << "Hello, World!";
+    return 0;
+}`,
   },
   {
-    id: "java", label: "Java", abbr: "JV",
-    color: "#b07219", bgColor: "#b0721922",
-    defaultCode: `// Java\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}`,
+    id: "java",
+    label: "Java",
+    abbr: "JV",
+    color: "#b07219",
+    bgColor: "#b0721922",
+    defaultCode: `public class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+    }
+}`,
   },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function syntaxHighlight(code, langId) {
-  // Very light tokenizer — just enough to match the screenshot colors
-  let html = code
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
 
-  if (langId === "javascript") {
-    html = html
-      .replace(/(\/\/[^\n]*)/g, '<span style="color:#6a9955">$1</span>')
-      .replace(/\b(console|log|Math|JSON|Array|Object|String|Number|Boolean|undefined|null|NaN|Infinity)\b/g, '<span style="color:#9cdcfe">$1</span>')
-      .replace(/\b(const|let|var|function|return|if|else|for|while|do|switch|case|break|continue|new|typeof|instanceof|class|extends|import|export|default|async|await|try|catch|finally|throw|of|in)\b/g, '<span style="color:#c586c0">$1</span>')
-      .replace(/("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)/g, '<span style="color:#ce9178">$1</span>');
-  } else if (langId === "python") {
-    html = html
-      .replace(/(#[^\n]*)/g, '<span style="color:#6a9955">$1</span>')
-      .replace(/\b(print|input|len|range|int|str|float|list|dict|set|tuple|type|isinstance|hasattr|getattr|setattr|open|enumerate|zip|map|filter|sorted|reversed)\b/g, '<span style="color:#9cdcfe">$1</span>')
-      .replace(/\b(def|class|return|if|elif|else|for|while|import|from|as|in|not|and|or|is|lambda|try|except|finally|raise|with|pass|break|continue|True|False|None|global|nonlocal|del|yield)\b/g, '<span style="color:#c586c0">$1</span>')
-      .replace(/("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g, '<span style="color:#ce9178">$1</span>');
-  } else {
-    // C / C++ / Java
-    html = html
-      .replace(/(\/\/[^\n]*)/g, '<span style="color:#6a9955">$1</span>')
-      .replace(/\b(int|char|float|double|void|bool|long|short|unsigned|signed|auto|static|const|return|if|else|for|while|do|switch|case|break|continue|struct|class|public|private|protected|new|delete|namespace|using|include|define|cout|cin|endl|string|printf|scanf|main)\b/g, '<span style="color:#569cd6">$1</span>')
-      .replace(/("(?:[^"\\]|\\.)*")/g, '<span style="color:#ce9178">$1</span>')
-      .replace(/(#\w+)/g, '<span style="color:#c586c0">$1</span>');
-  }
-  return html;
-}
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function Playground() {
@@ -99,22 +101,23 @@ export default function Playground() {
   const [running, setRunning] = useState(false);
   const [showStdin, setShowStdin] = useState(false);
   const [stdin, setStdin] = useState("");
-  const textareaRef = useRef(null);
-  const highlightRef = useRef(null);
-
-  // Sync textarea scroll → highlight scroll
-  const syncScroll = () => {
-    if (highlightRef.current && textareaRef.current) {
-      highlightRef.current.scrollTop = textareaRef.current.scrollTop;
-      highlightRef.current.scrollLeft = textareaRef.current.scrollLeft;
-    }
-  };
+  
 
   const handleLangSwitch = (lang) => {
     setActiveLang(lang);
     setCode(lang.defaultCode);
     setOutput("");
   };
+
+  const handleEditorMount = (editor) => {
+  editor.addCommand(
+    window.monaco.KeyMod.CtrlCmd |
+      window.monaco.KeyCode.Enter,
+    () => {
+      handleRun();
+    }
+  );
+};
 
   const handleRun = () => {
     setRunning(true);
@@ -142,8 +145,7 @@ export default function Playground() {
     setOutput("");
   };
 
-  const lines = code.split("\n");
-  const highlighted = syntaxHighlight(code, activeLang.id);
+  
 
   return (
     <div className="fixed inset-0 flex bg-[#060810] text-[#e2e8f0] font-sans overflow-hidden select-none">
@@ -222,41 +224,37 @@ export default function Playground() {
         <div className="flex flex-1 overflow-hidden mx-5 mb-0 gap-3">
 
           {/* Editor pane */}
-          <div className="flex flex-col flex-1 overflow-hidden rounded-t-xl border border-b-0 border-[#1e2433]/70 bg-[#0d1117]">
-            <div className="flex flex-1 overflow-hidden">
-              {/* Line numbers */}
-              <div
-                className="text-right pr-4 pl-4 pt-4 text-[13px] font-mono text-gray-600 select-none flex-shrink-0 overflow-hidden"
-                style={{ minWidth: 52, lineHeight: "1.6", userSelect: "none" }}
-              >
-                {lines.map((_, i) => (
-                  <div key={i} style={{ lineHeight: "1.6" }}>{i + 1}</div>
-                ))}
-              </div>
-
-              {/* Code area with highlight + textarea overlay */}
-              <div className="relative flex-1 overflow-auto">
-                {/* Syntax-highlighted layer */}
-                <pre
-                  ref={highlightRef}
-                  aria-hidden="true"
-                  className="absolute inset-0 p-0 pt-4 pr-4 m-0 overflow-auto pointer-events-none font-mono text-[13px] whitespace-pre text-[#d4d4d4]"
-                  style={{ lineHeight: "1.6", tabSize: 2 }}
-                  dangerouslySetInnerHTML={{ __html: highlighted }}
-                />
-                {/* Transparent textarea for editing */}
-                <textarea
-                  ref={textareaRef}
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  onScroll={syncScroll}
-                  spellCheck={false}
-                  className="absolute inset-0 w-full h-full p-0 pt-4 pr-4 m-0 bg-transparent text-transparent caret-white font-mono text-[13px] resize-none outline-none border-none overflow-auto"
-                  style={{ lineHeight: "1.6", tabSize: 2, caretColor: "#fff" }}
-                />
-              </div>
+            <div className="flex-1 rounded-t-xl border border-b-0 border-[#1e2433]/70 overflow-hidden bg-[#0d1117]">
+            <Editor
+                height="100%"
+                language={activeLang.id}
+                theme="vs-dark"
+                value={code}
+                onChange={(value) => setCode(value || "")}
+                onMount={(editor, monaco) => {
+                editor.addCommand(
+                monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
+                () => handleRun()
+                );
+            }}
+                options={{
+                minimap: {
+                    enabled: false,
+                },
+                fontSize: 14,
+                fontFamily: "JetBrains Mono, monospace",
+                automaticLayout: true,
+                scrollBeyondLastLine: false,
+                wordWrap: "on",
+                padding: {
+                    top: 16,
+                },
+                tabSize: 2,
+                lineNumbers: "on",
+                renderLineHighlight: "all",
+                }}
+            />
             </div>
-          </div>
 
           {/* Output pane */}
           <div className="w-[380px] flex-shrink-0 flex flex-col rounded-t-xl border border-b-0 border-[#1e2433]/70 bg-[#0d1117] overflow-hidden">
