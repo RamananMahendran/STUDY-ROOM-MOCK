@@ -1,81 +1,72 @@
-# STUDY-ROOM-MOCK
+# Study Room Mock (Client)
 
-A collaborative EdTech platform inspired by modern group-study workflows, built for students preparing for placements, coding interviews, and academic sessions together.
+Collaborative EdTech frontend for the Study Room project.
 
-This project combines:
-- Shared study rooms
-- Synced Pomodoro timers
-- Group chat & voice communication
-- Collaborative notes
-- Coding interview preparation
-- Progress tracking and analytics
+## What this app does
+- Authenticated dashboard layout (AppLayout)
+- Study rooms, profiles, community, pricing/promise/changelog pages
+- Practice area:
+  - Mock interview UI
+  - Code playground UI
+  - Leaderboard / Study plans / Pair code setup pages
 
-The goal of this project is to create an all-in-one study environment where students can learn, practice, and prepare together without switching between multiple apps.
+## Tech stack
+- React
+- Vite
+- React Router
+- Tailwind CSS
+- (Code playground) Monaco editor (@monaco-editor/react)
 
-## Features
+## Routes (React Router)
+- Public:
+  - `/` → Home
+  - `/login` → Login
+  - `/signup` → Signup
+  - `/forgot-password` → ForgotPassword
+  - `/pricing` → Pricing
+  - `/promise` → Promise
+  - `/changelog` → Changelog
+  - `/room/:roomId` → Room
+- Authenticated (inside `AppLayout`):
+  - `/home` → Dashboard
+  - `/rooms` → Rooms
+  - `/profile` → Profile
+  - `/community` → Community
+  - `/refer` → ReferAndEarn
+  - `/practice/leaderboard` → practice/leaderboard
+  - `/practice/mock-interview` → practice/MockInterview
+  - `/practice/playground` → practice/Playground
+  - `/practice/study-plans` → practice/StudyPlans
+  - `/practice/pair-code` → practice/PairCodeSetup
 
-- Real-time collaborative study rooms
-- Synced Pomodoro timer
-- Group text and voice chat
-- Shared live notepad
-- Coding interview problem practice
-- Study analytics dashboard
-- User authentication
-- Room invite system
-- Responsive modern UI
+## Local development
+> Prerequisite: backend API should be running (the frontend is built to call backend endpoints).
 
-## Tech Stack
+### Start
+1. Install dependencies:
+   ```bat
+   cd client
+   npm install
+   ```
+2. Run dev server:
+   ```bat
+   npm run dev
+   ```
+3. Open the URL shown by Vite.
 
-- Frontend: React / Next.js / Tailwind CSS
-- Backend: Node.js / Express
-- Database: MongoDB
-- Realtime: Socket.IO / WebRTC
-- Authentication: Clerk / Firebase / Auth.js
-- Deployment: Vercel / Render / Railway
+## Build for production
+```bat
+cd client
+npm run build
+```
 
----
+## Project structure (high level)
+- `src/App.jsx` – router configuration
+- `src/pages/*` – page components
+- `src/pages/components/*` – shared UI layout components
+- `src/pages/practice/*` – practice feature pages
 
-# TODO
+## Notes
+- This README is intentionally focused on how to run the client and how routing is wired.
+- If you see runtime/API errors, ensure the backend is up and reachable from your browser environment.
 
-## Frontend
-- [ ] Create landing page UI
-- [ ] Build responsive navbar
-- [ ] Create authentication pages
-- [ ] Design study room interface
-- [ ] Add Pomodoro timer UI
-- [ ] Build coding practice dashboard
-- [ ] Create analytics page
-- [ ] Add dark mode support
-
-## Backend
-- [ ] Setup backend server
-- [ ] Configure database
-- [ ] Implement authentication
-- [ ] Create room APIs
-- [ ] Add real-time socket connection
-- [ ] Implement collaborative notes
-- [ ] Add voice chat support
-- [ ] Create coding problem APIs
-
-## Realtime Features
-- [ ] Synced Pomodoro timer
-- [ ] Live chat system
-- [ ] Shared notepad updates
-- [ ] User presence tracking
-- [ ] Room join invite code
-
-## Deployment
-- [ ] Deploy frontend
-- [ ] Deploy backend
-- [ ] Setup environment variables
-- [ ] Configure domain
-- [ ] Add CI/CD pipeline
-
-## Future Improvements
-- [ ] AI study assistant
-- [ ] Mock interview system
-- [ ] Leaderboards
-- [ ] Weekly challenges
-- [ ] Mobile application
-- [ ] Screen sharing
-- [ ] Study streak tracking

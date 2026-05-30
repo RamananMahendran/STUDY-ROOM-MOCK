@@ -109,15 +109,7 @@ export default function Playground() {
     setOutput("");
   };
 
-  const handleEditorMount = (editor) => {
-  editor.addCommand(
-    window.monaco.KeyMod.CtrlCmd |
-      window.monaco.KeyCode.Enter,
-    () => {
-      handleRun();
-    }
-  );
-};
+ 
 
   const handleRun = () => {
     setRunning(true);
