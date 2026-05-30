@@ -11,6 +11,7 @@ import Pricing from './pages/Pricing.jsx';
 import Promise from './pages/Promise.jsx';
 import Changelog from './pages/Changelog.jsx';
 import LeaderboardPage from './pages/practice/leaderboard.jsx';
+import MockInterview from './pages/practice/MockInterview.jsx';
 import Community from './pages/Community.jsx';
 import ReferAndEarn from './pages/ReferAndEarn.jsx';
 import FloatingMessage from './pages/components/FloatingMessage.jsx';
@@ -35,6 +36,7 @@ function App() {
           <Route path="/community" element={<Community />} />
           <Route path="/refer" element={<ReferAndEarn />} />
           <Route path="/practice/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/practice/mock-interview" element={<MockInterview />} />
           <Route path="/practice/study-plans" element={<StudyPlans />} />
           <Route path="/practice/pair-code" element={<PairCodeSetup />} />
         </Route>
