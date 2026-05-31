@@ -106,7 +106,7 @@ const TOP_NAV = [
 ];
 
 const BOTTOM_NAV = [
-  { id: "contests",  label: "Contests",     Icon: IcoZap,   soon: true                 },
+  { id: "contests",  label: "Contests",     Icon: IcoZap,   path: "/contests", soon: true                 },
   { id: "community", label: "Community",    Icon: IcoUsers, path: "/community"         },
   { id: "profile",   label: "Profile",      Icon: IcoBar,   path: "/profile"           },
   { id: "refer",     label: "Refer & earn", Icon: IcoGift,  path: "/refer"             },
@@ -301,7 +301,7 @@ export default function Sidebar({ active, onNav }) {
         {BOTTOM_NAV.map(({ id, label, Icon, path, soon }) => (
           <div key={id} style={{ position: "relative" }}>
             <button
-              onClick={() => !soon && go(id, path)}
+              onClick={() => go(id, path)}
               style={btnStyle(active === id, soon)}
             >
               <Icon s={15} />
