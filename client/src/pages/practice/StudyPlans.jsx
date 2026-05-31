@@ -129,7 +129,7 @@ export default function StudyPlans() {
     <div className="fixed inset-0 flex bg-[#060810] text-[#e2e8f0] font-sans overflow-hidden">
       
       {/* LEFT SIDEBAR INJECTION */}
-      <Sidebar active="practice" />
+      <Sidebar active="study-plans" />
 
       {/* MAIN VIEWPORT INTERFACE CONTAINER */}
       <div className="flex-1 flex flex-col min-w-0 h-full">

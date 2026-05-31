@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar.jsx";
 import TopBar from "../components/TopBar.jsx";
 // ── CUSTOM REUSABLE SVG ICONS ────────────────────────────────────────────────
@@ -24,17 +24,20 @@ const IcoArrowRight = () => (
 
 export default function PairCodeSetup() {
   const [sessionCode, setSessionCode] = useState("");
+  const navigate = useNavigate();
 
   const handleCreateSession = () => {
     // Generate a fresh 6-character room code framework configuration loop
     const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     console.log(`Staging pristine room session token: ${randomCode}`);
+    navigate(`/practice/pair/${randomCode}`);
   };
 
   const handleJoinSession = (e) => {
     e.preventDefault();
     if (sessionCode.length === 6) {
       console.log(`Connecting room cluster sequence targeting node: ${sessionCode}`);
+      navigate(`/practice/pair/${sessionCode}`);
     }
   };
 
@@ -42,7 +45,7 @@ export default function PairCodeSetup() {
     <div className="fixed inset-0 flex bg-[#060810] text-[#e2e8f0] font-sans overflow-hidden select-none">
       
       {/* LEFT SIDEBAR NAVIGATION COMPONENT INJECTION */}
-      <Sidebar active="practice" />
+      <Sidebar active="pair-code" />
 
       {/* CENTER STAGE VIEWPORT CANVAS WRAPPER */}
       <div className="flex-1 flex items-center justify-center bg-[#060810] px-6">

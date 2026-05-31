@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar.jsx";
 import Editor from "@monaco-editor/react";
 
@@ -118,13 +119,22 @@ int main() {
 
 
 // ── Main Component ────────────────────────────────────────────────────────────
-export default function Playground() {
+export default function PairCode() {
+  const { roomId } = useParams();
+  const navigate = useNavigate();
   const [activeLang, setActiveLang] = useState(LANGUAGES[0]);
   const [code, setCode] = useState(LANGUAGES[0].defaultCode);
   const [outputResult, setOutputResult] = useState(null);
   const [running, setRunning] = useState(false);
   const [showStdin, setShowStdin] = useState(false);
   const [stdin, setStdin] = useState("");
+  const [copied, setCopied] = useState(false);
+  
+  const handleCopyRoomId = () => {
+    navigator.clipboard.writeText(roomId || "BB0F55");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
   
 
   const handleLangSwitch = (lang) => {
@@ -185,38 +195,56 @@ export default function Playground() {
 
   return (
     <div className="fixed inset-0 flex bg-[#060810] text-[#e2e8f0] font-sans overflow-hidden select-none">
-      <Sidebar active="playground" />
+      <Sidebar active="pair-code" />
 
       {/* Main area */}
       <div className="flex-1 flex flex-col overflow-hidden">
 
         {/* ── Top bar ── */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-[#1e2433]/70 flex-shrink-0">
-          <div>
-            <h1 className="text-[15px] font-bold text-[#f1f5f9] tracking-tight">Code Playground</h1>
-            <p className="text-[11px] text-gray-500 mt-0.5">Write, run, and experiment</p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate("/practice/playground")}
+              className="flex items-center gap-1.5 text-[12px] font-semibold text-gray-400 hover:text-gray-200 transition-colors"
+            >
+              <span>←</span>
+              <span>Playground</span>
+            </button>
+            <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg border border-[#1e2433] bg-[#0d1117]">
+              <span className="text-[12px] font-mono font-bold tracking-widest text-[#f1f5f9] flex items-center gap-1.5">
+                <span className="text-gray-500">🔗</span> {roomId || "BB0F55"}
+              </span>
+              <button 
+                onClick={handleCopyRoomId}
+                className={`${copied ? 'text-emerald-500' : 'text-gray-500 hover:text-gray-300'} transition-colors`}
+              >
+                {copied ? (
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                ) : (
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                )}
+              </button>
+            </div>
+            
+            <div className="flex items-center gap-2 text-[12px] font-semibold text-gray-500">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Waiting for partner
+            </div>
+            
+            <button 
+              onClick={handleCopyRoomId}
+              className="px-3 py-1.5 rounded-lg border border-indigo-500/30 text-indigo-400 text-[12px] font-bold hover:bg-indigo-500/10 transition-colors cursor-pointer w-[72px] flex justify-center items-center"
+            >
+              {copied ? "Copied!" : "Invite"}
+            </button>
           </div>
+          
           <div className="flex items-center gap-2">
-            {/* Pair Code button */}
-            <button
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#1e2433] bg-[#0d1117] text-gray-400 text-[12px] font-semibold hover:border-indigo-500/40 hover:text-indigo-400 transition-all"
-            >
-              <IcoPairCode />
-              <span>Pair Code</span>
-            </button>
-            {/* Reset button */}
-            <button
-              onClick={handleReset}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#1e2433] bg-[#0d1117] text-gray-400 text-[12px] font-semibold hover:border-[#2e3448] hover:text-gray-300 transition-all"
-            >
-              <IcoReset />
-              <span>Reset</span>
-            </button>
             {/* Run button */}
             <button
               onClick={handleRun}
               disabled={running}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] disabled:opacity-60 text-white text-[12px] font-bold shadow-lg shadow-indigo-600/20 transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] disabled:opacity-60 text-white text-[12px] font-bold shadow-lg shadow-indigo-600/20 transition-all cursor-pointer"
             >
               <IcoPlay />
               <span>{running ? "Running…" : "Run"}</span>

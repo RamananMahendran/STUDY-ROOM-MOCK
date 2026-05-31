@@ -20,6 +20,7 @@ import ReferAndEarn from './pages/ReferAndEarn.jsx';
 import FloatingMessage from './pages/components/FloatingMessage.jsx';
 import StudyPlans from './pages/practice/StudyPlans.jsx';
 import PairCodeSetup from './pages/practice/PairCodeSetup.jsx';
+import PairCode from './pages/practice/PairCode.jsx';
 import AppLayout from './pages/components/AppLayout.jsx';
 
 function App() {
@@ -45,6 +46,7 @@ function App() {
           <Route path="/practice/playground" element={<Playground />} />
           <Route path="/practice/study-plans" element={<StudyPlans />} />
           <Route path="/practice/pair-code" element={<PairCodeSetup />} />
+          <Route path="/practice/pair/:roomId" element={<PairCode />} />
         </Route>
         
         <Route path="/pricing" element={<Pricing />} />
