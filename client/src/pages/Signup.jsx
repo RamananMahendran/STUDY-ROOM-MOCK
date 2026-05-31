@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function BrandMark({ size = 28 }) {
   return (
@@ -123,10 +123,54 @@ function DashboardMock() {
 
 // ── SIGNUP PAGE ───────────────────────────────────────────────────────────────
 export default function Signup() {
+  const navigate = useNavigate(); 
   const [showPw, setShowPw] = useState(false);
   const [name, setName]       = useState("");
   const [email, setEmail]     = useState("");
   const [password, setPassword] = useState("");
+
+  const handleSubmit = (e) => {
+  e.preventDefault(); 
+  console.log("Form submitted with:", { name, email, password });
+  // 1. Map 'name' to 'username' so the backend can destructure it properly
+  const accountData = { username: name, email, password };
+  console.log("Sending account data:", accountData);
+
+  fetch("http://localhost:5001/api/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(accountData),
+  })
+  .then(async (res) => {
+    const data = await res.json();
+    
+    // 2. Check the HTTP status code instead of 'data.success'
+    if (!res.ok) {
+      // If the backend threw an error (e.g., status 400), catch the error message
+      throw new Error(data.message || "Registration failed");
+    }
+    
+    return data;
+  })
+  .then((data) => {
+    // 3. Backend returns the user object directly on success (contains data.id, data.token, etc.)
+    console.log("Registration successful! User data:", data);
+    navigate("/home");
+    
+    // Optional: Save the token to localStorage for authenticated requests later
+     localStorage.setItem("token", data.token);
+     localStorage.setItem("user", JSON.stringify({
+        username: data.username,
+        email: data.email,
+        userId: data.id,
+        streak: data.streak || 0
+     }));
+  })
+  .catch((err) => {
+    console.error("Signup error:", err);
+    alert(err.message || "An error occurred. Please try again.");
+  });
+};
 
   // ── Password strength ───────────────────────────────────────────
   const getStrength = (pw) => {
@@ -216,7 +260,7 @@ export default function Signup() {
               </div>
 
               {/* Form */}
-              <form style={{ display:"flex", flexDirection:"column", gap:14 }}>
+              <form onSubmit={handleSubmit} style={{ display:"flex", flexDirection:"column", gap:14 }} >
                 <div>
                   <label style={{ display:"block", fontSize:11, fontWeight:600, letterSpacing:"0.5px", textTransform:"uppercase", color:"var(--text-muted)", marginBottom:6 }}>Name</label>
                   <input id="signup-name" type="text" placeholder="Your name" autoComplete="name" value={name} onChange={e=>setName(e.target.value)} style={{ ...inputStyle, borderColor:"rgba(99,102,241,0.7)", boxShadow:"0 0 0 3px rgba(99,102,241,0.12)" }} onFocus={focusIn} onBlur={focusOut} />

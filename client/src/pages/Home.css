@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap');
 
 /* ── RESET ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
 body { background: #060810; font-family: 'DM Sans', sans-serif; color: #e2e8f0; }
 a { text-decoration: none; color: inherit; }
 
@@ -26,16 +26,27 @@ a { text-decoration: none; color: inherit; }
   display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
 }
 .navbar-logo-text {
-  font-weight: 700; font-size: 0.95rem; color: #f1f5f9;
+  font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 0.95rem; color: #f1f5f9;
 }
 .navbar-links {
   display: flex; align-items: center; gap: 32px;
 }
 .nav-link {
-  color: #9ca3af; font-size: 0.88rem; font-weight: 500;
-  transition: color 0.2s; cursor: pointer;
+  color: #9ca3af; 
+  font-size: 0.88rem; 
+  font-weight: 500;
+  transition: all 0.2s; 
+  cursor: pointer;
+  padding: 6px 12px; /* Added spacing around text for the background fill */
+  border-radius: 6px;  /* Smooths the edges of the background fill */
 }
-.nav-link:hover, .nav-link.active { color: #f1f5f9; }
+
+/* Target them directly via the parent navbar layout wrapper */
+.navbar .nav-link.active,
+.navbar .nav-link:hover { 
+  color: #a5b4fc !important;
+  background-color: #111122 !important; 
+}
 .navbar-actions { display: flex; gap: 10px; align-items: center; }
 
 /* ── BUTTONS ── */
@@ -87,7 +98,7 @@ a { text-decoration: none; color: inherit; }
 .hero-title { font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 24px; }
 .hero-title-line1 { font-size: clamp(3rem, 7vw, 5.5rem); color: #f1f5f9; display: block; }
 .hero-title-line2 {
-  font-size: clamp(3rem, 7vw, 5.5rem); display: block;
+  font-family: 'DM Sans', sans-serif; font-size: clamp(3rem, 7vw, 5.5rem); display: block;
   background: linear-gradient(135deg, #818cf8 0%, #c084fc 60%, #e879f9 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
@@ -96,7 +107,7 @@ a { text-decoration: none; color: inherit; }
   font-size: clamp(2.2rem, 5.5vw, 4.2rem); color: #6b7280; display: block; margin-top: 8px;
 }
 .hero-sub {
-  font-size: 1rem; color: #6b7280; line-height: 1.7;
+  font-family: 'DM Sans', sans-serif; font-size: 1rem; color: #6b7280; line-height: 1.7;
   max-width: 520px; margin: 0 auto 40px;
 }
 .hero-sub strong { color: #d1d5db; }

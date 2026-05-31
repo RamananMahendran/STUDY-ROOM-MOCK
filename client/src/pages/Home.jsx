@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import "./Home.css";
-
+import Header from "./components/header.jsx";
+import Footer from "./components/footer.jsx";
+import {Link} from "react-router-dom";
 // ── DATA ──────────────────────────────────────────────────────────────────────
 
 const NAV_LINKS = ["Home", "Pricing", "Promise", "Changelog"];
@@ -183,7 +185,7 @@ function StudyRoomMock() {
   ];
 
   return (
-    <div style={{ display:"flex", background:"#0d1117", border:"1px solid #1e2433", borderRadius:14, overflow:"hidden", width:"100%", maxWidth:540, fontFamily:"'DM Sans', sans-serif", fontSize:"0.75rem" }}>
+    <div id="study-rooms" style={{ display:"flex", background:"#0d1117", border:"1px solid #1e2433", borderRadius:14, overflow:"hidden", width:"100%", maxWidth:540, fontFamily:"'DM Sans', sans-serif", fontSize:"0.75rem" }}>
       {/* sidebar */}
       <div style={{ width:130, background:"#080c12", borderRight:"1px solid #1e2433", padding:"14px 0" }}>
         <div style={{ padding:"0 12px 10px", display:"flex", alignItems:"center", gap:7 }}>
@@ -317,7 +319,7 @@ function CodeEditorMock() {
 
 function PricingProSection() {
   return (
-    <section className="pricing-pro-section">
+    <section id ="pricing" className="pricing-pro-section">
       {/* page-level glows behind card */}
       <div className="hero-glow" style={{ width:500, height:400, background:"#1e3a5f", top:"10%", right:"5%", opacity:0.3 }} />
       <div className="hero-glow" style={{ width:350, height:350, background:"#4c1d95", bottom:"5%", left:"10%", opacity:0.15 }} />
@@ -366,8 +368,8 @@ function PricingProSection() {
 
         {/* CTAs */}
         <div className="pricing-pro-ctas">
-          <button className="btn-primary lg">See Pricing →</button>
-          <button className="btn-outline lg">Try free first →</button>
+          <Link to="/pricing" className="btn-primary lg">See Pricing →</Link>
+          <Link to="/signup" className="btn-outline lg">Try free first →</Link>
         </div>
       </div>
     </section>
@@ -383,23 +385,7 @@ export default function Home() {
     <div style={{ fontFamily:"'DM Sans', sans-serif", background:"#060810", color:"#e2e8f0", minHeight:"100vh", overflowX:"hidden" }}>
 
       {/* ── NAVBAR ── */}
-      <nav className="navbar">
-        <div className="navbar-inner">
-          <a href="/" className="navbar-logo">
-            <div className="navbar-logo-icon">▦</div>
-            <span className="navbar-logo-text">Study Room</span>
-          </a>
-          <div className="navbar-links">
-            {NAV_LINKS.map((l, i) => (
-              <span key={l} className={`nav-link${i === 0 ? " active" : ""}`}>{l}</span>
-            ))}
-          </div>
-          <div className="navbar-actions">
-            <button className="btn-outline sm">Log in</button>
-            <button className="btn-primary sm">Get started →</button>
-          </div>
-        </div>
-      </nav>
+      <Header activePage="Home" />
 
       {/* ── HERO ── */}
       <section className="hero">
@@ -422,8 +408,8 @@ export default function Home() {
             <strong>Free for students. Forever.</strong>
           </p>
           <div className="hero-ctas fade-in-4">
-            <button className="btn-primary lg">Start studying free →</button>
-            <button className="btn-outline lg">See it in action ▶</button>
+            <Link to="/signup" className="btn-primary lg">Start studying free →</Link>
+            <a href = "#product"className="btn-outline lg">See it in action ▶</a>
           </div>
           <p className="hero-fine">No credit card · Google or email · 3 students joined today</p>
         </div>
@@ -462,7 +448,7 @@ export default function Home() {
       </section>
 
       {/* ── THE PRODUCT ── */}
-      <section className="product-section">
+      <section id="product" className="product-section">
         <div className="section-tag">THE PRODUCT</div>
         <h2 className="product-heading">
           Built for how students <span className="italic">actually</span> study.
@@ -497,7 +483,7 @@ export default function Home() {
       </section>
 
       {/* ── FEATURE: CODE ── */}
-      <section className="feature-section" style={{ paddingTop: 20 }}>
+      <section  id ="coding-ground" className="feature-section" style={{ paddingTop: 20 }}>
         <div className="feature-row reverse">
           <div className="feature-col-text">
             <div className="feature-eyebrow">CODE</div>
@@ -521,7 +507,7 @@ export default function Home() {
       </section>
 
       {/* ── FEATURE: PROGRESS ── */}
-      <section className="feature-section" style={{ paddingTop: 20 }}>
+      <section id ="mock-interviews" className="feature-section" style={{ paddingTop: 20 }}>
         <div className="feature-row">
           <div className="feature-col-text">
             <div className="feature-eyebrow">PROGRESS</div>
@@ -631,47 +617,14 @@ export default function Home() {
             You're 4 minutes away from a synced study room with your friends, a Pomodoro that ticks for everyone, and 120 problems waiting.
           </p>
           <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
-            <button className="btn-primary lg">Start studying free →</button>
-            <button className="btn-outline lg">Or sign up with email</button>
+            <Link to="/signup" className="btn-primary lg">Start studying free →</Link>
+            <Link to="/signup" className="btn-outline lg">Or sign up with email</Link>
           </div>
           <p className="final-cta-fine">No credit card · No email verification · 3 students joined today</p>
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
-      <footer className="footer">
-        <div className="footer-inner">
-          <div>
-            <div className="footer-brand-logo">
-              <div className="footer-brand-icon">▦</div>
-              <span className="footer-brand-name">Study Room</span>
-            </div>
-            <p className="footer-brand-desc">
-              One tab for studying together and shipping placements. Free for students forever.
-            </p>
-            <div className="footer-status">
-              <span className="footer-status-dot" />
-              All systems operational
-            </div>
-          </div>
-          <div>
-            <div className="footer-col-label">PRODUCT</div>
-            {["Study rooms","Coding ground","Mock interviews","Pricing"].map(l => (
-              <a key={l} href="#" className="footer-link">{l}</a>
-            ))}
-          </div>
-          <div>
-            <div className="footer-col-label">RESOURCES</div>
-            {["30-day Placement Sprint","FAANG Prep plan","Promise","Changelog"].map(l => (
-              <a key={l} href="#" className="footer-link">{l}</a>
-            ))}
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <span className="footer-copy">© 2026 Study Room · Built by Jainth A in Chennai</span>
-          <span className="footer-made">Made with 🍕 and <em>way too many Pomodoros</em></span>
-        </div>
-      </footer>
+      <Footer />
 
     </div>
   );
