@@ -2,7 +2,7 @@ import prisma from '../../config/database.js';
 
 export interface CreatePairSessionData {
   roomCode: string;
-  problemId: number;
+  problemId?: number;
   hostId: number;
   language?: string;
 }

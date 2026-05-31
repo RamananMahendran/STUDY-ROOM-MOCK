@@ -51,24 +51,41 @@ const submitCodeFromPair = async (
 // POST /api/pair/create - Create a new pair session
 export const createSession = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { problemId, language } = req.body;
+    let { problemId, language } = req.body;
     const hostId = (req as any).user?.id || 1;
 
+    // If no problemId provided, try to fetch the first available problem
+    // If no problems exist, allow creation without a problemId (for demo/testing)
     if (!problemId) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required field: problemId',
-      });
+      try {
+        const firstProblem = await prisma.problem.findFirst({
+          select: { id: true },
+        });
+        
+        if (firstProblem) {
+          problemId = firstProblem.id;
+        }
+        // Otherwise leave problemId undefined - the schema will handle it
+      } catch (err: any) {
+        console.error('Error fetching first problem:', err);
+        // Continue without problemId for now
+      }
     }
 
     const roomCode = generateRoomCode();
 
-    const session = await pairModel.createSession({
+    // Only pass problemId if it exists
+    const sessionData: any = {
       roomCode,
-      problemId: parseInt(problemId),
       hostId,
       language: language || 'python',
-    });
+    };
+    
+    if (problemId) {
+      sessionData.problemId = parseInt(problemId);
+    }
+
+    const session = await pairModel.createSession(sessionData);
 
     const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
 

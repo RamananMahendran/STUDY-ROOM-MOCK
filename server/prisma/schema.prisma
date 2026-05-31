@@ -384,7 +384,7 @@ model MockInterviewResult {
 model PairSession {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   roomCode    String   @unique @map("room_code")
-  problemId   Int      @map("problem_id")
+  problemId   Int?     @map("problem_id")
   hostId      Int      @map("host_id")
   guestId     Int?     @map("guest_id")
   status      String   @default("waiting") // waiting, active, ended
@@ -395,7 +395,7 @@ model PairSession {
   submissions  Submission[]  // 👈 ADD THIS LINE
 
   // Relations
-  problem     Problem      @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  problem     Problem?      @relation(fields: [problemId], references: [id], onDelete: Cascade)
   host        User         @relation("HostSessions", fields: [hostId], references: [id])
   guest       User?        @relation("GuestSessions", fields: [guestId], references: [id])
   cursors     PairCursor[]
