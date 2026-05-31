@@ -363,6 +363,7 @@ export default function Rooms() {
                     <button
                       key={room.id}
                       onClick={() => {
+                        if (isExpired) return;
                         sessionStorage.setItem("currentRoom", JSON.stringify(room));
                         navigate(`/room/${room.id}`);
                       }}
@@ -371,7 +372,7 @@ export default function Rooms() {
                         padding: 14, borderRadius: 12,
                         backgroundColor: "var(--surface)",
                         border: `2px solid ${room.color}44`,
-                        cursor: "pointer", textAlign: "left",
+                        cursor: isExpired ? "default" : "pointer", textAlign: "left",
                         fontFamily: "inherit", color: "var(--text)",
                         transition: "border-color 0.15s, box-shadow 0.15s, transform 0.15s",
                         boxShadow: "var(--card-shadow)",
@@ -388,7 +389,7 @@ export default function Rooms() {
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                           <span style={{ fontSize: 10, fontFamily: "monospace", color: "var(--text-muted)", background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 5, padding: "2px 6px" }}>{room.id}</span>
-                          <span style={{ color: "var(--text-muted)", fontSize: 12 }}>→</span>
+                          {!isExpired && <span style={{ color: "var(--text-muted)", fontSize: 12 }}>→</span>}
                         </div>
                       </div>
 
