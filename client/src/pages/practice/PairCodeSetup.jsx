@@ -25,12 +25,38 @@ const IcoArrowRight = () => (
 export default function PairCodeSetup() {
   const [sessionCode, setSessionCode] = useState("");
   const navigate = useNavigate();
+  
+  const handleCreateSession = async () => {
+    console.log('🔴 handleCreateSession CALLED');
+    try {
+      console.log('📤 Fetching /api/pair/create...');
+      const response = await fetch('http://localhost:5001/api/pair/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language: 'python' }),
+      });
 
-  const handleCreateSession = () => {
-    // Generate a fresh 6-character room code framework configuration loop
-    const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-    console.log(`Staging pristine room session token: ${randomCode}`);
-    navigate(`/practice/pair/${randomCode}`);
+      console.log('📥 Response status:', response.status);
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        console.error('❌ Failed to create session', err);
+        return;
+      }
+
+      const result = await response.json();
+      console.log('✅ API Response:', result);
+      
+      const roomCode = result?.data?.roomCode;
+      if (roomCode) {
+        console.log(`🎯 Created new session with room code: ${roomCode}`);
+        navigate(`/practice/pair/${roomCode}`);
+      } else {
+        console.error('❌ Create session: no roomCode received', result);
+      }
+    } catch (err) {
+      console.error('❌ Error creating session:', err);
+    }
   };
 
   const handleJoinSession = (e) => {
@@ -67,6 +93,7 @@ export default function PairCodeSetup() {
                 </div>
 
                 <button
+                    type="button"
                     onClick={handleCreateSession}
                     className="h-10 w-full mt-8 px-6 py-2.5 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] text-white text-[12px] font-bold shadow-lg shadow-indigo-600/10 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                 >
