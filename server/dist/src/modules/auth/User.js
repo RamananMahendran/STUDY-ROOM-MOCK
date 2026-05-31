@@ -1,5 +1,6 @@
 import prisma from '../../config/database.js'; // centralized database.ts
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 const User = {
     async findByEmail(email) {
         const rows = await prisma.$queryRaw `
@@ -40,7 +41,67 @@ const User = {
     },
     async matchPassword(enteredPassword, hashedPassword) {
         return await bcrypt.compare(enteredPassword, hashedPassword);
-    }
+    },
+    // ── Password Reset Methods ─────────────────────────────────────────────────
+    /**
+     * Generates a secure random token, hashes it for DB storage,
+     * saves the hash + expiry (10 min) to the user row,
+     * and returns the PLAIN token to send in the email.
+     */
+    async saveResetToken(userId) {
+        // 1. Generate cryptographically secure random token (32 bytes → 64 hex chars)
+        const plainToken = crypto.randomBytes(32).toString('hex');
+        // 2. Hash it before storing – so even if DB is compromised, tokens can't be used
+        const hashedToken = crypto.createHash('sha256').update(plainToken).digest('hex');
+        // 3. 10-minute expiry
+        const expireAt = new Date(Date.now() + 10 * 60 * 1000);
+        await prisma.$executeRaw `
+      UPDATE users
+      SET reset_password_token = ${hashedToken},
+          reset_password_expire = ${expireAt}
+      WHERE id = ${userId}
+    `;
+        return plainToken; // ← send this in the email link
+    },
+    /**
+     * Looks up a user by the hashed form of the plain token,
+     * only if the token hasn't expired yet.
+     */
+    async findByResetToken(plainToken) {
+        const hashedToken = crypto.createHash('sha256').update(plainToken).digest('hex');
+        const now = new Date();
+        const rows = await prisma.$queryRaw `
+      SELECT id, name AS username, email, streak_count AS streak
+      FROM users
+      WHERE reset_password_token = ${hashedToken}
+        AND reset_password_expire > ${now}
+    `;
+        return rows[0];
+    },
+    /**
+     * Hashes and saves the new password for the given user ID.
+     */
+    async updatePassword(userId, newPassword) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+        await prisma.$executeRaw `
+      UPDATE users
+      SET password = ${hashedPassword},
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${userId}
+    `;
+    },
+    /**
+     * Clears the reset token fields after a successful reset.
+     */
+    async clearResetToken(userId) {
+        await prisma.$executeRaw `
+      UPDATE users
+      SET reset_password_token = NULL,
+          reset_password_expire = NULL
+      WHERE id = ${userId}
+    `;
+    },
 };
 export default User;
 // import pool from '../config/db.js';

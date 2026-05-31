@@ -30,31 +30,33 @@ export async function getJudge0Languages() {
     return parseJudge0Response(response);
 }
 export async function runJudge0Submission(payload) {
-    // Build the request body dynamically
+    // Build the request body dynamically with base64 encoding
     const requestBody = {
-        source_code: payload.sourceCode,
+        source_code: Buffer.from(payload.sourceCode).toString('base64'),
         language_id: payload.languageId,
-        stdin: payload.stdin || '',
+        stdin: payload.stdin ? Buffer.from(payload.stdin).toString('base64') : '',
     };
-    // Only add expected_output if it's provided (for single-run tests, not for submissions)
+    // Only add expected_output if it's provided
     if (payload.expectedOutput !== undefined && payload.expectedOutput !== null) {
-        requestBody.expected_output = payload.expectedOutput;
+        requestBody.expected_output = Buffer.from(payload.expectedOutput).toString('base64');
     }
-    const response = await fetch(`${judge0Url}/submissions?base64_encoded=false&wait=true`, {
+    const response = await fetch(`${judge0Url}/submissions?base64_encoded=true&wait=true`, {
         method: 'POST',
         headers: judge0Headers(),
         body: JSON.stringify(requestBody),
     });
     const result = await parseJudge0Response(response);
+    // Helper to decode base64
+    const decodeBase64 = (str) => str ? Buffer.from(str, 'base64').toString('utf8') : null;
     // Ensure consistent response format
     return {
-        stdout: result.stdout || null,
-        stderr: result.stderr || null,
-        compile_output: result.compile_output || null,
+        stdout: decodeBase64(result.stdout),
+        stderr: decodeBase64(result.stderr),
+        compile_output: decodeBase64(result.compile_output),
         time: result.time || '0',
         memory: result.memory || 0,
         status: result.status || { id: 5, description: 'Runtime Error' },
         token: result.token,
-        message: result.message,
+        message: result.message ? Buffer.from(result.message, 'base64').toString('utf8') : null,
     };
 }
