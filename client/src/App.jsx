@@ -14,7 +14,8 @@ import Changelog from './pages/Changelog.jsx';
 import LeaderboardPage from './pages/practice/leaderboard.jsx';
 import MockInterview from './pages/practice/MockInterview.jsx';
 import Playground from './pages/practice/Playground.jsx';
-import Problems from './pages/practice/Problems.jsx';
+import ProblemsPage from './pages/practice/ProblemsPage.jsx';
+import ProblemPage from './pages/practice/ProblemPage.jsx';
 import Community from './pages/Community.jsx';
 import ReferAndEarn from './pages/ReferAndEarn.jsx';
 import FloatingMessage from './pages/components/FloatingMessage.jsx';
@@ -43,7 +44,8 @@ function App() {
           <Route path="/refer" element={<ReferAndEarn />} />
           <Route path="/practice/leaderboard" element={<LeaderboardPage />} />
           <Route path="/practice/mock-interview" element={<MockInterview />} />
-          <Route path="/practice/problems" element={<Problems />} />
+          <Route path="/practice/problems" element={<ProblemsPage />} />
+          <Route path="/practice/problems/:slug" element={<ProblemPage />} />
           <Route path="/practice/playground" element={<Playground />} />
           <Route path="/practice/study-plans" element={<StudyPlans />} />
           <Route path="/practice/pair-code" element={<PairCodeSetup />} />
