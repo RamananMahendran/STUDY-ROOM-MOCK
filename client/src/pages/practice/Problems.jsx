@@ -1,5 +1,26 @@
 import { useState, useMemo } from 'react';
-//import { PROBLEMS, DAILY_CHALLENGE } from '../data/problems';
+import { useNavigate } from 'react-router-dom';
+// Mock data since the file is missing
+const DAILY_CHALLENGE = {
+  id: 1,
+  title: "Factorial",
+  difficulty: "Easy",
+  tags: ["Math", "Recursion"],
+  acceptance: "75%",
+};
+
+const PROBLEMS = [
+  { id: 1, title: "Factorial", difficulty: "Easy", tags: ["Math", "Recursion"], acceptance: "75%" },
+  { id: 2, title: "Two Sum", difficulty: "Easy", tags: ["Array", "Hash Table"], acceptance: "48%" },
+  { id: 3, title: "Longest Substring Without Repeating Characters", difficulty: "Medium", tags: ["String", "Sliding Window"], acceptance: "33%" },
+  { id: 4, title: "Median of Two Sorted Arrays", difficulty: "Hard", tags: ["Array", "Binary Search"], acceptance: "35%" },
+  { id: 5, title: "Valid Parentheses", difficulty: "Easy", tags: ["String", "Stack"], acceptance: "40%" },
+  { id: 6, title: "Merge K Sorted Lists", difficulty: "Hard", tags: ["Linked List", "Divide and Conquer"], acceptance: "49%" },
+  { id: 7, title: "3Sum", difficulty: "Medium", tags: ["Array", "Two Pointers"], acceptance: "32%" },
+  { id: 8, title: "Search in Rotated Sorted Array", difficulty: "Medium", tags: ["Array", "Binary Search"], acceptance: "38%" },
+  { id: 9, title: "Climbing Stairs", difficulty: "Easy", tags: ["Math", "DP"], acceptance: "52%" },
+  { id: 10, title: "Edit Distance", difficulty: "Hard", tags: ["String", "DP"], acceptance: "53%" },
+];
 
 const DIFFICULTY_COLORS = {
   Easy: { bg: '#14532d', color: '#4ade80', border: '#166534' },
@@ -8,6 +29,7 @@ const DIFFICULTY_COLORS = {
 };
 
 export default function ProblemsPage({ onSelectProblem }) {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('All');
   const [solved] = useState(new Set([2, 3, 6, 7, 8, 9])); // demo solved
@@ -66,7 +88,7 @@ export default function ProblemsPage({ onSelectProblem }) {
           <DifficultyBadge difficulty={DAILY_CHALLENGE.difficulty} />
         </div>
         <button
-          onClick={() => onSelectProblem(DAILY_CHALLENGE)}
+          onClick={() => onSelectProblem ? onSelectProblem(DAILY_CHALLENGE) : navigate('/practice/playground')}
           style={{
             background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)',
             color: '#fff', padding: '12px 22px', borderRadius: 10, cursor: 'pointer',
@@ -122,7 +144,7 @@ export default function ProblemsPage({ onSelectProblem }) {
             problem={problem}
             idx={idx}
             solved={solved.has(problem.id)}
-            onClick={() => onSelectProblem(problem)}
+            onClick={() => onSelectProblem ? onSelectProblem(problem) : navigate('/practice/playground')}
             isLast={idx === filtered.length - 1}
           />
         ))}

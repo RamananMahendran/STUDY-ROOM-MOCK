@@ -76,6 +76,7 @@ const IcoSparkles = ({ s = 16 }) => <svg width={s} height={s} viewBox="0 0 24 24
 
 // ── Daily challenge banner ────────────────────────────────────────────────────
 function DailyChallenge() {
+  const navigate = useNavigate();
   const now = new Date();
   const day = now.toLocaleDateString("en-US", { weekday: "long" });
   const date = now.toLocaleDateString("en-US", { month: "long", day: "numeric" });
@@ -127,6 +128,7 @@ function DailyChallenge() {
 
         {/* Solve button */}
         <div
+          onClick={() => navigate("/practice/playground")}
           className="flex-shrink-0 flex items-center cursor-pointer"
           style={{ gap: 6, backgroundColor: "#fff", color: "#4f46e5", padding: "8px 16px", borderRadius: 10, fontSize: 13, fontWeight: 700 }}
         >
@@ -142,6 +144,7 @@ function DailyChallenge() {
 
 // ── Hero greeting card ────────────────────────────────────────────────────────
 function HeroCard({ onStartFocus, username, streak }) {
+  const navigate = useNavigate();
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const day = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][new Date().getDay()];
@@ -193,6 +196,7 @@ function HeroCard({ onStartFocus, username, streak }) {
             Resume · Focus session
           </button>
           <button
+            onClick={() => navigate("/practice/problems")}
             className="inline-flex items-center cursor-pointer"
             style={{ gap: 6, padding: "11px 14px", borderRadius: 10, background: "transparent", color: "var(--text-muted)", border: "1px solid var(--border)", fontSize: 13, fontWeight: 600, fontFamily: "inherit" }}
           >
