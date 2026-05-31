@@ -333,36 +333,60 @@ function CreateRoomModal({ onClose, onNavigate }) {
             Cancel
           </button>
           <button
-            onClick={() => {
-              const id = Math.random().toString(36).slice(2, 8);
-              const room = {
-                id,
-                name:     roomName || "My Room",
-                icon:     ROOM_ICONS[selectedIcon],
-                color:    ROOM_COLORS[selectedColor],
-                goal,
-                focusMin: focus,
-                breakMin: brk,
-                expires,
-                createdAt: Date.now(),
-                members: 1
-              };
-              sessionStorage.setItem("currentRoom", JSON.stringify(room));
-              const existingRooms = JSON.parse(localStorage.getItem("myRooms") || "null");
-              if (!existingRooms) {
-                // Initialize with some defaults if empty
-                const defaults = [
-                  { id: "ffaaae", name: "try", icon: "📚", color: "#6366f1", goal: "", focusMin: 90, breakMin: 15, left: "23H 59M", members: 1 },
-                  { id: "f3e62f", name: "try", icon: "🟡", color: "#f59e0b", goal: "work should be completed", focusMin: 90, breakMin: 15, left: "23H 56M", members: 1 },
-                ];
-                localStorage.setItem("myRooms", JSON.stringify([...defaults, room]));
-              } else {
-                existingRooms.push(room);
-                localStorage.setItem("myRooms", JSON.stringify(existingRooms));
+            onClick={async () => {
+              try {
+                const token = localStorage.getItem("token");
+                const res = await fetch("http://localhost:5001/api/rooms", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                  },
+                  body: JSON.stringify({
+                    mode: "study",
+                    isPublic: true,
+                    maxCapacity: 10
+                  })
+                });
+                
+                if (!res.ok) {
+                  throw new Error("Failed to create room. Please ensure you are logged in.");
+                }
+                
+                const data = await res.json();
+                const id = data.roomId;
+                const room = {
+                  id,
+                  joinCode: data.joinCode,
+                  name:     roomName || "My Room",
+                  icon:     ROOM_ICONS[selectedIcon],
+                  color:    ROOM_COLORS[selectedColor],
+                  goal,
+                  focusMin: focus,
+                  breakMin: brk,
+                  expires,
+                  createdAt: Date.now(),
+                  members: 1
+                };
+                sessionStorage.setItem("currentRoom", JSON.stringify(room));
+                const existingRooms = JSON.parse(localStorage.getItem("myRooms") || "null");
+                if (!existingRooms) {
+                  const defaults = [
+                    { id: "ffaaae", name: "try", icon: "📚", color: "#6366f1", goal: "", focusMin: 90, breakMin: 15, left: "23H 59M", members: 1 },
+                    { id: "f3e62f", name: "try", icon: "🟡", color: "#f59e0b", goal: "work should be completed", focusMin: 90, breakMin: 15, left: "23H 56M", members: 1 },
+                  ];
+                  localStorage.setItem("myRooms", JSON.stringify([...defaults, room]));
+                } else {
+                  existingRooms.push(room);
+                  localStorage.setItem("myRooms", JSON.stringify(existingRooms));
+                }
+                window.addNotification(`You successfully created the room "${room.name}".`);
+                onClose();
+                if (onNavigate) onNavigate(`/room/${id}`);
+              } catch (err) {
+                console.error("Error creating room:", err);
+                alert(err.message);
               }
-              window.addNotification(`You successfully created the room "${room.name}".`);
-              onClose();
-              if (onNavigate) onNavigate(`/room/${id}`);
             }}
             style={{
               flex: 1, padding: "11px 24px", borderRadius: 10,

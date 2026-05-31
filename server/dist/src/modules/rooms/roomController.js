@@ -40,27 +40,28 @@ export const getRooms = async (req, res) => {
 export const createRoom = async (req, res) => {
     try {
         const { mode, isPublic, maxCapacity } = req.body;
-        const userId = req.user?.id;
-        if (!userId) {
-            res.status(401).json({ error: 'Unauthorized' });
-            return;
-        }
+        const userId = req.user?.id; // Optional
         if (!mode || !['solo', 'pair', 'study', 'mock_interview'].includes(mode)) {
             res.status(400).json({ error: 'Invalid mode. Must be "solo", "pair", "study", or "mock_interview"' });
             return;
         }
         const capacity = maxCapacity || (mode === 'solo' ? 1 : mode === 'pair' ? 2 : 10);
         const joinCode = generateJoinCode();
-        const room = await prisma.studyRoom.create({
-            data: {
-                name: `${mode.charAt(0).toUpperCase() + mode.slice(1)} Room`,
-                slug: `${mode}-${joinCode.toLowerCase()}`,
-                ownerId: userId,
-                isPrivate: !isPublic,
-                roomType: mode === 'mock_interview' ? 'mock_interview' : 'study',
-            },
-        });
-        await setRoomState(room.id, {
+        // Generate a temporary ID if no user is logged in, otherwise create DB record
+        let roomId = `guest-room-${Date.now()}`;
+        if (userId) {
+            const room = await prisma.studyRoom.create({
+                data: {
+                    name: `${mode.charAt(0).toUpperCase() + mode.slice(1)} Room`,
+                    slug: `${mode}-${joinCode.toLowerCase()}`,
+                    ownerId: userId,
+                    isPrivate: !isPublic,
+                    roomType: mode === 'mock_interview' ? 'mock_interview' : 'study',
+                },
+            });
+            roomId = room.id;
+        }
+        await setRoomState(roomId, {
             status: 'IDLE',
             mode: mode,
             maxCapacity: capacity,
@@ -69,7 +70,7 @@ export const createRoom = async (req, res) => {
             createdAt: Date.now(),
         });
         res.status(201).json({
-            roomId: room.id,
+            roomId,
             joinCode,
             mode,
             maxCapacity: capacity,

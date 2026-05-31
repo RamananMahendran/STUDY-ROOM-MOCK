@@ -72,7 +72,35 @@ export default function Rooms() {
   const [roomCode, setRoomCode]   = useState("");
   const [modeFilter, setModeFilter] = useState("All");
   const [search, setSearch]       = useState("");
+  const [publicRooms, setPublicRooms] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+
+  const fetchRooms = async () => {
+    try {
+      setIsLoading(true);
+      let url = "http://localhost:5001/api/rooms";
+      if (modeFilter !== "All") {
+        let backendMode = modeFilter.toLowerCase();
+        if (backendMode === "solo+") backendMode = "solo";
+        url += `?mode=${backendMode}`;
+      }
+      const res = await fetch(url);
+      const data = await res.json();
+      if (res.ok) {
+        setPublicRooms(data.rooms || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch rooms:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRooms();
+  }, [modeFilter]);
+
 
   const [myRooms, setMyRooms] = useState(() => {
     const saved = localStorage.getItem("myRooms");
@@ -246,7 +274,7 @@ export default function Rooms() {
                         fontWeight: 700, border: "1px solid var(--border)",
                       }}
                     >
-                      0
+                      {publicRooms.length}
                     </span>
                     <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
                       Open rooms anyone can join
@@ -306,42 +334,106 @@ export default function Rooms() {
                   </div>
                 </div>
 
-                {/* Empty state */}
-                <div
-                  className="ui-empty flex flex-col items-center justify-center text-center"
-                  style={{ padding: "48px 24px" }}
-                >
-                  <div
-                    className="ui-empty-icon flex items-center justify-center"
-                    style={{ marginBottom: 14, color: "var(--text-subtle)" }}
-                    aria-hidden="true"
-                  >
-                    <IcoUsersLg s={36} />
+                {/* Empty state / Rooms grid */}
+                {isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <span style={{ color: "var(--text-muted)", fontSize: 13 }}>Loading rooms...</span>
                   </div>
-                  <p style={{ margin: "0 0 6px", fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
-                    No public rooms right now.
-                  </p>
-                  <p style={{ margin: "0 0 20px", fontSize: 12, color: "var(--text-muted)", maxWidth: 280, lineHeight: 1.55 }}>
-                    Be the first to host one — set your room to public when you create it.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => window.dispatchEvent(new Event("open-create-room-modal"))}
-                    style={{
-                      display: "inline-flex", alignItems: "center", gap: 6,
-                      padding: "8px 18px", borderRadius: "var(--radius-md)",
-                      background: "#6366f1", color: "#fff",
-                      border: "none", fontSize: 12, fontWeight: 700,
-                      cursor: "pointer", fontFamily: "inherit",
-                      boxShadow: "0 4px 14px rgba(99,102,241,0.35)",
-                      transition: "opacity 0.12s",
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
-                    onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+                ) : publicRooms.filter(r => r.roomId.toLowerCase().includes(search.toLowerCase()) || r.mode.toLowerCase().includes(search.toLowerCase())).length === 0 ? (
+                  <div
+                    className="ui-empty flex flex-col items-center justify-center text-center"
+                    style={{ padding: "48px 24px" }}
                   >
-                    Create a room
-                  </button>
-                </div>
+                    <div
+                      className="ui-empty-icon flex items-center justify-center"
+                      style={{ marginBottom: 14, color: "var(--text-subtle)" }}
+                      aria-hidden="true"
+                    >
+                      <IcoUsersLg s={36} />
+                    </div>
+                    <p style={{ margin: "0 0 6px", fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
+                      No public rooms right now.
+                    </p>
+                    <p style={{ margin: "0 0 20px", fontSize: 12, color: "var(--text-muted)", maxWidth: 280, lineHeight: 1.55 }}>
+                      Be the first to host one — set your room to public when you create it.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => window.dispatchEvent(new Event("open-create-room-modal"))}
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        padding: "8px 18px", borderRadius: "var(--radius-md)",
+                        background: "#6366f1", color: "#fff",
+                        border: "none", fontSize: 12, fontWeight: 700,
+                        cursor: "pointer", fontFamily: "inherit",
+                        boxShadow: "0 4px 14px rgba(99,102,241,0.35)",
+                        transition: "opacity 0.12s",
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
+                      onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+                    >
+                      Create a room
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
+                    {publicRooms
+                      .filter(r => r.roomId.toLowerCase().includes(search.toLowerCase()) || r.mode.toLowerCase().includes(search.toLowerCase()))
+                      .map((room) => (
+                      <button
+                        key={room.roomId}
+                        onClick={() => {
+                          const existingRoom = myRooms.find(r => r.id === room.roomId);
+                          const joinedRoom = existingRoom || {
+                            id: room.roomId,
+                            name: `${room.mode.charAt(0).toUpperCase() + room.mode.slice(1)} Room`,
+                            icon: "🚪",
+                            color: "#10b981",
+                            goal: "",
+                            focusMin: 50,
+                            breakMin: 10,
+                            expires: "24h"
+                          };
+                          sessionStorage.setItem("currentRoom", JSON.stringify(joinedRoom));
+                          navigate(`/room/${room.roomId}`);
+                        }}
+                        style={{
+                          display: "flex", flexDirection: "column", gap: 10,
+                          padding: 14, borderRadius: 12,
+                          backgroundColor: "var(--surface)",
+                          border: `2px solid rgba(16, 185, 129, 0.44)`,
+                          cursor: "pointer", textAlign: "left",
+                          fontFamily: "inherit", color: "var(--text)",
+                          transition: "border-color 0.15s, box-shadow 0.15s, transform 0.15s",
+                          boxShadow: "var(--card-shadow)",
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = "#10b981"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 6px 20px rgba(16, 185, 129, 0.30)`; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = `rgba(16, 185, 129, 0.44)`; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--card-shadow)"; }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <span style={{ fontSize: 20 }}>{room.mode === "pair" ? "🤝" : room.mode === "study" ? "📚" : "🎯"}</span>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>{room.mode.charAt(0).toUpperCase() + room.mode.slice(1)} Room</span>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <span style={{ fontSize: 10, fontFamily: "monospace", color: "var(--text-muted)", background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 5, padding: "2px 6px" }}>{room.joinCode}</span>
+                            <span style={{ color: "var(--text-muted)", fontSize: 12 }}>→</span>
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 6, borderTop: "1px solid var(--border)" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <span style={{ fontSize: 10, background: "rgba(16,185,129,0.12)", color: "#10b981", border: "1px solid rgba(16,185,129,0.25)", borderRadius: 999, padding: "2px 7px", fontWeight: 700 }}>
+                              {room.status}
+                            </span>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 10, color: "var(--text-muted)" }}>
+                            <span>👥 {room.participantCount} / {room.maxCapacity} members</span>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </section>
 
               {/* ── Your rooms ── */}
