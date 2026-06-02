@@ -1,8 +1,7 @@
 -- ============================================================
--- StudyRoom.co.in — Full PostgreSQL Schema
--- All 4 Backend Devs (BE1 + BE2 + BE3 + BE4)
+-- StudyRoom.co.in — Full PostgreSQL Schema (Updated)
+-- BE3 Day 1-5: Problems, Submissions, Pair Coding, Mock Interviews
 -- ============================================================
-
 
 -- ============================================================
 -- EXTENSIONS
@@ -29,8 +28,6 @@ CREATE TABLE users (
   updated_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
--- Stores Google / GitHub OAuth links per user
--- One user can have multiple OAuth providers
 CREATE TABLE oauth_accounts (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id         UUID          NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -43,7 +40,6 @@ CREATE TABLE oauth_accounts (
   UNIQUE (provider, provider_id)
 );
 
--- NextAuth / custom sessions
 CREATE TABLE sessions (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id         UUID          NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -54,7 +50,6 @@ CREATE TABLE sessions (
   created_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
--- Tracks daily study activity for streak calculation
 CREATE TABLE streaks (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id         UUID          NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -65,11 +60,10 @@ CREATE TABLE streaks (
   UNIQUE (user_id, date)
 );
 
--- One active subscription per user
 CREATE TABLE subscriptions (
   id                  UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id             UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  razorpay_sub_id     TEXT        UNIQUE,               -- Razorpay subscription ID
+  razorpay_sub_id     TEXT        UNIQUE,
   plan                TEXT        NOT NULL CHECK (plan IN ('monthly', 'annual')),
   status              TEXT        NOT NULL DEFAULT 'active'
                                   CHECK (status IN ('active', 'cancelled', 'expired', 'paused')),
@@ -80,25 +74,23 @@ CREATE TABLE subscriptions (
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Individual payment records (one per billing cycle)
 CREATE TABLE payments (
   id                  UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id             UUID        NOT NULL REFERENCES users(id) ON DELETE SET NULL,
   subscription_id     UUID        REFERENCES subscriptions(id) ON DELETE SET NULL,
   razorpay_payment_id TEXT        UNIQUE,
   razorpay_order_id   TEXT,
-  amount_paise        INTEGER     NOT NULL,             -- stored in paise (100 paise = ₹1)
+  amount_paise        INTEGER     NOT NULL,
   currency            TEXT        NOT NULL DEFAULT 'INR',
   status              TEXT        NOT NULL CHECK (status IN ('pending', 'captured', 'failed', 'refunded')),
   captured_at         TIMESTAMPTZ,
   created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Raw Razorpay webhook payloads — processed idempotently
 CREATE TABLE webhook_events (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_id        TEXT          NOT NULL UNIQUE,        -- Razorpay event ID (idempotency key)
-  event_type      TEXT          NOT NULL,               -- e.g. payment.captured
+  event_id        TEXT          NOT NULL UNIQUE,
+  event_type      TEXT          NOT NULL,
   payload         JSONB         NOT NULL,
   processed       BOOLEAN       NOT NULL DEFAULT FALSE,
   processed_at    TIMESTAMPTZ,
@@ -125,7 +117,6 @@ CREATE TABLE study_rooms (
   updated_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
--- Who is currently in (or has been in) a room
 CREATE TABLE room_members (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   room_id         UUID          NOT NULL REFERENCES study_rooms(id) ON DELETE CASCADE,
@@ -134,11 +125,10 @@ CREATE TABLE room_members (
   joined_at       TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
   left_at         TIMESTAMPTZ,
   is_online       BOOLEAN       NOT NULL DEFAULT FALSE,
-  socket_id       TEXT,                                 -- current Socket.io socket ID
+  socket_id       TEXT,
   UNIQUE (room_id, user_id)
 );
 
--- Group chat messages per room
 CREATE TABLE chat_messages (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   room_id         UUID          NOT NULL REFERENCES study_rooms(id) ON DELETE CASCADE,
@@ -150,7 +140,6 @@ CREATE TABLE chat_messages (
   created_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
--- One Pomodoro timer per room (synced to all members)
 CREATE TABLE pomodoro_timers (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   room_id         UUID          NOT NULL REFERENCES study_rooms(id) ON DELETE CASCADE UNIQUE,
@@ -158,24 +147,22 @@ CREATE TABLE pomodoro_timers (
   status          TEXT          NOT NULL DEFAULT 'idle'
                                 CHECK (status IN ('idle', 'running', 'paused', 'break')),
   mode            TEXT          NOT NULL DEFAULT 'work' CHECK (mode IN ('work', 'short_break', 'long_break')),
-  duration_secs   INTEGER       NOT NULL DEFAULT 1500,  -- 25 minutes default
+  duration_secs   INTEGER       NOT NULL DEFAULT 1500,
   started_at      TIMESTAMPTZ,
   ends_at         TIMESTAMPTZ,
   cycles_done     INTEGER       NOT NULL DEFAULT 0,
   updated_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
--- One shared notes document per room
 CREATE TABLE shared_notes (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   room_id         UUID          NOT NULL REFERENCES study_rooms(id) ON DELETE CASCADE UNIQUE,
   content         TEXT          NOT NULL DEFAULT '',
-  version         INTEGER       NOT NULL DEFAULT 0,     -- CRDT/OT version counter
+  version         INTEGER       NOT NULL DEFAULT 0,
   updated_by      UUID          REFERENCES users(id) ON DELETE SET NULL,
   updated_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
--- Periodic snapshots for recovery (OT history)
 CREATE TABLE note_snapshots (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   note_id         UUID          NOT NULL REFERENCES shared_notes(id) ON DELETE CASCADE,
@@ -186,76 +173,79 @@ CREATE TABLE note_snapshots (
 
 
 -- ============================================================
--- BE3 — Code Judge + Problems DB
+-- BE3 — Code Judge + Problems DB (UPDATED)
 -- ============================================================
 
 CREATE TABLE problems (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   title           TEXT          NOT NULL,
   slug            TEXT          NOT NULL UNIQUE,
-  description     TEXT          NOT NULL,              -- markdown
+  description     TEXT          NOT NULL,
   difficulty      TEXT          NOT NULL CHECK (difficulty IN ('easy', 'medium', 'hard')),
-  tags            TEXT[]        NOT NULL DEFAULT '{}', -- e.g. {array, dp, graph}
+  tags            TEXT[]        NOT NULL DEFAULT '{}',
   constraints     TEXT,
   hints           TEXT[],
-  starter_code    JSONB,                               -- {python: "...", java: "...", cpp: "..."}
+  starter_code    JSONB,
   is_premium      BOOLEAN       NOT NULL DEFAULT FALSE,
   acceptance_rate NUMERIC(5,2)  NOT NULL DEFAULT 0,
+  test_cases      JSONB         NOT NULL DEFAULT '[]',  -- 👈 UPDATED: store test cases directly
   created_by      UUID          REFERENCES users(id) ON DELETE SET NULL,
   created_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
   updated_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
--- Each problem has multiple test cases
+-- Test cases table (alternative if not using JSONB)
 CREATE TABLE test_cases (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   problem_id      UUID          NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
   input           TEXT          NOT NULL,
   expected_output TEXT          NOT NULL,
-  is_hidden       BOOLEAN       NOT NULL DEFAULT TRUE,  -- hidden = not shown to user
+  is_hidden       BOOLEAN       NOT NULL DEFAULT TRUE,
   order_index     INTEGER       NOT NULL DEFAULT 0,
-  explanation     TEXT,                                 -- shown only for visible cases
+  explanation     TEXT,
   created_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
--- Every code submission by a user
+-- Every code submission by a user (UPDATED for Day 3)
 CREATE TABLE submissions (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id         UUID          NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   problem_id      UUID          NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
   language        TEXT          NOT NULL CHECK (language IN ('python', 'javascript', 'java', 'cpp', 'go', 'rust')),
+  language_id     INTEGER,                                  -- Judge0 language ID
   code            TEXT          NOT NULL,
   status          TEXT          NOT NULL DEFAULT 'pending'
-                                CHECK (status IN ('pending', 'running', 'accepted', 'wrong_answer',
+                                CHECK (status IN ('pending', 'accepted', 'wrong_answer',
                                                   'time_limit_exceeded', 'memory_limit_exceeded',
-                                                  'runtime_error', 'compile_error')),
+                                                  'runtime_error', 'compile_error', 'error')),
   runtime_ms      INTEGER,
   memory_kb       INTEGER,
-  judge0_token    TEXT,                                 -- Judge0 submission token for polling
-  error_message   TEXT,                                 -- compile / runtime error output
-  test_results    JSONB,                                -- per-test-case pass/fail array
+  error_message   TEXT,                                     -- compile / runtime error output
+  test_results    JSONB,                                    -- per-test-case results
   submitted_from  TEXT CHECK (submitted_from IN ('solo', 'pair', 'interview')),
+  pair_session_id UUID,                                     -- 👈 NEW: link to pair session
   created_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
   updated_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
--- Pair coding sessions — two users solving one problem together
+-- Pair coding sessions (UPDATED for Day 4)
 CREATE TABLE pair_sessions (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
-  room_code       TEXT          NOT NULL UNIQUE,        -- shareable 6-char code
+  room_code       TEXT          NOT NULL UNIQUE,
   problem_id      UUID          REFERENCES problems(id) ON DELETE SET NULL,
   host_id         UUID          NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   guest_id        UUID          REFERENCES users(id) ON DELETE SET NULL,
   status          TEXT          NOT NULL DEFAULT 'waiting'
                                 CHECK (status IN ('waiting', 'active', 'ended')),
-  current_code    TEXT          NOT NULL DEFAULT '',    -- shared editor state
+  current_code    TEXT          NOT NULL DEFAULT '',
   language        TEXT          NOT NULL DEFAULT 'python',
   started_at      TIMESTAMPTZ,
   ended_at        TIMESTAMPTZ,
-  created_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+  created_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
--- Cursor positions broadcast via Socket.io, stored for reconnection recovery
+-- Cursor positions (Day 4)
 CREATE TABLE pair_cursors (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id      UUID          NOT NULL REFERENCES pair_sessions(id) ON DELETE CASCADE,
@@ -267,23 +257,49 @@ CREATE TABLE pair_cursors (
   UNIQUE (session_id, user_id)
 );
 
--- Mock interview scheduling between two users
-CREATE TABLE interview_slots (
+-- ============================================================
+-- BE3 Day 5 — Mock Interview Mode (PRO ONLY)
+-- ============================================================
+
+-- Mock interview sessions
+CREATE TABLE mock_interviews (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
-  interviewer_id  UUID          NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  interviewee_id  UUID          NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  problem_id      UUID          REFERENCES problems(id) ON DELETE SET NULL,
-  scheduled_at    TIMESTAMPTZ   NOT NULL,
-  duration_mins   INTEGER       NOT NULL DEFAULT 60,
-  status          TEXT          NOT NULL DEFAULT 'scheduled'
-                                CHECK (status IN ('scheduled', 'ongoing', 'completed', 'cancelled', 'no_show')),
-  meeting_url     TEXT,
-  feedback        TEXT,
-  rating          SMALLINT      CHECK (rating BETWEEN 1 AND 5),
+  user_id         UUID          NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  difficulty      TEXT          NOT NULL CHECK (difficulty IN ('easy', 'medium', 'hard', 'mixed', 'random')),
+  status          TEXT          NOT NULL DEFAULT 'in_progress'
+                                CHECK (status IN ('in_progress', 'completed', 'timeout')),
+  started_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
   completed_at    TIMESTAMPTZ,
+  total_score     INTEGER       DEFAULT 0,
+  is_pro          BOOLEAN       NOT NULL DEFAULT FALSE,
+  weak_topics     TEXT[]        DEFAULT '{}',
+  problem_count   INTEGER       NOT NULL DEFAULT 3,
   created_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
-  updated_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
-  CHECK (interviewer_id != interviewee_id)
+  updated_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+);
+
+-- Problems selected for each mock interview
+CREATE TABLE mock_interview_problems (
+  id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+  interview_id    UUID          NOT NULL REFERENCES mock_interviews(id) ON DELETE CASCADE,
+  problem_id      UUID          NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
+  order_index     INTEGER       NOT NULL,
+  UNIQUE(interview_id, order_index),
+  created_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+);
+
+-- Results for each problem in a mock interview
+CREATE TABLE mock_interview_results (
+  id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+  interview_id    UUID          NOT NULL REFERENCES mock_interviews(id) ON DELETE CASCADE,
+  problem_id      UUID          NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
+  code            TEXT          NOT NULL,
+  passed          BOOLEAN       NOT NULL DEFAULT FALSE,
+  runtime_ms      INTEGER,
+  memory_kb       INTEGER,
+  score           INTEGER       DEFAULT 0,
+  submitted_at    TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
+  created_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
 
@@ -291,7 +307,6 @@ CREATE TABLE interview_slots (
 -- BE4 — DB + DevOps + Infra
 -- ============================================================
 
--- Leaderboard scores (recalculated and cached periodically)
 CREATE TABLE leaderboard_entries (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id         UUID          NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -304,24 +319,22 @@ CREATE TABLE leaderboard_entries (
   UNIQUE (user_id, period)
 );
 
--- Raw analytics events (page views, feature usage, errors)
 CREATE TABLE analytics_events (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id         UUID          REFERENCES users(id) ON DELETE SET NULL,
-  event_name      TEXT          NOT NULL,               -- e.g. problem_viewed, room_joined
-  properties      JSONB,                                -- flexible key-value metadata
+  event_name      TEXT          NOT NULL,
+  properties      JSONB,
   ip_address      TEXT,
   user_agent      TEXT,
   session_id      TEXT,
   created_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
--- Audit trail for sensitive actions (payments, role changes, deletions)
 CREATE TABLE audit_logs (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   actor_id        UUID          REFERENCES users(id) ON DELETE SET NULL,
-  action          TEXT          NOT NULL,               -- e.g. user.role_changed
-  target_type     TEXT,                                 -- e.g. users, submissions
+  action          TEXT          NOT NULL,
+  target_type     TEXT,
   target_id       UUID,
   old_value       JSONB,
   new_value       JSONB,
@@ -332,7 +345,6 @@ CREATE TABLE audit_logs (
 
 -- ============================================================
 -- INDEXES
--- Performance indexes on all high-traffic query paths
 -- ============================================================
 
 -- users
@@ -380,20 +392,30 @@ CREATE INDEX idx_problems_premium       ON problems(is_premium);
 -- test_cases
 CREATE INDEX idx_testcases_problem      ON test_cases(problem_id);
 
--- submissions
+-- submissions (UPDATED)
 CREATE INDEX idx_subs_user_problem      ON submissions(user_id, problem_id);
 CREATE INDEX idx_subs_status            ON submissions(status) WHERE status = 'pending';
 CREATE INDEX idx_subs_created           ON submissions(created_at DESC);
+CREATE INDEX idx_subs_pair_session      ON submissions(pair_session_id);
 
 -- pair_sessions
 CREATE INDEX idx_pair_host              ON pair_sessions(host_id);
 CREATE INDEX idx_pair_guest             ON pair_sessions(guest_id);
 CREATE INDEX idx_pair_room_code         ON pair_sessions(room_code);
+CREATE INDEX idx_pair_status            ON pair_sessions(status);
 
--- interview_slots
-CREATE INDEX idx_interviews_interviewer ON interview_slots(interviewer_id);
-CREATE INDEX idx_interviews_interviewee ON interview_slots(interviewee_id);
-CREATE INDEX idx_interviews_scheduled   ON interview_slots(scheduled_at);
+-- pair_cursors
+CREATE INDEX idx_cursors_session        ON pair_cursors(session_id);
+CREATE INDEX idx_cursors_user           ON pair_cursors(user_id);
+
+-- mock_interviews (NEW)
+CREATE INDEX idx_mock_interviews_user   ON mock_interviews(user_id);
+CREATE INDEX idx_mock_interviews_status ON mock_interviews(status);
+CREATE INDEX idx_mock_interviews_created ON mock_interviews(created_at DESC);
+
+-- mock_interview_results (NEW)
+CREATE INDEX idx_mock_results_interview ON mock_interview_results(interview_id);
+CREATE INDEX idx_mock_results_problem   ON mock_interview_results(problem_id);
 
 -- leaderboard
 CREATE INDEX idx_leaderboard_period_rank ON leaderboard_entries(period, rank);
@@ -441,6 +463,10 @@ CREATE TRIGGER trg_submissions_updated
   BEFORE UPDATE ON submissions
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
-CREATE TRIGGER trg_interview_slots_updated
-  BEFORE UPDATE ON interview_slots
+CREATE TRIGGER trg_pair_sessions_updated
+  BEFORE UPDATE ON pair_sessions
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER trg_mock_interviews_updated
+  BEFORE UPDATE ON mock_interviews
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
