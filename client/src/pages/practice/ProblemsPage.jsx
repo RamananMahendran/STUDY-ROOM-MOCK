@@ -155,7 +155,7 @@ export default function ProblemsPage() {
 
               onClick={ () => {
                 console.log(problem)
-                navigate(`/practice/problems/${problem.slug}`)
+                navigate(`/practice/problems/${problem.id}`)
               }
               }
               isLast={idx === filtered.length - 1}

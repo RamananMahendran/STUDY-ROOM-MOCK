@@ -17,16 +17,17 @@
 //  //},
 //});
 import "dotenv/config";
-import { defineConfig } from "prisma/config";
+import { defineConfig, env } from "prisma/config";
 
 export default defineConfig({
   // Force Prisma to find the schema file correctly
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
+    seed: "npx tsx prisma/seed.ts",
   },
   datasource: {
     // Read the injected Docker compose URL, otherwise use local fallback
-    url: process.env.DATABASE_URL || "postgresql://postgres:prar0210thna@localhost:5432/studyplatform?schema=public",
+    url: env("DATABASE_URL") || "postgresql://postgres:prar0210thna@localhost:5432/studyplatform?schema=public",
   },
 });

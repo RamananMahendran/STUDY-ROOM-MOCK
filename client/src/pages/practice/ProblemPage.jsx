@@ -563,7 +563,7 @@ export default function ProblemPage() {
   useEffect(() => {
     if (!slug) return;
     setLoading(true);
-    fetch(`${API}/api/problems/slug/${slug}`, { headers: authHeaders() })
+    fetch(`${API}/api/problems/${slug}`, { headers: authHeaders() })
       .then(r => r.json())
       .then(data => {
         if (data.success) {

@@ -14,7 +14,7 @@
     "seed": "prisma db seed"
   },
   "prisma": {
-    "seed": "node --loader ts-node/esm prisma/seed.ts"
+    "seed": "node --import ts-node/esm prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -50,6 +50,7 @@
     "nodemon": "^3.1.14",
     "prisma": "^7.8.0",
     "ts-node": "^10.9.2",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   }
 }
