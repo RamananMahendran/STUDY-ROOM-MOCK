@@ -5,7 +5,7 @@ import crypto from 'crypto';
 const User = {
   async findByEmail(email: string) {
     const rows: any = await prisma.$queryRaw`
-      SELECT id, name AS username, email, password, streak_count AS streak, created_at
+      SELECT id, name AS username, email, password, streak_count AS streak, last_active_at, created_at
       FROM users
       WHERE email = ${email}
     `;
@@ -14,7 +14,7 @@ const User = {
 
   async findByUsername(username: string) {
     const rows: any = await prisma.$queryRaw`
-      SELECT id, name AS username, email, password, streak_count AS streak, created_at
+      SELECT id, name AS username, email, password, streak_count AS streak, last_active_at, created_at
       FROM users
       WHERE name = ${username}
     `;
@@ -26,7 +26,7 @@ const User = {
     if (!Number.isInteger(userId)) return undefined;
 
     const rows: any = await prisma.$queryRaw`
-      SELECT id, name AS username, email, streak_count AS streak, created_at
+      SELECT id, name AS username, email, streak_count AS streak, last_active_at, created_at
       FROM users
       WHERE id = ${userId}
     `;
@@ -47,6 +47,38 @@ const User = {
 
   async matchPassword(enteredPassword: string, hashedPassword: string) {
     return await bcrypt.compare(enteredPassword, hashedPassword);
+  },
+
+  async updateStreak(userId: number, lastActiveAt: Date | null, currentStreak: number) {
+    const now = new Date();
+    let newStreak = currentStreak;
+
+    if (lastActiveAt) {
+      const lastActiveDate = new Date(lastActiveAt);
+      lastActiveDate.setHours(0, 0, 0, 0);
+      const today = new Date(now);
+      today.setHours(0, 0, 0, 0);
+
+      const diffTime = today.getTime() - lastActiveDate.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 1) {
+        newStreak += 1;
+      } else if (diffDays > 1) {
+        newStreak = 1;
+      }
+    } else {
+      newStreak = 1;
+    }
+
+    await prisma.$executeRaw`
+      UPDATE users
+      SET streak_count = ${newStreak},
+          last_active_at = ${now}
+      WHERE id = ${userId}
+    `;
+
+    return newStreak;
   },
 
   // ── Password Reset Methods ─────────────────────────────────────────────────

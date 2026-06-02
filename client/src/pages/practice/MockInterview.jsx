@@ -52,7 +52,7 @@ const FEATURES = [
 export default function MockInterview() {
   const navigate = useNavigate();
   return (
-    <div className="fixed inset-0 flex bg-[#060810] text-[#e2e8f0] font-sans overflow-hidden select-none">
+    <div className="fixed inset-0 flex font-sans overflow-hidden select-none" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       <Sidebar active="mock-interview" />
 
       {/* Center stage */}
@@ -65,7 +65,8 @@ export default function MockInterview() {
         {/* Main content */}
         <div className="flex-1 flex items-center justify-center px-6 overflow-auto">
           <div
-            className="w-full max-w-[680px] rounded-2xl border border-[#1e2433]/70 bg-[#0d1117] p-10 flex flex-col items-center text-center gap-6"
+            className="w-full max-w-[680px] rounded-2xl border p-10 flex flex-col items-center text-center gap-6"
+            style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
           >
             {/* Lock icon */}
             <div className="w-[68px] h-[68px] rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/30">
@@ -74,10 +75,10 @@ export default function MockInterview() {
 
             {/* Heading */}
             <div>
-              <h2 className="text-[22px] font-bold text-[#f1f5f9] tracking-tight mb-3">
+              <h2 className="text-[22px] font-bold tracking-tight mb-3" style={{ color: 'var(--text)' }}>
                 Mock Interview Mode
               </h2>
-              <p className="text-[13px] text-gray-400 leading-relaxed max-w-[420px]">
+              <p className="text-[13px] leading-relaxed max-w-[420px]" style={{ color: 'var(--text-muted)' }}>
                 Timed 45-minute sessions against 2–3 random problems. Submit all to see per-problem
                 pass/fail, score, and a weak-topic breakdown. Built for the last mile of interview prep.
               </p>
@@ -88,8 +89,8 @@ export default function MockInterview() {
               {FEATURES.map(({ Icon, label }) => (
                 <div
                   key={label}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#1e2433] bg-[#060810]/60 text-[12px] text-gray-400"
-                  style={{ minWidth: 170 }}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border text-[12px]"
+                  style={{ minWidth: 170, background: 'var(--surface-2)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}
                 >
                   <span className="text-indigo-400">
                     <Icon />

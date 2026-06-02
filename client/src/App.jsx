@@ -24,6 +24,10 @@ import PairCodeSetup from './pages/practice/PairCodeSetup.jsx';
 import PairCode from './pages/practice/PairCode.jsx';
 import Contests from './pages/Contests.jsx';
 import AppLayout from './pages/components/AppLayout.jsx';
+import PlacementSprint30 from './pages/practice/plans/placement-sprint-30.jsx';
+import FaangPrep45 from './pages/practice/plans/faang-prep-45.jsx';
+import ArraysMastery14 from './pages/practice/plans/arrays-mastery-14.jsx';
+import WeeklyChallenge7 from './pages/practice/plans/weekly-challenge-7.jsx';
 
 function App() {
   return (
@@ -48,6 +52,10 @@ function App() {
           <Route path="/practice/problems/:slug" element={<ProblemPage />} />
           <Route path="/practice/playground" element={<Playground />} />
           <Route path="/practice/study-plans" element={<StudyPlans />} />
+          <Route path="/practice/study-plans/placement-sprint-30" element={<PlacementSprint30 />} />
+          <Route path="/practice/study-plans/faang-prep-45" element={<FaangPrep45 />} />
+          <Route path="/practice/study-plans/arrays-mastery-14" element={<ArraysMastery14 />} />
+          <Route path="/practice/study-plans/weekly-challenge-7" element={<WeeklyChallenge7 />} />
           <Route path="/practice/pair-code" element={<PairCodeSetup />} />
           <Route path="/practice/pair/:roomId" element={<PairCode />} />
           <Route path="/contests" element={<Contests />} />

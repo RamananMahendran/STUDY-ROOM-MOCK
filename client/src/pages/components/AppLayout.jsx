@@ -1,11 +1,15 @@
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, Link } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
 
 const getPageInfo = (pathname) => {
   if (pathname.startsWith("/home")) return { title: "Dashboard", subtitle: "Track your progress and stats", activeNav: "home" };
   if (pathname.startsWith("/rooms")) return { title: "Rooms", subtitle: "Nothing live right now — kick off a session", activeNav: "rooms" };
-  if (pathname.startsWith("/practice/leaderboard")) return { title: "Leaderboard", subtitle: "See how you rank across problems", activeNav: "leaderboard" };
+  if (pathname.startsWith("/practice/leaderboard")) return { title: "Leaderboard", subtitle: null, activeNav: "leaderboard" };
+  if (pathname.startsWith("/practice/study-plans/placement-sprint-30")) return { title: "30-Day Placement Sprint", subtitle: "Track progress dynamically", activeNav: "study-plans" };
+  if (pathname.startsWith("/practice/study-plans/faang-prep-45")) return { title: "FAANG Prep Intensive", subtitle: "Master algorithmic patterns", activeNav: "study-plans" };
+  if (pathname.startsWith("/practice/study-plans/arrays-mastery-14")) return { title: "Arrays & Strings Mastery", subtitle: "14-day deep dive into the single topic", activeNav: "study-plans" };
+  if (pathname.startsWith("/practice/study-plans/weekly-challenge-7")) return { title: "Weekly Challenge", subtitle: "One carefully chosen problem per day", activeNav: "study-plans" };
   if (pathname.startsWith("/practice/study-plans")) return { title: "Study Plans", subtitle: "Curated multi-day tracks", activeNav: "study-plans" };
   if (pathname.startsWith("/practice/pair-code")) return { title: "Pair Code", subtitle: "Live collaborative coding", activeNav: "pair-code" };
   if (pathname.startsWith("/community")) return { title: "Community", subtitle: "Invite friends and study together.", activeNav: "community" };
@@ -33,7 +37,7 @@ export default function AppLayout() {
 
       {/* Main pane */}
       <div style={{ flex: "1 1 0%", display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0 }}>
-        <TopBar title={title} subtitle={subtitle} />
+        {!location.pathname.startsWith("/practice/leaderboard") && !location.pathname.startsWith("/practice/problems") && <TopBar title={title} subtitle={subtitle} />}
 
         {/* Page Content */}
         <Outlet />

@@ -1,17 +1,18 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
+import Sidebar from '../components/Sidebar.jsx';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
 const LANGUAGE_OPTIONS = [
-  { label: 'JavaScript', value: 'javascript', monacoLang: 'javascript', ext: 'js' },
-  { label: 'Python',     value: 'python',     monacoLang: 'python',     ext: 'py' },
-  { label: 'Java',       value: 'java',       monacoLang: 'java',       ext: 'java' },
-  { label: 'C++',        value: 'cpp',        monacoLang: 'cpp',        ext: 'cpp' },
-  { label: 'C',          value: 'c',          monacoLang: 'c',          ext: 'c' },
+  { label: 'JavaScript', value: 'javascript', monacoLang: 'javascript', ext: 'js', short: 'JS' },
+  { label: 'Python',     value: 'python',     monacoLang: 'python',     ext: 'py', short: 'PY' },
+  { label: 'C',          value: 'c',          monacoLang: 'c',          ext: 'c', short: 'C' },
+  { label: 'C++',        value: 'cpp',        monacoLang: 'cpp',        ext: 'cpp', short: 'C++' },
+  { label: 'Java',       value: 'java',       monacoLang: 'java',       ext: 'java', short: 'JV' },
 ];
 
 const STARTER_CODE = {
@@ -20,48 +21,81 @@ const STARTER_CODE = {
  * @param {number} target
  * @return {number[]}
  */
-var solution = function(nums, target) {
-    // Write your solution here
+var twoSum = function(nums, target) {
+    // Write your code here
+    return [];
 };`,
   python: `class Solution:
-    def solution(self, nums, target):
-        # Write your solution here
+    def twoSum(self, nums: List[int], target: int) -> List[int]:
+        # Write your code here
         pass`,
   java: `class Solution {
-    public int[] solution(int[] nums, int target) {
-        // Write your solution here
+    public int[] twoSum(int[] nums, int target) {
+        // Write your code here
         return new int[]{};
     }
 }`,
-  cpp: `class Solution {
-public:
-    vector<int> solution(vector<int>& nums, int target) {
-        // Write your solution here
-        return {};
-    }
-};`,
+  cpp: `// All standard headers are pre-included (vector, map, string, etc.)
+using namespace std;
+
+vector<int> twoSum(vector<int>& nums, int target) {
+    // Write your code here
+    return {};
+}`,
   c: `#include <stdio.h>
 
-void solution() {
-    // Write your solution here
+void twoSum() {
+    // Write your code here
 }`,
 };
 
 const DIFFICULTY_STYLE = {
-  Easy:   { color: '#4ade80', bg: 'rgba(74,222,128,0.1)',  border: 'rgba(74,222,128,0.25)' },
-  Medium: { color: '#fbbf24', bg: 'rgba(251,191,36,0.1)',  border: 'rgba(251,191,36,0.25)' },
-  Hard:   { color: '#f87171', bg: 'rgba(248,113,113,0.1)', border: 'rgba(248,113,113,0.25)' },
+  Easy:   { text: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
+  Medium: { text: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
+  Hard:   { text: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20' },
 };
 
 const STATUS_META = {
-  accepted:            { color: '#4ade80', icon: '✓', label: 'Accepted' },
-  wrong_answer:        { color: '#f87171', icon: '✗', label: 'Wrong Answer' },
-  runtime_error:       { color: '#fb923c', icon: '⚠', label: 'Runtime Error' },
-  compile_error:       { color: '#f87171', icon: '⚠', label: 'Compile Error' },
-  time_limit_exceeded: { color: '#fbbf24', icon: '⏱', label: 'Time Limit Exceeded' },
-  pending:             { color: '#a78bfa', icon: '…', label: 'Pending' },
-  error:               { color: '#f87171', icon: '✗', label: 'Error' },
+  accepted:            { color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20', icon: '✓', label: 'Accepted' },
+  wrong_answer:        { color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20', icon: '✗', label: 'Wrong Answer' },
+  runtime_error:       { color: 'text-amber-500', bg: 'bg-amber-500/10', border: 'border-amber-500/20', icon: '⚠', label: 'Runtime Error' },
+  compile_error:       { color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20', icon: '⚠', label: 'Compile Error' },
+  time_limit_exceeded: { color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20', icon: '⏱', label: 'Time Limit Exceeded' },
+  pending:             { color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/20', icon: '…', label: 'Pending' },
+  error:               { color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20', icon: '✗', label: 'Error' },
 };
+
+// ─── Icons ──────────────────────────────────────────────────────────────────
+
+const IcoArrowLeft = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+  </svg>
+);
+
+const IcoReset = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+  </svg>
+);
+
+const IcoPlay = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M6 4l15 8-15 8z" />
+  </svg>
+);
+
+const IcoSubmit = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>
+  </svg>
+);
+
+const IcoExternal = () => (
+  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+  </svg>
+);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -102,26 +136,19 @@ function timeAgo(dateStr) {
 function DifficultyBadge({ difficulty }) {
   // Normalize difficulty string (e.g., 'easy' -> 'Easy')
   const normalized = difficulty ? (difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase()) : 'Easy';
-  const s = DIFFICULTY_STYLE[normalized] || DIFFICULTY_STYLE.Easy;
+  const style = DIFFICULTY_STYLE[normalized] || DIFFICULTY_STYLE.Easy;
   return (
-    <span style={{
-      color: s.color, background: s.bg, border: `1px solid ${s.border}`,
-      padding: '3px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700,
-    }}>
+    <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold border ${style.bg} ${style.text} ${style.border}`}>
       {normalized}
     </span>
   );
 }
 
 function StatusBadge({ status }) {
-  const m = STATUS_META[status] || { color: '#9ca3af', icon: '?', label: status };
+  const m = STATUS_META[status] || { color: 'text-gray-400', bg: 'bg-gray-400/10', border: 'border-gray-400/20', icon: '?', label: status };
   return (
-    <span style={{
-      color: m.color, background: `${m.color}18`, border: `1px solid ${m.color}30`,
-      padding: '2px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-      display: 'inline-flex', alignItems: 'center', gap: 5,
-    }}>
-      {m.icon} {m.label}
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[12px] font-semibold border ${m.bg} ${m.color} ${m.border}`}>
+      <span>{m.icon}</span> {m.label}
     </span>
   );
 }
@@ -129,68 +156,93 @@ function StatusBadge({ status }) {
 // ─── Description Panel ───────────────────────────────────────────────────────
 
 function DescriptionPanel({ problem }) {
-  const testCases = (problem.testCases || []).slice(0, 3);
+  const testCases = (problem.testCases || []).slice(0, 4);
 
   return (
-    <div style={{ padding: '24px 28px', overflowY: 'auto', height: '100%', boxSizing: 'border-box' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
-        <h1 style={{ color: '#f0f0fa', fontSize: 22, fontWeight: 700, margin: 0 }}>{problem.title}</h1>
+    <div className="p-6 md:p-8 overflow-y-auto h-full box-border">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <h1 className="text-2xl font-extrabold text-gray-100 m-0 tracking-tight">{problem.title}</h1>
         <DifficultyBadge difficulty={problem.difficulty} />
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 20 }}>
+      {/* Tags */}
+      <div className="flex flex-wrap gap-2 mb-6">
         {(problem.tags || []).map(tag => (
-          <span key={tag} style={{
-            background: '#1e1f30', color: '#8b8fa8', border: '1px solid #2d2e3d',
-            padding: '3px 10px', borderRadius: 6, fontSize: 12, fontWeight: 500,
-          }}>{tag}</span>
+          <span key={tag} className="px-3 py-1 rounded-full text-[11px] font-semibold bg-[#111622] text-gray-400 border border-[#1e2433]">
+            {tag}
+          </span>
         ))}
       </div>
 
-      <div style={{ display: 'flex', gap: 20, marginBottom: 24, padding: '12px 16px', background: '#1a1b2e', borderRadius: 10, border: '1px solid #2d2e3d' }}>
-        <div>
-          <div style={{ color: '#6b7280', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 3 }}>Acceptance</div>
-          <div style={{ color: '#e0e0f0', fontSize: 14, fontWeight: 600 }}>
-            {typeof problem.acceptanceRate === 'number' ? `${problem.acceptanceRate.toFixed(1)}%` : 'N/A'}
-          </div>
-        </div>
-        <div style={{ width: 1, background: '#2d2e3d' }} />
-        <div>
-          <div style={{ color: '#6b7280', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 3 }}>Topics</div>
-          <div style={{ color: '#e0e0f0', fontSize: 14, fontWeight: 600 }}>{(problem.tags || []).length}</div>
-        </div>
-      </div>
-
+      {/* Description Text */}
       <div
-        style={{ color: '#c9cad8', fontSize: 14, lineHeight: 1.75, marginBottom: 28 }}
+        className="text-[14px] text-gray-300 leading-relaxed mb-6 font-normal space-y-4 prose prose-invert max-w-none"
         dangerouslySetInnerHTML={{ __html: problem.description.replace(/\n/g, '<br/>') }}
       />
 
+      {/* Hint */}
+      <div className="bg-[#1e1b4b]/40 border border-indigo-500/20 rounded-xl p-4 mb-8">
+        <span className="font-bold text-indigo-400">Hint:</span> <span className="text-indigo-200/80 text-[13px]">A hash map lets you solve this in O(n).</span>
+      </div>
+
+      {/* Constraints */}
+      <div className="mb-8">
+        <h3 className="text-[11px] font-black tracking-widest text-gray-500 uppercase mb-3">Constraints</h3>
+        <div className="bg-[#111622] border border-[#1e2433]/70 rounded-xl p-4 font-mono text-[12px] text-gray-300 space-y-1.5 shadow-inner">
+          <div>2 ≤ nums.length ≤ 10⁴</div>
+          <div>-10⁹ ≤ nums[i] ≤ 10⁹</div>
+          <div>-10⁹ ≤ target ≤ 10⁹</div>
+          <div className="pt-2 text-gray-400">Exactly one valid answer exists.</div>
+        </div>
+      </div>
+
+      {/* Examples */}
+      {testCases.length > 0 && (
+        <div className="mb-8">
+          <h3 className="text-[11px] font-black tracking-widest text-gray-500 uppercase mb-3">Examples</h3>
+          <div className="flex flex-col gap-3">
+            {testCases.slice(0, 2).map((tc, i) => (
+              <div key={i} className="bg-[#111622]/50 border border-[#1e2433]/50 rounded-xl p-4 font-mono text-[13px]">
+                <div className="text-[10px] font-bold text-gray-500 uppercase mb-3">Example {i + 1}</div>
+                <div className="mb-2">
+                  <span className="text-gray-500">Input: </span>
+                  <span className="text-indigo-300">{typeof tc.input === 'object' ? JSON.stringify(tc.input) : String(tc.input).replace(/,/g, ' ')}</span>
+                </div>
+                <div className="mb-2">
+                  <span className="text-gray-500">Output: </span>
+                  <span className="text-emerald-300 font-bold">{typeof tc.expected === 'object' ? JSON.stringify(tc.expected) : String(tc.expected).replace(/,/g, ' ')}</span>
+                </div>
+                {i === 0 && (
+                  <div>
+                    <span className="text-gray-500 font-sans font-bold">Explanation: </span>
+                    <span className="text-gray-400 font-sans">nums[0] + nums[1] == 9</span>
+                  </div>
+                )}
+                {i === 1 && (
+                  <div>
+                    <span className="text-gray-500 font-sans font-bold">Explanation: </span>
+                    <span className="text-gray-400 font-sans">nums[1] + nums[2] == 6</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Sample Test Cases */}
       {testCases.length > 0 && (
         <div>
-          <h3 style={{ color: '#e0e0f0', fontSize: 13, fontWeight: 700, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-            Examples
-          </h3>
-          {testCases.map((tc, i) => (
-            <div key={i} style={{
-              background: '#13141f', border: '1px solid #2d2e3d',
-              borderRadius: 10, padding: '14px 16px', marginBottom: 12, fontFamily: 'monospace',
-            }}>
-              <div style={{ color: '#6b7280', fontSize: 11, fontWeight: 700, marginBottom: 8 }}>EXAMPLE {i + 1}</div>
-              <div style={{ marginBottom: 6 }}>
-                <span style={{ color: '#6b7280', fontSize: 12 }}>Input: </span>
-                <span style={{ color: '#a5f3fc', fontSize: 13 }}>
-                  {typeof tc.input === 'object' ? JSON.stringify(tc.input) : String(tc.input)}
-                </span>
+          <h3 className="text-[11px] font-black tracking-widest text-gray-500 uppercase mb-3">Sample Test Cases</h3>
+          <div className="flex flex-col gap-2">
+            {testCases.map((tc, i) => (
+              <div key={i} className="bg-[#111622]/30 border border-[#1e2433]/40 rounded-lg p-3 font-mono text-[12px] flex items-center">
+                <span className="text-gray-500 w-20">Input #{i + 1}:</span>
+                <span className="text-gray-300 font-bold">{typeof tc.input === 'object' ? JSON.stringify(tc.input) : String(tc.input).replace(/,/g, ' ')}</span>
               </div>
-              <div>
-                <span style={{ color: '#6b7280', fontSize: 12 }}>Output: </span>
-                <span style={{ color: '#86efac', fontSize: 13 }}>
-                  {typeof tc.expected === 'object' ? JSON.stringify(tc.expected) : String(tc.expected)}
-                </span>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -214,7 +266,7 @@ function SubmissionsPanel({ problemId, selectedSubmission, onSelect }) {
   }, [problemId]);
 
   if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#6b7280' }}>
+    <div className="flex items-center justify-center h-full text-gray-500 text-sm">
       Loading submissions…
     </div>
   );
@@ -222,57 +274,55 @@ function SubmissionsPanel({ problemId, selectedSubmission, onSelect }) {
   if (selectedSubmission) {
     const s = selectedSubmission;
     return (
-      <div style={{ padding: '20px 24px', overflowY: 'auto', height: '100%', boxSizing: 'border-box' }}>
+      <div className="p-6 h-full overflow-y-auto box-border">
         <button
           onClick={() => onSelect(null)}
-          style={{ background: 'none', border: '1px solid #2d2e3d', color: '#9ca3af', padding: '6px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 13, marginBottom: 20 }}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#1e2433] bg-[#111622] text-gray-400 text-[12px] font-semibold hover:text-gray-200 transition-colors mb-6"
         >
-          ← Back
+          <IcoArrowLeft /> Back
         </button>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+        <div className="flex flex-wrap items-center gap-3 mb-6">
           <StatusBadge status={s.status} />
-          <span style={{ color: '#6b7280', fontSize: 13 }}>{s.language} · {timeAgo(s.createdAt)}</span>
-          {s.runtimeMs != null && <span style={{ color: '#9ca3af', fontSize: 13 }}>{s.runtimeMs.toFixed(0)}ms</span>}
+          <span className="text-gray-500 text-[12px] font-medium">{s.language} · {timeAgo(s.createdAt)}</span>
+          {s.runtimeMs != null && <span className="text-gray-400 text-[12px] font-mono">{s.runtimeMs.toFixed(0)}ms</span>}
         </div>
 
         {s.error_message && (
-          <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', borderRadius: 10, padding: '12px 16px', marginBottom: 16 }}>
-            <div style={{ color: '#f87171', fontSize: 13, fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>{s.error_message}</div>
+          <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 mb-6">
+            <div className="text-rose-400 text-[12px] font-mono whitespace-pre-wrap">{s.error_message}</div>
           </div>
         )}
 
         {s.test_results && s.test_results.length > 0 && (
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ color: '#9ca3af', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 10 }}>Test Cases</div>
-            {s.test_results.map((tr, i) => (
-              <div key={i} style={{
-                background: tr.passed ? 'rgba(74,222,128,0.05)' : 'rgba(248,113,113,0.05)',
-                border: `1px solid ${tr.passed ? 'rgba(74,222,128,0.15)' : 'rgba(248,113,113,0.15)'}`,
-                borderRadius: 8, padding: '10px 14px', marginBottom: 8, fontFamily: 'monospace', fontSize: 12,
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ color: '#9ca3af' }}>Case {tr.test_case_index}</span>
-                  <span style={{ color: tr.passed ? '#4ade80' : '#f87171', fontWeight: 600 }}>{tr.passed ? '✓ Passed' : '✗ Failed'}</span>
+          <div className="mb-6">
+            <div className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mb-3">Test Cases</div>
+            <div className="flex flex-col gap-2">
+              {s.test_results.map((tr, i) => (
+                <div key={i} className={`rounded-xl p-3.5 font-mono text-[12px] border ${tr.passed ? 'bg-emerald-500/5 border-emerald-500/10' : 'bg-rose-500/5 border-rose-500/10'}`}>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-500">Case {tr.test_case_index}</span>
+                    <span className={`font-bold ${tr.passed ? 'text-emerald-400' : 'text-rose-400'}`}>{tr.passed ? '✓ Passed' : '✗ Failed'}</span>
+                  </div>
+                  <div className="text-gray-400 mb-1">
+                    Input: <span className="text-indigo-300">{typeof tr.input === 'object' ? JSON.stringify(tr.input) : String(tr.input)}</span>
+                  </div>
+                  <div className="text-gray-400 mb-1">
+                    Expected: <span className="text-emerald-300">{typeof tr.expected === 'object' ? JSON.stringify(tr.expected) : String(tr.expected)}</span>
+                  </div>
+                  <div className="text-gray-400">
+                    Got: <span className={tr.passed ? 'text-emerald-300' : 'text-rose-400'}>{tr.output || '(empty)'}</span>
+                  </div>
+                  {tr.error && <div className="text-amber-500 mt-1">Error: {tr.error}</div>}
                 </div>
-                <div style={{ color: '#6b7280' }}>
-                  Input: <span style={{ color: '#a5f3fc' }}>{typeof tr.input === 'object' ? JSON.stringify(tr.input) : String(tr.input)}</span>
-                </div>
-                <div style={{ color: '#6b7280' }}>
-                  Expected: <span style={{ color: '#86efac' }}>{typeof tr.expected === 'object' ? JSON.stringify(tr.expected) : String(tr.expected)}</span>
-                </div>
-                <div style={{ color: '#6b7280' }}>
-                  Got: <span style={{ color: tr.passed ? '#86efac' : '#f87171' }}>{tr.output || '(empty)'}</span>
-                </div>
-                {tr.error && <div style={{ color: '#fb923c', marginTop: 4 }}>Error: {tr.error}</div>}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
 
         <div>
-          <div style={{ color: '#9ca3af', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 8 }}>Code</div>
-          <div style={{ background: '#0d0e17', border: '1px solid #2d2e3d', borderRadius: 10, padding: '14px 16px', fontFamily: 'monospace', fontSize: 13, color: '#c9cad8', whiteSpace: 'pre-wrap', lineHeight: 1.6, overflowX: 'auto' }}>
+          <div className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mb-3">Code</div>
+          <div className="bg-[#0d0e17] border border-[#1e2433] rounded-xl p-4 font-mono text-[12px] text-gray-300 whitespace-pre-wrap overflow-x-auto leading-relaxed">
             {s.code}
           </div>
         </div>
@@ -282,39 +332,35 @@ function SubmissionsPanel({ problemId, selectedSubmission, onSelect }) {
 
   if (submissions.length === 0) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12, color: '#6b7280' }}>
-        <div style={{ fontSize: 32 }}>📭</div>
-        <div style={{ fontSize: 14 }}>No submissions yet</div>
-        <div style={{ fontSize: 13, color: '#4b5563' }}>Submit your first solution!</div>
+      <div className="flex flex-col items-center justify-center h-full gap-3 text-gray-500">
+        <div className="text-3xl opacity-50">📭</div>
+        <div className="text-[13px] font-medium">No submissions yet</div>
+        <div className="text-[12px] text-gray-600">Submit your first solution!</div>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '20px 24px', overflowY: 'auto', height: '100%', boxSizing: 'border-box' }}>
-      <h3 style={{ color: '#e0e0f0', fontSize: 15, fontWeight: 700, margin: '0 0 16px' }}>My Submissions</h3>
-      {submissions.map(s => (
-        <div
-          key={s.id}
-          onClick={() => onSelect(s)}
-          style={{
-            display: 'grid', gridTemplateColumns: '1fr auto auto',
-            alignItems: 'center', gap: 12,
-            padding: '12px 16px', marginBottom: 8,
-            background: '#13141f', border: '1px solid #2d2e3d',
-            borderRadius: 10, cursor: 'pointer', transition: 'border-color 0.15s',
-          }}
-          onMouseEnter={e => (e.currentTarget.style.borderColor = '#7c3aed')}
-          onMouseLeave={e => (e.currentTarget.style.borderColor = '#2d2e3d')}
-        >
-          <div>
-            <StatusBadge status={s.status} />
-            <div style={{ color: '#6b7280', fontSize: 12, marginTop: 4 }}>{s.language} · {timeAgo(s.createdAt)}</div>
+    <div className="p-6 h-full overflow-y-auto box-border">
+      <h3 className="text-gray-200 text-[14px] font-bold mb-4">My Submissions</h3>
+      <div className="flex flex-col gap-2">
+        {submissions.map(s => (
+          <div
+            key={s.id}
+            onClick={() => onSelect(s)}
+            className="group flex items-center justify-between p-3.5 bg-[#111622] border border-[#1e2433] hover:border-indigo-500/50 rounded-xl cursor-pointer transition-colors"
+          >
+            <div>
+              <StatusBadge status={s.status} />
+              <div className="text-gray-500 text-[11px] mt-1.5 font-medium">{s.language} · {timeAgo(s.createdAt)}</div>
+            </div>
+            <div className="flex items-center gap-3">
+              {s.runtimeMs != null && <span className="text-gray-400 text-[12px] font-mono">{s.runtimeMs.toFixed(0)} ms</span>}
+              <span className="text-gray-600 group-hover:text-indigo-400 transition-colors">›</span>
+            </div>
           </div>
-          {s.runtimeMs != null && <span style={{ color: '#9ca3af', fontSize: 12 }}>{s.runtimeMs.toFixed(0)} ms</span>}
-          <span style={{ color: '#374151', fontSize: 16 }}>›</span>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
@@ -359,69 +405,54 @@ function DiscussionsPanel({ problemId }) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ padding: '16px 24px', borderBottom: '1px solid #1e1f2e', flexShrink: 0 }}>
+    <div className="flex flex-col h-full">
+      <div className="p-5 border-b border-[#1e2433] shrink-0 bg-[#0d1117]/30">
         <textarea
           value={content}
           onChange={e => setContent(e.target.value)}
           placeholder="Share your approach, ask a question, or discuss edge cases…"
           rows={3}
-          style={{
-            width: '100%', background: '#13141f', border: '1px solid #2d2e3d',
-            borderRadius: 10, padding: '10px 14px', color: '#e0e0f0', fontSize: 13,
-            resize: 'vertical', outline: 'none', boxSizing: 'border-box',
-            fontFamily: 'inherit', lineHeight: 1.6,
-          }}
-          onFocus={e => (e.target.style.borderColor = '#7c3aed')}
-          onBlur={e => (e.target.style.borderColor = '#2d2e3d')}
+          className="w-full bg-[#111622] border border-[#1e2433] focus:border-indigo-500 rounded-xl p-3 text-gray-200 text-[13px] resize-y outline-none transition-colors"
         />
-        {error && <div style={{ color: '#f87171', fontSize: 12, marginTop: 4 }}>{error}</div>}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+        {error && <div className="text-rose-400 text-[12px] mt-1.5 font-medium">{error}</div>}
+        <div className="flex justify-end mt-3">
           <button
             onClick={post}
             disabled={posting || !content.trim()}
-            style={{
-              background: posting || !content.trim() ? '#2d2e3d' : '#7c3aed',
-              border: 'none', color: '#fff', padding: '8px 20px', borderRadius: 8,
-              cursor: posting || !content.trim() ? 'not-allowed' : 'pointer',
-              fontSize: 13, fontWeight: 600,
-            }}
+            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-[#1e2433] disabled:text-gray-500 text-white px-5 py-2 rounded-lg text-[12px] font-bold transition-colors"
           >
             {posting ? 'Posting…' : 'Post'}
           </button>
         </div>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
+      <div className="flex-1 overflow-y-auto p-5">
         {loading ? (
-          <div style={{ color: '#6b7280', textAlign: 'center', paddingTop: 40 }}>Loading…</div>
+          <div className="text-center text-gray-500 text-sm mt-8">Loading…</div>
         ) : discussions.length === 0 ? (
-          <div style={{ textAlign: 'center', paddingTop: 40, color: '#6b7280' }}>
-            <div style={{ fontSize: 28, marginBottom: 8 }}>💬</div>
-            <div>No discussions yet. Start the conversation!</div>
+          <div className="text-center text-gray-500 mt-10 flex flex-col items-center gap-2">
+            <div className="text-3xl opacity-50 mb-2">💬</div>
+            <div className="text-[13px] font-medium">No discussions yet. Start the conversation!</div>
           </div>
         ) : (
-          discussions.map(d => (
-            <div key={d.id} style={{ padding: '14px 0', borderBottom: '1px solid #1e1f2e' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                <div style={{
-                  width: 30, height: 30, borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: '#fff', fontSize: 13, fontWeight: 700, flexShrink: 0,
-                }}>
-                  {d.user?.name?.[0]?.toUpperCase() || 'U'}
+          <div className="flex flex-col gap-4">
+            {discussions.map(d => (
+              <div key={d.id} className="border-b border-[#1e2433]/50 pb-4 last:border-0">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white text-[12px] font-bold shrink-0 shadow-inner">
+                    {d.user?.name?.[0]?.toUpperCase() || 'U'}
+                  </div>
+                  <div>
+                    <div className="text-gray-200 text-[13px] font-bold">{d.user?.name || 'User'}</div>
+                    <div className="text-gray-500 text-[11px] font-medium">{timeAgo(d.createdAt)}</div>
+                  </div>
                 </div>
-                <div>
-                  <div style={{ color: '#e0e0f0', fontSize: 13, fontWeight: 600 }}>{d.user?.name || 'User'}</div>
-                  <div style={{ color: '#6b7280', fontSize: 11 }}>{timeAgo(d.createdAt)}</div>
+                <div className="text-gray-300 text-[13px] leading-relaxed pl-11">
+                  {d.content}
                 </div>
               </div>
-              <div style={{ color: '#c9cad8', fontSize: 13, lineHeight: 1.65, paddingLeft: 40 }}>
-                {d.content}
-              </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
     </div>
@@ -433,35 +464,34 @@ function DiscussionsPanel({ problemId }) {
 function ResultsPanel({ result, loading }) {
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '16px 24px', color: '#a78bfa', fontSize: 13 }}>
-        <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span>
+      <div className="flex items-center gap-3 p-5 text-indigo-400 text-[13px] font-medium">
+        <span className="animate-spin text-lg">⟳</span>
         <span>Running your code…</span>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   if (!result) {
-    return <div style={{ padding: '16px 24px', color: '#4b5563', fontSize: 13 }}>Run your code or submit to see results here.</div>;
+    return <div className="p-5 text-gray-500 text-[13px]">Run your code or submit to see results here.</div>;
   }
 
   if (result.mode === 'run') {
     return (
-      <div style={{ padding: '12px 24px', fontFamily: 'monospace' }}>
+      <div className="p-4 font-mono text-[13px]">
         {result.stdout && (
-          <div style={{ marginBottom: 8 }}>
-            <span style={{ color: '#6b7280', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.8px' }}>Output</span>
-            <div style={{ color: '#86efac', fontSize: 13, marginTop: 4, whiteSpace: 'pre-wrap' }}>{result.stdout}</div>
+          <div className="mb-4">
+            <div className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mb-1.5">Output</div>
+            <div className="text-emerald-400 bg-emerald-400/5 border border-emerald-400/10 p-3 rounded-lg whitespace-pre-wrap">{result.stdout}</div>
           </div>
         )}
         {result.stderr && (
           <div>
-            <span style={{ color: '#6b7280', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.8px' }}>Error</span>
-            <div style={{ color: '#f87171', fontSize: 13, marginTop: 4, whiteSpace: 'pre-wrap' }}>{result.stderr}</div>
+            <div className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mb-1.5">Error</div>
+            <div className="text-rose-400 bg-rose-400/5 border border-rose-400/10 p-3 rounded-lg whitespace-pre-wrap">{result.stderr}</div>
           </div>
         )}
         {!result.stdout && !result.stderr && (
-          <div style={{ color: '#9ca3af', fontSize: 13 }}>No output</div>
+          <div className="text-gray-500 italic">No output</div>
         )}
       </div>
     );
@@ -472,34 +502,28 @@ function ResultsPanel({ result, loading }) {
   const total  = (result.testResults || []).length;
 
   return (
-    <div style={{ padding: '12px 24px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
+    <div className="p-4 font-mono">
+      <div className="flex flex-wrap items-center gap-3 mb-4">
         <StatusBadge status={result.status} />
-        {result.runtimeMs != null && <span style={{ color: '#9ca3af', fontSize: 12 }}>{result.runtimeMs.toFixed(0)} ms</span>}
-        {result.memoryKb  != null && <span style={{ color: '#9ca3af', fontSize: 12 }}>{(result.memoryKb / 1024).toFixed(1)} MB</span>}
+        {result.runtimeMs != null && <span className="text-gray-400 text-[12px]">{result.runtimeMs.toFixed(0)} ms</span>}
+        {result.memoryKb  != null && <span className="text-gray-400 text-[12px]">{(result.memoryKb / 1024).toFixed(1)} MB</span>}
         {total > 0 && (
-          <span style={{ color: passed === total ? '#4ade80' : '#f87171', fontSize: 12, fontWeight: 600 }}>
+          <span className={`text-[12px] font-bold ${passed === total ? 'text-emerald-400' : 'text-rose-400'}`}>
             {passed}/{total} test cases passed
           </span>
         )}
       </div>
 
       {result.errorMessage && (
-        <div style={{ background: 'rgba(248,113,113,0.07)', border: '1px solid rgba(248,113,113,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 10 }}>
-          <div style={{ color: '#f87171', fontSize: 12, fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>{result.errorMessage}</div>
+        <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 mb-4">
+          <div className="text-rose-400 text-[12px] whitespace-pre-wrap">{result.errorMessage}</div>
         </div>
       )}
 
       {result.testResults && (
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        <div className="flex flex-wrap gap-2">
           {result.testResults.map((t, i) => (
-            <div key={i} style={{
-              width: 28, height: 28, borderRadius: '50%',
-              background: t.passed ? 'rgba(74,222,128,0.15)' : 'rgba(248,113,113,0.15)',
-              border: `1.5px solid ${t.passed ? '#4ade80' : '#f87171'}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 11, color: t.passed ? '#4ade80' : '#f87171', fontWeight: 700,
-            }} title={`Case ${t.test_case_index}: ${t.passed ? 'Passed' : 'Failed'}`}>
+            <div key={i} className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold border ${t.passed ? 'bg-emerald-500/10 border-emerald-400 text-emerald-400' : 'bg-rose-500/10 border-rose-400 text-rose-400'}`} title={`Case ${t.test_case_index}: ${t.passed ? 'Passed' : 'Failed'}`}>
               {i + 1}
             </div>
           ))}
@@ -520,8 +544,8 @@ export default function ProblemPage() {
   const [loadingProblem, setLoading]    = useState(true);
   const [problemError, setProblemError] = useState('');
 
-  const [language, setLanguage] = useState('javascript');
-  const [code, setCode]         = useState(STARTER_CODE['javascript']);
+  const [language, setLanguage] = useState('cpp');
+  const [code, setCode]         = useState(STARTER_CODE['cpp']);
 
   const [leftTab, setLeftTab] = useState('description');
 
@@ -532,7 +556,7 @@ export default function ProblemPage() {
 
   const [selectedSubmission, setSelectedSubmission] = useState(null);
 
-  const [leftWidth, setLeftWidth] = useState(45);
+  const [leftWidth, setLeftWidth] = useState(48);
   const dragging = useRef(false);
 
   // Load problem
@@ -544,6 +568,7 @@ export default function ProblemPage() {
       .then(data => {
         if (data.success) {
           setProblem(data.data);
+          // Set title dynamically if needed, but not required.
         } else {
           setProblemError(data.error || data.message || 'Problem not found');
         }
@@ -574,7 +599,7 @@ export default function ProblemPage() {
 
   const handleLanguageChange = lang => {
     setLanguage(lang);
-    setCode(STARTER_CODE[lang] || '// Write your solution here');
+    setCode(STARTER_CODE[lang] || '// Write your code here');
   };
 
   // Run
@@ -650,20 +675,26 @@ export default function ProblemPage() {
 
   if (loadingProblem) {
     return (
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0d0e17', color: '#6b7280', fontSize: 14 }}>
-        Loading problem…
+      <div className="fixed inset-0 flex bg-[#060810] text-[#e2e8f0] font-sans overflow-hidden select-none">
+        <Sidebar active="practice" />
+        <div className="flex-1 flex items-center justify-center bg-[#0d0e17] text-gray-500 text-sm">
+          Loading problem…
+        </div>
       </div>
     );
   }
 
   if (problemError || !problem) {
     return (
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0d0e17', gap: 12, padding: 40, textAlign: 'center' }}>
-        <div style={{ color: '#f87171', fontSize: 18, fontWeight: 600 }}>Problem not found</div>
-        <div style={{ color: '#6b7280', fontSize: 14, maxWidth: 400 }}>{problemError || "The problem you are looking for does not exist or has been moved."}</div>
-        <button onClick={() => navigate('/practice/problems')} style={{ marginTop: 12, background: '#7c3aed', border: 'none', color: '#fff', padding: '10px 24px', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>
-          ← Back to Problems
-        </button>
+      <div className="fixed inset-0 flex bg-[#060810] text-[#e2e8f0] font-sans overflow-hidden select-none">
+        <Sidebar active="practice" />
+        <div className="flex-1 flex flex-col items-center justify-center bg-[#0d0e17] gap-4 text-center px-6">
+          <div className="text-rose-400 text-lg font-bold">Problem not found</div>
+          <div className="text-gray-500 text-sm max-w-md">{problemError || "The problem you are looking for does not exist or has been moved."}</div>
+          <button onClick={() => navigate('/practice/problems')} className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-lg text-sm font-bold transition-colors mt-2">
+            ← Back to Problems
+          </button>
+        </div>
       </div>
     );
   }
@@ -671,184 +702,182 @@ export default function ProblemPage() {
   const langMeta = LANGUAGE_OPTIONS.find(l => l.value === language) || LANGUAGE_OPTIONS[0];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0d0e17', overflow: 'hidden' }}>
+    <div className="fixed inset-0 flex bg-[#060810] text-[#e2e8f0] font-sans overflow-hidden select-none">
+      
+      <Sidebar active="practice" />
 
-      {/* Top Bar */}
-      <div style={{
-        height: 52, background: '#13141f', borderBottom: '1px solid #1e1f2e',
-        display: 'flex', alignItems: 'center', padding: '0 16px', gap: 12, flexShrink: 0,
-      }}>
-        <button
-          onClick={() => navigate('/practice/problems')}
-          style={{ background: 'none', border: '1px solid #2d2e3d', color: '#9ca3af', padding: '5px 12px', borderRadius: 7, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
-        >
-          ← Problems
-        </button>
-        <div style={{ width: 1, height: 20, background: '#2d2e3d' }} />
-        <span style={{ color: '#e0e0f0', fontSize: 14, fontWeight: 600 }}>{problem.title}</span>
-        <DifficultyBadge difficulty={problem.difficulty} />
-        <div style={{ flex: 1 }} />
-
-        {/* Language selector */}
-        <div style={{ display: 'flex', gap: 4 }}>
-          {LANGUAGE_OPTIONS.map(l => (
+      <div className="flex-1 flex flex-col min-w-0 h-full bg-[#0d0e17]">
+        {/* Top Bar Workspace Header */}
+        <div className="h-[52px] bg-[#0d1117]/80 backdrop-blur-md border-b border-[#1e2433] flex items-center justify-between px-5 shrink-0 z-10">
+          
+          {/* Left: Navigation and Title */}
+          <div className="flex items-center gap-4">
             <button
-              key={l.value}
-              onClick={() => handleLanguageChange(l.value)}
-              style={{
-                background: language === l.value ? 'rgba(124,58,237,0.2)' : 'transparent',
-                border: `1px solid ${language === l.value ? '#7c3aed' : '#2d2e3d'}`,
-                color: language === l.value ? '#a78bfa' : '#6b7280',
-                padding: '4px 12px', borderRadius: 6, cursor: 'pointer',
-                fontSize: 12, fontWeight: 600, transition: 'all 0.15s',
-              }}
+              onClick={() => navigate('/practice/problems')}
+              className="flex items-center gap-1.5 text-[12px] font-bold text-gray-400 hover:text-gray-200 transition-colors"
             >
-              {l.label}
+              <IcoArrowLeft /> Problems
             </button>
-          ))}
-        </div>
-        <div style={{ width: 1, height: 20, background: '#2d2e3d' }} />
+            <div className="w-[1px] h-5 bg-[#1e2433]" />
+            <div className="flex items-center gap-2.5">
+              <span className="text-[14px] font-extrabold tracking-tight text-gray-100">{problem.title}</span>
+              <DifficultyBadge difficulty={problem.difficulty} />
+            </div>
+          </div>
 
-        {/* Run */}
-        <button
-          onClick={handleRun}
-          disabled={runLoading || submitLoading}
-          style={{
-            background: 'transparent', border: '1px solid #2d2e3d',
-            color: '#e0e0f0', padding: '6px 18px', borderRadius: 8,
-            cursor: runLoading ? 'not-allowed' : 'pointer',
-            fontSize: 13, fontWeight: 600, transition: 'all 0.15s',
-          }}
-          onMouseEnter={e => { if (!runLoading && !submitLoading) e.currentTarget.style.borderColor = '#4ade80'; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = '#2d2e3d'; }}
-        >
-          ▶ Run
-        </button>
-
-        {/* Submit */}
-        <button
-          onClick={handleSubmit}
-          disabled={submitLoading || runLoading}
-          style={{
-            background: submitLoading ? '#5b21b6' : '#7c3aed',
-            border: 'none', color: '#fff', padding: '6px 20px', borderRadius: 8,
-            cursor: submitLoading ? 'not-allowed' : 'pointer',
-            fontSize: 13, fontWeight: 700, transition: 'background 0.15s',
-          }}
-        >
-          {submitLoading ? '⟳ Judging…' : '⚡ Submit'}
-        </button>
-      </div>
-
-      {/* Split Pane */}
-      <div id="problem-container" style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
-
-        {/* Left Pane */}
-        <div style={{
-          width: `${leftWidth}%`, display: 'flex', flexDirection: 'column',
-          background: '#13141f', borderRight: '1px solid #1e1f2e',
-          overflow: 'hidden', minWidth: 280,
-        }}>
-          {/* Tabs */}
-          <div style={{ display: 'flex', borderBottom: '1px solid #1e1f2e', background: '#0d0e17', flexShrink: 0 }}>
-            {['description', 'submissions', 'discussions'].map(tab => (
+          {/* Center: Language Selectors */}
+          <div className="hidden md:flex items-center gap-2">
+            {LANGUAGE_OPTIONS.map(l => (
               <button
-                key={tab}
-                onClick={() => { setLeftTab(tab); if (tab !== 'submissions') setSelectedSubmission(null); }}
-                style={{
-                  background: 'none', border: 'none',
-                  borderBottom: leftTab === tab ? '2px solid #7c3aed' : '2px solid transparent',
-                  color: leftTab === tab ? '#a78bfa' : '#6b7280',
-                  padding: '12px 20px', cursor: 'pointer',
-                  fontSize: 13, fontWeight: leftTab === tab ? 700 : 400,
-                  textTransform: 'capitalize', transition: 'color 0.15s',
-                  marginBottom: -1,
-                }}
+                key={l.value}
+                onClick={() => handleLanguageChange(l.value)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[11px] font-bold transition-all ${
+                  language === l.value 
+                    ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300' 
+                    : 'bg-[#111622] border-[#1e2433] text-gray-500 hover:text-gray-300 hover:border-gray-600'
+                }`}
               >
-                {tab}
+                <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black tracking-tighter ${
+                  language === l.value ? 'bg-indigo-500 text-white' : 'bg-[#1e2433] text-gray-500'
+                }`}>
+                  {l.short}
+                </div>
+                {l.label}
               </button>
             ))}
           </div>
 
-          <div style={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
-            {leftTab === 'description'  && <DescriptionPanel problem={problem} />}
-            {leftTab === 'submissions'  && (
-              <SubmissionsPanel
-                problemId={problem.id}
-                selectedSubmission={selectedSubmission}
-                onSelect={setSelectedSubmission}
-              />
-            )}
-            {leftTab === 'discussions' && <DiscussionsPanel problemId={problem.id} />}
+          {/* Right: Actions */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setCode(STARTER_CODE[language] || '')}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-gray-500 hover:text-gray-300 transition-colors"
+            >
+              <IcoReset /> Reset
+            </button>
+            
+            <button
+              onClick={handleRun}
+              disabled={runLoading || submitLoading}
+              className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#111622] hover:bg-[#1a2133] border border-[#1e2433] text-gray-300 text-[12px] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <IcoPlay /> Run
+            </button>
+
+            <button
+              onClick={handleSubmit}
+              disabled={submitLoading || runLoading}
+              className="flex items-center gap-2 px-5 py-1.5 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] text-white text-[12px] font-extrabold shadow-lg shadow-indigo-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <IcoSubmit /> Submit
+            </button>
           </div>
         </div>
 
-        {/* Resizer */}
-        <div
-          onMouseDown={onMouseDown}
-          style={{ width: 5, background: '#1e1f2e', cursor: 'col-resize', flexShrink: 0, transition: 'background 0.15s' }}
-          onMouseEnter={e => (e.currentTarget.style.background = '#7c3aed')}
-          onMouseLeave={e => (e.currentTarget.style.background = '#1e1f2e')}
-        />
-
-        {/* Right Pane */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#0d0e17', overflow: 'hidden', minWidth: 0 }}>
-
-          {/* Editor header */}
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '8px 16px', background: '#13141f', borderBottom: '1px solid #1e1f2e', flexShrink: 0,
-          }}>
-            <span style={{ color: '#6b7280', fontSize: 12, fontWeight: 600 }}>
-              solution.{langMeta.ext}
-            </span>
-            <button
-              onClick={() => setCode(STARTER_CODE[language] || '')}
-              style={{ background: 'none', border: 'none', color: '#4b5563', fontSize: 12, cursor: 'pointer', padding: '2px 8px' }}
-            >
-              Reset
-            </button>
-          </div>
-
-          {/* Monaco */}
-          <div style={{ flex: showResults ? '0 0 calc(100% - 180px)' : '1', minHeight: 200, overflow: 'hidden' }}>
-            <Editor
-              height="100%"
-              language={langMeta.monacoLang}
-              value={code}
-              onChange={v => setCode(v || '')}
-              theme="vs-dark"
-              options={{
-                fontSize: 14,
-                minimap: { enabled: false },
-                lineNumbers: 'on',
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                tabSize: 2,
-                wordWrap: 'on',
-                padding: { top: 12, bottom: 12 },
-                fontFamily: '"Fira Code", "Cascadia Code", Consolas, monospace',
-                fontLigatures: true,
-                renderLineHighlight: 'gutter',
-                smoothScrolling: true,
-                cursorBlinking: 'smooth',
-                bracketPairColorization: { enabled: true },
-              }}
-            />
-          </div>
-
-          {/* Results */}
-          {showResults && (
-            <div style={{ height: 180, flexShrink: 0, background: '#13141f', borderTop: '1px solid #1e1f2e', overflowY: 'auto' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px 0', borderBottom: '1px solid #1e1f2e' }}>
-                <span style={{ color: '#9ca3af', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-                  {runResult?.mode === 'submit' ? 'Submission Result' : 'Test Output'}
-                </span>
-                <button onClick={() => setShowResults(false)} style={{ background: 'none', border: 'none', color: '#4b5563', cursor: 'pointer', fontSize: 16 }}>×</button>
-              </div>
-              <ResultsPanel result={runResult} loading={runLoading || submitLoading} />
+        {/* Split Pane Container */}
+        <div id="problem-container" className="flex-1 flex overflow-hidden min-h-0 bg-[#0d0e17]">
+          
+          {/* Left Pane */}
+          <div style={{ width: `${leftWidth}%` }} className="flex flex-col bg-[#060810]/50 border-r border-[#1e2433] overflow-hidden min-w-[280px]">
+            {/* Left Pane Tabs */}
+            <div className="flex border-b border-[#1e2433] bg-[#0a0c14] shrink-0 px-2 pt-2">
+              {[
+                { id: 'description', label: 'Description' },
+                { id: 'submissions', label: 'Submissions' },
+                { id: 'discussions', label: 'Discussion', icon: <IcoExternal /> }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => { setLeftTab(tab.id); if (tab.id !== 'submissions') setSelectedSubmission(null); }}
+                  className={`flex items-center gap-2 px-4 py-2.5 text-[12px] font-bold transition-colors border-b-2 -mb-[1px] ${
+                    leftTab === tab.id
+                      ? 'border-indigo-500 text-indigo-400'
+                      : 'border-transparent text-gray-500 hover:text-gray-300'
+                  }`}
+                >
+                  {tab.label}
+                  {tab.icon && <span className="opacity-70">{tab.icon}</span>}
+                </button>
+              ))}
             </div>
-          )}
+
+            {/* Left Pane Content */}
+            <div className="flex-1 overflow-hidden min-h-0 relative">
+              {leftTab === 'description' && <DescriptionPanel problem={problem} />}
+              {leftTab === 'submissions' && (
+                <SubmissionsPanel
+                  problemId={problem.id}
+                  selectedSubmission={selectedSubmission}
+                  onSelect={setSelectedSubmission}
+                />
+              )}
+              {leftTab === 'discussions' && <DiscussionsPanel problemId={problem.id} />}
+            </div>
+          </div>
+
+          {/* Resizer handle */}
+          <div
+            onMouseDown={onMouseDown}
+            className="w-1.5 bg-[#0d1117] hover:bg-indigo-500/50 cursor-col-resize shrink-0 transition-colors z-10"
+          />
+
+          {/* Right Pane (Code Editor) */}
+          <div className="flex-1 flex flex-col min-w-0 bg-[#13141f]">
+            {/* Editor Header Overlay */}
+            <div className="flex items-center px-4 py-2 bg-[#0a0c14] border-b border-[#1e2433] shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20 border border-emerald-500/50" />
+                <span className="text-[11px] font-bold text-gray-400 font-mono">
+                  {langMeta.monacoLang}
+                </span>
+              </div>
+            </div>
+
+            {/* Monaco Container */}
+            <div className="flex-1 relative min-h-[200px]" style={{ flex: showResults ? '0 0 calc(100% - 250px)' : '1' }}>
+              <Editor
+                height="100%"
+                language={langMeta.monacoLang}
+                value={code}
+                onChange={v => setCode(v || '')}
+                theme="vs-dark"
+                options={{
+                  fontSize: 14,
+                  minimap: { enabled: false },
+                  lineNumbers: 'on',
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                  tabSize: 4,
+                  wordWrap: 'on',
+                  padding: { top: 20, bottom: 20 },
+                  fontFamily: '"Fira Code", "Cascadia Code", Consolas, monospace',
+                  fontLigatures: true,
+                  renderLineHighlight: 'all',
+                  smoothScrolling: true,
+                  cursorBlinking: 'smooth',
+                  bracketPairColorization: { enabled: true },
+                }}
+              />
+            </div>
+
+            {/* Execution Results Panel */}
+            {showResults && (
+              <div className="h-[250px] shrink-0 bg-[#0d1117] border-t border-[#1e2433] flex flex-col shadow-2xl">
+                <div className="flex items-center justify-between px-4 py-2.5 bg-[#0a0c14] border-b border-[#1e2433]">
+                  <span className="text-[10px] font-black tracking-widest uppercase text-gray-400 flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                    {runResult?.mode === 'submit' ? 'Submission Result' : 'Test Output'}
+                  </span>
+                  <button onClick={() => setShowResults(false)} className="text-gray-500 hover:text-white transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto">
+                  <ResultsPanel result={runResult} loading={runLoading || submitLoading} />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

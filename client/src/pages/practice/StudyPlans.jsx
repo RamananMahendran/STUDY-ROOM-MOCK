@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar.jsx";
 import TopBar from "../components/TopBar.jsx";
 
@@ -125,8 +126,9 @@ const PLANS = [
 ];
 
 export default function StudyPlans() {
+  const navigate = useNavigate();
   return (
-    <div className="fixed inset-0 flex bg-[#060810] text-[#e2e8f0] font-sans overflow-hidden">
+    <div className="fixed inset-0 flex font-sans overflow-hidden" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       
       {/* LEFT SIDEBAR INJECTION */}
       <Sidebar active="study-plans" />
@@ -138,15 +140,15 @@ export default function StudyPlans() {
         <TopBar title="Study Plans" subtitle="Curated multi-day tracks" />
 
         {/* MAIN BODY SCROLL ZONE - Fixed: Removed items-center */}
-        <div className="flex-1 overflow-y-auto min-h-0 bg-[#060810] flex justify-center w-full">
+        <div className="flex-1 overflow-y-auto min-h-0 flex justify-center w-full">
           <div className="w-full max-w-[900px] mx-auto px-6 py-10 md:py-12 flex flex-col gap-10">
             
             {/* HERO TYPOGRAPHY HEADER */}
             <div className="max-w-3xl">
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[#f1f5f9] mb-3">
+              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-3" style={{ color: 'var(--text)' }}>
                 Structured Study Plans — 30-Day Placement Sprint, FAANG Prep, and more
               </h1>
-              <p className="text-[13px] md:text-sm text-gray-500 leading-relaxed font-normal">
+              <p className="text-[13px] md:text-sm leading-relaxed font-normal" style={{ color: 'var(--text-muted)' }}>
                 Hand-picked daily curricula. Each plan is a sequenced tour of the problems that actually matter — no more wondering what to solve next.
               </p>
             </div>
@@ -158,7 +160,9 @@ export default function StudyPlans() {
                 return (
                   <div
                     key={idx}
-                    className={`bg-[#0d1117] border border-[#1e2433]/70 rounded-xl px-5 py-3 flex flex-col gap-2 justify-between transition-all duration-200 cursor-pointer ${plan.borderColor}`}
+                    onClick={() => navigate(idx === 0 ? '/practice/study-plans/placement-sprint-30' : idx === 1 ? '/practice/study-plans/faang-prep-45' : idx === 2 ? '/practice/study-plans/arrays-mastery-14' : idx === 3 ? '/practice/study-plans/weekly-challenge-7' : '/practice/problems')}
+                    className={`rounded-xl border px-5 py-3 flex flex-col gap-2 justify-between transition-all duration-200 cursor-pointer ${plan.borderColor}`}
+                    style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
                   >
                     <div>
                       {/* CARD HEAD ROW */}
@@ -167,27 +171,27 @@ export default function StudyPlans() {
                           <PlanIcon />
                         </div>
                         <div className="flex flex-col gap-1">
-                          <h2 className="text-[15px] font-bold text-[#f1f5f9] tracking-tight">
+                          <h2 className="text-[15px] font-bold tracking-tight" style={{ color: 'var(--text)' }}>
                             {plan.title}
                           </h2>
                           <span className={`w-fit text-[9px] font-black px-1.5 py-0.5 rounded-md tracking-wider ${plan.tagBg}`}>
                             {plan.tag}
                           </span>
-                          <div className="text-[11px] text-gray-500 mb-1 font-medium">
+                          <div className="text-[11px] mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>
                             {plan.meta}
                           </div>
                         </div>
                       </div>
 
                       {/* CARD CONTENT LAYER */}
-                      <p className="text-[12px] text-gray-400/80 leading-relaxed font-normal mb-5 line-clamp-3 mt-2">
+                      <p className="text-[12px] leading-relaxed font-normal mb-5 line-clamp-3 mt-2" style={{ color: 'var(--text-muted)' }}>
                         {plan.desc}
                       </p>
                     </div>
 
                     {/* CARD METADATA METRICS FOOTER */}
                     <div>
-                      <div className="flex items-center gap-4 text-[11px] text-gray-500 border-b border-[#1e2433]/50 pb-4 mb-3.5">
+                      <div className="flex items-center gap-4 text-[11px] border-b pb-4 mb-3.5" style={{ color: 'var(--text-muted)', borderColor: 'var(--border)' }}>
                         <div className="flex items-center gap-1.5">
                           <IcoCalendar />
                           <span>{plan.duration}</span>
@@ -200,11 +204,11 @@ export default function StudyPlans() {
 
                       {/* CARD INTERACTIVE NAVIGATION CHEVRONS */}
                       <div className="flex items-center justify-between text-gray-400 font-medium text-[12px] group">
-                        <div className="flex items-center gap-1.5 text-gray-500 group-hover:text-gray-300 transition-colors">
+                        <div className="flex items-center gap-1.5 transition-colors" style={{ color: 'var(--text-muted)' }}>
                           {plan.isPro && <IcoLock />}
                           <span className="text-[11px] tracking-wide">{plan.footerText}</span>
                         </div>
-                        <span className="text-gray-600 group-hover:text-gray-300 transition-colors">
+                        <span className="transition-colors" style={{ color: 'var(--text-muted)' }}>
                           <IcoArrowRight />
                         </span>
                       </div>
@@ -216,16 +220,16 @@ export default function StudyPlans() {
             </div>
 
             {/* UPGRADE CALL TO ACTION FOOTER BANNER */}
-            <div className="bg-gradient-to-r from-[#0d1117] via-[#0d1324] to-[#111129] border border-[#1e2433] rounded-xl p-5 md:px-6 md:py-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
+            <div className="rounded-xl border p-5 md:px-6 md:py-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl" style={{ borderColor: 'var(--border)', background: 'var(--surface-2)' }}>
               <div className="flex gap-4 items-start">
                 <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 flex-shrink-0 mt-0.5">
                   <IcoSparkles />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-[#f1f5f9] mb-0.5 tracking-tight">
+                  <h3 className="text-sm font-bold mb-0.5 tracking-tight" style={{ color: 'var(--text)' }}>
                     Unlock every plan with Pro
                   </h3>
-                  <p className="text-[11px] text-gray-500 leading-normal">
+                  <p className="text-[11px] leading-normal" style={{ color: 'var(--text-muted)' }}>
                     FAANG Prep, Arrays Mastery, Weekly Challenge — plus mock interview modules and advanced performance analytics scorecards.
                   </p>
                 </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar.jsx";
 import Editor from "@monaco-editor/react";
 
@@ -125,7 +125,18 @@ export default function Playground() {
   const [running, setRunning] = useState(false);
   const [showStdin, setShowStdin] = useState(false);
   const [stdin, setStdin] = useState("");
-  
+  const [editorTheme, setEditorTheme] = useState("vs-dark");
+
+  useEffect(() => {
+    const checkTheme = () => {
+      const isLight = document.documentElement.getAttribute("data-theme") === "light";
+      setEditorTheme(isLight ? "light" : "vs-dark");
+    };
+    checkTheme();
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
 
   const handleLangSwitch = (lang) => {
     setActiveLang(lang);
@@ -184,22 +195,23 @@ export default function Playground() {
   
 
   return (
-    <div className="fixed inset-0 flex bg-[#060810] text-[#e2e8f0] font-sans overflow-hidden select-none">
+    <div className="fixed inset-0 flex font-sans overflow-hidden select-none" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       <Sidebar active="playground" />
 
       {/* Main area */}
       <div className="flex-1 flex flex-col overflow-hidden">
 
         {/* ── Top bar ── */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-[#1e2433]/70 flex-shrink-0">
+        <div className="flex items-center justify-between px-5 py-3 border-b flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
           <div>
-            <h1 className="text-[15px] font-bold text-[#f1f5f9] tracking-tight">Code Playground</h1>
+            <h1 className="text-[15px] font-bold tracking-tight" style={{ color: 'var(--text)' }}>Code Playground</h1>
             <p className="text-[11px] text-gray-500 mt-0.5">Write, run, and experiment</p>
           </div>
           <div className="flex items-center gap-2">
             {/* Pair Code button */}
             <button
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#1e2433] bg-[#0d1117] text-gray-400 text-[12px] font-semibold hover:border-indigo-500/40 hover:text-indigo-400 transition-all"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border text-gray-400 text-[12px] font-semibold hover:border-indigo-500/40 hover:text-indigo-400 transition-all"
+              style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
             >
               <IcoPairCode />
               <span>Pair Code</span>
@@ -207,7 +219,8 @@ export default function Playground() {
             {/* Reset button */}
             <button
               onClick={handleReset}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#1e2433] bg-[#0d1117] text-gray-400 text-[12px] font-semibold hover:border-[#2e3448] hover:text-gray-300 transition-all"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border text-gray-400 text-[12px] font-semibold hover:border-[#2e3448] hover:text-gray-300 transition-all"
+              style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
             >
               <IcoReset />
               <span>Reset</span>
@@ -260,11 +273,11 @@ export default function Playground() {
         <div className="flex flex-1 overflow-hidden mx-5 mb-0 gap-3">
 
           {/* Editor pane */}
-            <div className="flex-1 rounded-t-xl border border-b-0 border-[#1e2433]/70 overflow-hidden bg-[#0d1117]">
+            <div className="flex-1 rounded-t-xl border border-b-0 overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
             <Editor
                 height="100%"
                 language={activeLang.id}
-                theme="vs-dark"
+                theme={editorTheme}
                 value={code}
                 onChange={(value) => setCode(value || "")}
                 onMount={(editor, monaco) => {
@@ -293,7 +306,7 @@ export default function Playground() {
             </div>
 
           {/* Output pane */}
-          <div className="w-[380px] flex-shrink-0 flex flex-col rounded-t-xl border border-b-0 border-[#1e2433]/70 bg-[#0d1117] overflow-hidden">
+          <div className="w-[380px] flex-shrink-0 flex flex-col rounded-t-xl border border-b-0 overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
             <div className="px-4 pt-4 pb-2 flex-shrink-0">
               <span className="text-[10px] font-bold text-gray-500 tracking-widest uppercase">Output</span>
             </div>
@@ -322,8 +335,8 @@ export default function Playground() {
                     {/* Raw output */}
                     <div className="flex flex-col gap-2">
                       <span className="text-[10px] font-bold text-gray-500 tracking-widest uppercase">Output</span>
-                      <div className="bg-[#161b22] rounded-lg p-3 overflow-x-auto border border-[#1e2433]/50">
-                        <pre className="text-[#d4d4d4] whitespace-pre-wrap leading-relaxed text-[12px]">{outputResult.message}</pre>
+                      <div className="rounded-lg p-3 overflow-x-auto border" style={{ background: 'var(--surface-2)', borderColor: 'var(--border)' }}>
+                        <pre className="whitespace-pre-wrap leading-relaxed text-[12px]" style={{ color: 'var(--text)' }}>{outputResult.message}</pre>
                       </div>
                     </div>
                   </div>
@@ -341,7 +354,7 @@ export default function Playground() {
         </div>
 
         {/* ── Custom input (stdin) ── */}
-        <div className="mx-5 mb-5 border border-t-0 border-[#1e2433]/70 rounded-b-xl bg-[#0d1117] flex-shrink-0">
+        <div className="mx-5 mb-5 border border-t-0 rounded-b-xl flex-shrink-0" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
           <button
             onClick={() => setShowStdin(o => !o)}
             className="flex items-center gap-2 w-full px-4 py-2.5 text-[12px] text-gray-500 hover:text-gray-400 transition-colors"
@@ -364,7 +377,7 @@ export default function Playground() {
                 onChange={(e) => setStdin(e.target.value)}
                 placeholder="Enter custom input here…"
                 rows={3}
-                className="w-full bg-[#060810] border border-[#1e2433] rounded-lg p-3 font-mono text-[12px] text-gray-300 placeholder-gray-700 outline-none focus:border-indigo-500/40 resize-none transition-colors"
+                className="w-full rounded-lg p-3 font-mono text-[12px] outline-none resize-none transition-colors input-glass"
               />
             </div>
           )}

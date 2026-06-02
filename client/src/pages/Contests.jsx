@@ -95,11 +95,11 @@ export default function Contests() {
   ];
 
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-12 md:py-16 bg-[#060810] text-[#e2e8f0] font-sans h-full">
+    <div className="flex-1 overflow-y-auto px-6 py-12 md:py-16 bg-[var(--bg)] text-[var(--text)] font-sans h-full">
       <div className="max-w-4xl mx-auto space-y-16">
         
         {/* Hero Card */}
-        <div className="relative rounded-3xl p-10 md:p-16 overflow-hidden border border-[#1e2433] bg-gradient-to-br from-[#2a1b54] to-[#4c2889] shadow-2xl shadow-indigo-900/20">
+        <div className="relative rounded-3xl p-10 md:p-16 overflow-hidden border border-[var(--border)] bg-gradient-to-br from-[#2a1b54] to-[#4c2889] shadow-2xl shadow-indigo-900/20">
           <div className="relative z-10 space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-white/90 text-[10px] font-bold tracking-widest uppercase">
               <IcoLock /> COMING SOON
@@ -136,7 +136,7 @@ export default function Contests() {
           <h3 className="text-xs font-bold text-gray-500 tracking-widest uppercase ml-1">WHAT'S COMING</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {features.map((feature, idx) => (
-              <div key={idx} className="flex gap-4 p-5 rounded-2xl bg-[#0a0d14] border border-[#1e2433] hover:border-[#2a3441] transition-colors group">
+              <div key={idx} className="flex gap-4 p-5 rounded-2xl bg-[#0a0d14] border border-[var(--border)] hover:border-[#2a3441] transition-colors group">
                 <div className="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 group-hover:bg-indigo-500/20 transition-colors">
                   {feature.icon}
                 </div>
@@ -150,7 +150,7 @@ export default function Contests() {
         </div>
 
         {/* Bottom Card */}
-        <div className="flex items-center gap-5 p-6 rounded-2xl bg-[#0a0d14] border border-[#1e2433]">
+        <div className="flex items-center gap-5 p-6 rounded-2xl bg-[#0a0d14] border border-[var(--border)]">
           <div className="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-500 text-white shadow-lg shadow-amber-500/20">
             <IcoTrophy />
           </div>

@@ -95,7 +95,7 @@ function Dashboard() {
     { name: "Dynamic Prog",     pct: 22, color: "#ef4444" },
   ];
   return (
-    <div style={{ background:"#0d1117", border:"1px solid #1e2433", borderRadius:14, padding:"18px 20px", width:"100%", maxWidth:420, fontSize:"0.78rem", fontFamily:"'DM Sans', sans-serif" }}>
+    <div style={{ background:"var(--surface)", border:"1px solid var(--border)", borderRadius:14, padding:"18px 20px", width:"100%", maxWidth:420, fontSize:"0.78rem", fontFamily:"'DM Sans', sans-serif" }}>
       {/* header */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
         <div>
@@ -185,7 +185,7 @@ function StudyRoomMock() {
   ];
 
   return (
-    <div id="study-rooms" style={{ display:"flex", background:"#0d1117", border:"1px solid #1e2433", borderRadius:14, overflow:"hidden", width:"100%", maxWidth:540, fontFamily:"'DM Sans', sans-serif", fontSize:"0.75rem" }}>
+    <div id="study-rooms" style={{ display:"flex", background:"var(--surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", width:"100%", maxWidth:540, fontFamily:"'DM Sans', sans-serif", fontSize:"0.75rem" }}>
       {/* sidebar */}
       <div style={{ width:130, background:"#080c12", borderRight:"1px solid #1e2433", padding:"14px 0" }}>
         <div style={{ padding:"0 12px 10px", display:"flex", alignItems:"center", gap:7 }}>
@@ -231,7 +231,7 @@ function StudyRoomMock() {
         </svg>
         <div style={{ display:"flex", gap:8, marginTop:10 }}>
           <button style={{ background:"#6366f1", color:"#fff", border:"none", borderRadius:8, padding:"6px 16px", fontSize:"0.72rem", fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Pause</button>
-          <button style={{ background:"transparent", color:"#9ca3af", border:"1px solid #1e2433", borderRadius:8, padding:"6px 14px", fontSize:"0.72rem", cursor:"pointer", fontFamily:"inherit" }}>Skip break</button>
+          <button style={{ background:"transparent", color:"#9ca3af", border:"1px solid var(--border)", borderRadius:8, padding:"6px 14px", fontSize:"0.72rem", cursor:"pointer", fontFamily:"inherit" }}>Skip break</button>
         </div>
       </div>
       {/* chat */}
@@ -250,7 +250,7 @@ function StudyRoomMock() {
             </div>
           ))}
         </div>
-        <input placeholder="type a message..." readOnly style={{ marginTop:10, background:"#111827", border:"1px solid #1e2433", borderRadius:6, padding:"5px 8px", color:"#9ca3af", fontSize:"0.65rem", outline:"none", width:"100%", fontFamily:"inherit" }} />
+        <input placeholder="type a message..." readOnly style={{ marginTop:10, background:"#111827", border:"1px solid var(--border)", borderRadius:6, padding:"5px 8px", color:"#9ca3af", fontSize:"0.65rem", outline:"none", width:"100%", fontFamily:"inherit" }} />
       </div>
     </div>
   );
@@ -273,7 +273,7 @@ function CodeEditorMock() {
   const colors = { kw:"#c084fc", fn:"#60a5fa", id:"#e2e8f0", pl:"#94a3b8", sp:"" };
 
   return (
-    <div style={{ background:"#0d1117", border:"1px solid #1e2433", borderRadius:14, overflow:"hidden", width:"100%", maxWidth:560, fontFamily:"'DM Sans', sans-serif" }}>
+    <div style={{ background:"var(--surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", width:"100%", maxWidth:560, fontFamily:"'DM Sans', sans-serif" }}>
       {/* tabs */}
       <div style={{ borderBottom:"1px solid #1e2433", padding:"12px 16px", display:"flex", alignItems:"center", gap:10 }}>
         <span style={{ background:"#0f2a1a", color:"#4ade80", border:"1px solid #166534", borderRadius:4, padding:"2px 8px", fontSize:"0.65rem", fontWeight:700 }}>EASY</span>
@@ -295,12 +295,12 @@ function CodeEditorMock() {
         ))}
       </div>
       {/* pair coding */}
-      <div style={{ borderTop:"1px solid #1e2433", padding:"8px 16px", background:"#0d1117", display:"flex", alignItems:"center", gap:8 }}>
+      <div style={{ borderTop:"1px solid var(--border)", padding:"8px 16px", background:"var(--surface)", display:"flex", alignItems:"center", gap:8 }}>
         <div style={{ width:8, height:8, borderRadius:"50%", background:"#f97316" }} />
         <span style={{ fontSize:"0.72rem", color:"#9ca3af" }}>Pair coding with <span style={{ color:"#f97316", fontWeight:700 }}>Aman</span></span>
       </div>
       {/* output */}
-      <div style={{ borderTop:"1px solid #1e2433", padding:"10px 16px", background:"#080c12" }}>
+      <div style={{ borderTop:"1px solid var(--border)", padding:"10px 16px", background:"#080c12" }}>
         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
             <span style={{ fontSize:"0.7rem", color:"#6b7280" }}>Output</span>
@@ -382,7 +382,7 @@ export default function Home() {
   const [studentCount] = useState(23);
 
   return (
-    <div style={{ fontFamily:"'DM Sans', sans-serif", background:"#060810", color:"#e2e8f0", minHeight:"100vh", overflowX:"hidden" }}>
+    <div style={{ fontFamily:"'DM Sans', sans-serif", background:"var(--bg)", color:"var(--text)", minHeight:"100vh", overflowX:"hidden" }}>
 
       {/* ── NAVBAR ── */}
       <Header activePage="Home" />

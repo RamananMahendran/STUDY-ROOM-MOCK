@@ -137,7 +137,7 @@ function CreateRoomModal({ onClose, onNavigate }) {
                     key={i}
                     onClick={() => setIcon(i)}
                     style={{
-                      background: selectedIcon === i ? "#1f2433" : "#0d1117",
+                      background: selectedIcon === i ? "var(--surface-2)" : "var(--surface)",
                       border: selectedIcon === i ? `2px solid ${ROOM_COLORS[selectedColor]}` : "2px solid #1e2433",
                       borderRadius: 8, padding: "6px", cursor: "pointer",
                       fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center",
@@ -185,15 +185,15 @@ function CreateRoomModal({ onClose, onNavigate }) {
                       key={qs.label}
                       onClick={() => applyQuick(qs)}
                       style={{
-                        background: isActive ? "#161b26" : "#0d1117",
+                        background: isActive ? "var(--surface-2)" : "var(--surface)",
                         border: isActive ? "1px solid #6366f1" : "1px solid #1e2433",
                         borderRadius: 8, padding: "10px 12px",
                         cursor: "pointer", textAlign: "left",
                         color: "#e2e8f0",
                         transition: "border-color 0.15s, background 0.15s",
                       }}
-                      onMouseEnter={e => { if (!isActive) { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.background = "#161b26"; } }}
-                      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.borderColor = "#1e2433"; e.currentTarget.style.background = "#0d1117"; } }}
+                      onMouseEnter={e => { if (!isActive) { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.background = "var(--surface-2)"; } }}
+                      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.background = "var(--surface)"; } }}
                     >
                       <div style={{ fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
                         <span>{qs.emoji}</span> {qs.label}
@@ -219,12 +219,12 @@ function CreateRoomModal({ onClose, onNavigate }) {
                   onChange={e => setRoomName(e.target.value)}
                   style={{
                     width: "100%", boxSizing: "border-box",
-                    background: "#0d1117", border: "1px solid #1e2433",
+                    background: "var(--surface)", border: "1px solid #1e2433",
                     borderRadius: 8, padding: "10px 12px 10px 34px",
                     fontSize: 13, color: "#f1f5f9", outline: "none", fontFamily: "inherit",
                   }}
                   onFocus={e => e.target.style.borderColor = "#6366f1"}
-                  onBlur={e => e.target.style.borderColor = "#1e2433"}
+                  onBlur={e => e.target.style.borderColor = "var(--border)"}
                 />
               </div>
             </div>
@@ -241,12 +241,12 @@ function CreateRoomModal({ onClose, onNavigate }) {
                   onChange={e => setGoal(e.target.value)}
                   style={{
                     width: "100%", boxSizing: "border-box",
-                    background: "#0d1117", border: "1px solid #1e2433",
+                    background: "var(--surface)", border: "1px solid #1e2433",
                     borderRadius: 8, padding: "10px 12px 10px 34px",
                     fontSize: 13, color: "#f1f5f9", outline: "none", fontFamily: "inherit",
                   }}
                   onFocus={e => e.target.style.borderColor = "#6366f1"}
-                  onBlur={e => e.target.style.borderColor = "#1e2433"}
+                  onBlur={e => e.target.style.borderColor = "var(--border)"}
                 />
               </div>
             </div>
@@ -263,7 +263,7 @@ function CreateRoomModal({ onClose, onNavigate }) {
                     onChange={e => setExpires(e.target.value)}
                     style={{
                       width: "100%",
-                      background: "#0d1117", border: "1px solid #1e2433",
+                      background: "var(--surface)", border: "1px solid #1e2433",
                       borderRadius: 8, padding: "9px 12px 9px 30px",
                       fontSize: 13, color: "#f1f5f9", outline: "none",
                       fontFamily: "inherit", cursor: "pointer", appearance: "none",
@@ -712,7 +712,7 @@ export default function TopBar({ title, subtitle }) {
                 onKeyDown={handleListKeyDown}
                 style={{
                   width: "100%", maxWidth: 580,
-                  background: "#0d1117",
+                  background: "var(--surface)",
                   border: "1px solid #1e2433",
                   borderRadius: 12,
                   boxShadow: "0 24px 64px rgba(0,0,0,0.7)",
@@ -757,7 +757,7 @@ export default function TopBar({ title, subtitle }) {
                                 padding: "8px 12px", borderRadius: 8,
                                 fontSize: 13, fontWeight: 500,
                                 border: "none", cursor: "pointer", fontFamily: "inherit",
-                                backgroundColor: isSelected ? "#161b26" : "transparent",
+                                backgroundColor: isSelected ? "var(--surface-2)" : "transparent",
                                 color: isSelected ? "#fff" : "#cbd5e1",
                                 transition: "background-color 0.1s, color 0.1s",
                               }}
