@@ -128,12 +128,13 @@ export default function LeaderboardPage() {
         </div>
 
         {/* Body */}
-        <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+        <div className="leaderboard-body" style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
           {/* ── Problem list ── */}
-          <div style={{
+          <div className="problem-list-panel" style={{
             width: 240, flexShrink: 0, overflowY: "auto",
             borderRight: "1px solid var(--border)",
+            borderBottom: "1px solid transparent",
             background: "var(--surface)",
           }}>
             <div style={{
@@ -236,6 +237,17 @@ export default function LeaderboardPage() {
       </div>
 
 
+      <style>{`
+        @media (max-width: 768px) {
+          .leaderboard-body { flex-direction: column !important; }
+          .problem-list-panel { 
+            width: 100% !important; 
+            max-height: 220px !important; 
+            border-right: none !important;
+            border-bottom: 1px solid var(--border) !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

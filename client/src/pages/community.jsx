@@ -301,9 +301,9 @@ export default function Community() {
                           <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-[12px] overflow-hidden" style={{ backgroundColor: user.bg }}>
                             {user.initial || user.name.charAt(0)}
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[13px] font-bold text-[var(--text)]">{user.name}</span>
-                            {user.isYou && <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-amber-500/20 text-amber-500">You</span>}
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-[13px] font-bold text-[var(--text)] truncate">{user.name}</span>
+                            {user.isYou && <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-amber-500/20 text-amber-500 flex-shrink-0">You</span>}
                           </div>
                         </div>
                         <div className="flex flex-col items-end">

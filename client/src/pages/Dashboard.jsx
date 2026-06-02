@@ -97,8 +97,6 @@ function HeroCard({ onStartFocus, username, streak }) {
         background: "linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(139,92,246,0.06) 60%, transparent 100%), var(--surface)",
         border: "1px solid var(--border)",
         boxShadow: "var(--card-shadow)",
-        display: "grid",
-        gridTemplateColumns: "minmax(0, 1fr) 280px",
         gap: 24,
         alignItems: "stretch",
       }}
@@ -519,10 +517,14 @@ export default function Dashboard() {
         </main>
       <style>{`
         .live-dot { animation: pulse-green 1.6s ease-in-out infinite; }
+        .hero-analytics { display: grid; grid-template-columns: minmax(0,1fr) 280px; }
         @media (max-width: 768px) {
           .hero-analytics  { grid-template-columns: minmax(0,1fr) !important; }
           .kpi-row         { grid-template-columns: repeat(2,1fr) !important; }
           .home-charts-row { grid-template-columns: minmax(0,1fr) !important; }
+        }
+        @media (max-width: 480px) {
+          .kpi-row         { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </>

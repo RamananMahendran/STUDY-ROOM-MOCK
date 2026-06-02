@@ -579,13 +579,13 @@ export default function Profile() {
           <div style={{ flex: "1 1 0%", overflowY: "auto", minHeight: 0, backgroundColor: "var(--bg)" }}>
             
             {/* Header Profile Info */}
-            <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 32px 0px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 24 }}>
-                <div className="ui-avatar ui-avatar-lg" style={{ width: 80, height: 80, borderRadius: 20, backgroundColor: "#0d9488", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36, fontWeight: 700, border: "none", boxShadow: "rgba(0, 0, 0, 0.3) 0px 4px 16px" }}>
+            <div className="profile-header" style={{ maxWidth: 900, margin: "0 auto", padding: "28px 32px 0px" }}>
+              <div className="profile-hero" style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 24 }}>
+                <div className="ui-avatar ui-avatar-lg" style={{ width: 80, height: 80, borderRadius: 20, backgroundColor: "#0d9488", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36, fontWeight: 700, border: "none", boxShadow: "rgba(0, 0, 0, 0.3) 0px 4px 16px", flexShrink: 0 }}>
                   {username ? username.charAt(0).toUpperCase() : "U"} {/* 👈 4. Dynamic Avatar Initial */}
                 </div>
                 <div style={{ flex: "1 1 0%", minWidth: 0, paddingBottom: 4 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
+                  <div className="profile-name-row" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
                     <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "var(--text)" }}>{username}</h1>
                     <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 99, backgroundColor: "rgba(234, 179, 8, 0.15)", border: "1px solid rgba(234, 179, 8, 0.3)", color: "#eab308", fontSize: 11, fontWeight: 700 }}>
                       <IcoFlame s={12} color="#eab308" /> {streak}-day streak
@@ -593,14 +593,14 @@ export default function Profile() {
                   </div>
                   <p style={{ margin: "0px", fontSize: 12, color: "var(--text-muted)" }}>{email}</p>
                 </div>
-                <button onClick={() => setShowShareModal(true)} title="Share your stats" style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 9, fontSize: 12, fontWeight: 600, cursor: "pointer", backgroundColor: "var(--surface)", color: "var(--text-muted)", border: "1px solid var(--border)", transition: "0.15s", flexShrink: 0 }}>
+                <button className="share-btn" onClick={() => setShowShareModal(true)} title="Share your stats" style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 9, fontSize: 12, fontWeight: 600, cursor: "pointer", backgroundColor: "var(--surface)", color: "var(--text-muted)", border: "1px solid var(--border)", transition: "0.15s", flexShrink: 0 }}>
                   <IcoShare s={13} /> Share
                 </button>
               </div>
             </div>
 
             {/* Content Area */}
-            <div style={{ maxWidth: 900, margin: "0 auto", padding: "0px 32px 48px" }}>
+            <div className="profile-content" style={{ maxWidth: 900, margin: "0 auto", padding: "0px 32px 48px" }}>
               
               {/* Stats Grid */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 140px), 1fr))", gap: 12, marginBottom: 24 }}>
@@ -972,6 +972,15 @@ export default function Profile() {
             </div>
           </div>
         </main>
+      <style>{`
+        @media (max-width: 640px) {
+          .profile-header { padding: 20px 16px 0px !important; }
+          .profile-content { padding: 0px 16px 48px !important; }
+          .profile-hero { flex-direction: column; text-align: center; }
+          .profile-name-row { justify-content: center; }
+          .share-btn { width: 100%; justify-content: center; }
+        }
+      `}</style>
     </>
   );
 }

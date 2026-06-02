@@ -532,8 +532,9 @@ const COMMANDS = [
  * Props:
  *  title    – page title shown on left
  *  subtitle – optional subtitle shown below title
+ *  onMenuToggle - callback to open mobile menu
  */
-export default function TopBar({ title, subtitle }) {
+export default function TopBar({ title, subtitle, onMenuToggle }) {
   const navigate = useNavigate();
   const [isOpen,          setIsOpen]          = useState(false);
   const [searchQuery,     setSearchQuery]     = useState("");
@@ -629,16 +630,32 @@ export default function TopBar({ title, subtitle }) {
           position: "relative",
         }}
       >
-        {/* Title block */}
-        <div style={{ minWidth: 0, flex: 1 }}>
-          <h1 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--text)", lineHeight: 1, whiteSpace: "nowrap" }}>
-            {title}
-          </h1>
-          {subtitle && (
-            <p style={{ margin: "2px 0 0", fontSize: 11, color: "var(--text-muted)", lineHeight: 1 }}>
-              {subtitle}
-            </p>
+        {/* Title block with hamburger for mobile */}
+        <div style={{ minWidth: 0, flex: 1, display: "flex", alignItems: "center", gap: 12 }}>
+          {onMenuToggle && (
+            <button
+              onClick={onMenuToggle}
+              className="md:hidden"
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "center",
+                width: 32, height: 32, borderRadius: 8,
+                background: "var(--surface-2)", border: "1px solid var(--border)",
+                color: "var(--text)", cursor: "pointer"
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
           )}
+          <div>
+            <h1 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--text)", lineHeight: 1, whiteSpace: "nowrap" }}>
+              {title}
+            </h1>
+            {subtitle && (
+              <p style={{ margin: "4px 0 0", fontSize: 11, color: "var(--text-muted)", lineHeight: 1 }}>
+                {subtitle}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Global Timer Pill */}

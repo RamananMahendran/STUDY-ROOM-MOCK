@@ -556,6 +556,9 @@ export default function Rooms() {
         @media (max-width: 768px) {
           .quick-start-grid { grid-template-columns: repeat(2,1fr) !important; }
         }
+        @media (max-width: 480px) {
+          .quick-start-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
     </>
   );
