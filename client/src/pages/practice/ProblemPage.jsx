@@ -4,7 +4,7 @@ import Editor from '@monaco-editor/react';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
 const LANGUAGE_OPTIONS = [
   { label: 'JavaScript', value: 'javascript', monacoLang: 'javascript', ext: 'js' },
@@ -100,13 +100,15 @@ function timeAgo(dateStr) {
 // ─── Shared Badges ────────────────────────────────────────────────────────────
 
 function DifficultyBadge({ difficulty }) {
-  const s = DIFFICULTY_STYLE[difficulty] || DIFFICULTY_STYLE.Easy;
+  // Normalize difficulty string (e.g., 'easy' -> 'Easy')
+  const normalized = difficulty ? (difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase()) : 'Easy';
+  const s = DIFFICULTY_STYLE[normalized] || DIFFICULTY_STYLE.Easy;
   return (
     <span style={{
       color: s.color, background: s.bg, border: `1px solid ${s.border}`,
       padding: '3px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700,
     }}>
-      {difficulty}
+      {normalized}
     </span>
   );
 }
@@ -511,6 +513,7 @@ function ResultsPanel({ result, loading }) {
 
 export default function ProblemPage() {
   const { slug }   = useParams();
+  console.log('slug from params:', slug);
   const navigate   = useNavigate();
 
   const [problem, setProblem]           = useState(null);
@@ -539,8 +542,11 @@ export default function ProblemPage() {
     fetch(`${API}/api/problems/slug/${slug}`, { headers: authHeaders() })
       .then(r => r.json())
       .then(data => {
-        if (data.success) setProblem(data.data);
-        else setProblemError(data.error || 'Problem not found');
+        if (data.success) {
+          setProblem(data.data);
+        } else {
+          setProblemError(data.error || data.message || 'Problem not found');
+        }
       })
       .catch(() => setProblemError('Failed to load problem'))
       .finally(() => setLoading(false));
@@ -652,9 +658,10 @@ export default function ProblemPage() {
 
   if (problemError || !problem) {
     return (
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0d0e17', gap: 12 }}>
-        <div style={{ color: '#f87171', fontSize: 16 }}>Problem not found</div>
-        <button onClick={() => navigate('/practice/problems')} style={{ background: '#7c3aed', border: 'none', color: '#fff', padding: '8px 20px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0d0e17', gap: 12, padding: 40, textAlign: 'center' }}>
+        <div style={{ color: '#f87171', fontSize: 18, fontWeight: 600 }}>Problem not found</div>
+        <div style={{ color: '#6b7280', fontSize: 14, maxWidth: 400 }}>{problemError || "The problem you are looking for does not exist or has been moved."}</div>
+        <button onClick={() => navigate('/practice/problems')} style={{ marginTop: 12, background: '#7c3aed', border: 'none', color: '#fff', padding: '10px 24px', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>
           ← Back to Problems
         </button>
       </div>

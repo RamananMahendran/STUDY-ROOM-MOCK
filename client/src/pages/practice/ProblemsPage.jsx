@@ -183,7 +183,12 @@ export default function ProblemsPage() {
               problem={problem}
               idx={idx}
               solved={solved.has(problem.id)}
-              onClick={() => navigate(`/practice/problems/${problem.slug}`)}
+
+              onClick={ () => {
+                console.log(problem)
+                navigate(`/practice/problems/${problem.slug}`)
+              }
+              }
               isLast={idx === filtered.length - 1}
             />
           ))
@@ -247,13 +252,15 @@ function ProblemRow({ problem, idx, solved, onClick, isLast }) {
 }
 
 function DifficultyBadge({ difficulty }) {
-  const c = DIFFICULTY_COLORS[difficulty] || DIFFICULTY_COLORS.Easy;
+  // Normalize difficulty string (e.g., 'easy' -> 'Easy')
+  const normalized = difficulty ? (difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase()) : 'Easy';
+  const c = DIFFICULTY_COLORS[normalized] || DIFFICULTY_COLORS.Easy;
   return (
     <span style={{
       background: c.bg, color: c.color, border: `1px solid ${c.border}`,
       padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600,
     }}>
-      {difficulty}
+      {normalized}
     </span>
   );
 }
