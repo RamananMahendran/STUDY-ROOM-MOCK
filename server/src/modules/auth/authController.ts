@@ -53,12 +53,13 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
     const user = await User.findByEmail(email);
 
     if (user && (await User.matchPassword(password, user.password))) {
+      const newStreak = await User.updateStreak(user.id, user.last_active_at, user.streak);
       const token = generateToken(res, user.id);
       res.json({
         id: user.id,
         username: user.username,
         email: user.email,
-        streak: user.streak,
+        streak: newStreak,
         token,
       });
     } else {
@@ -83,11 +84,12 @@ export const getUserProfile = async (req: AuthenticatedRequest, res: Response, n
     const user = await User.findById(req.user.id);
 
     if (user) {
+      const newStreak = await User.updateStreak(user.id, user.last_active_at, user.streak);
       res.json({
         id: user.id,
         username: user.username,
         email: user.email,
-        streak: user.streak,
+        streak: newStreak,
       });
     } else {
       res.status(404);

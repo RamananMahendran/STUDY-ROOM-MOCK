@@ -65,72 +65,18 @@ const IcoMsg = ({ s = 20 }) => <svg width={s} height={s} viewBox="0 0 24 24" fil
 const IcoBookOpen = ({ s = 13 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 7v14" /><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" /></svg>;
 const IcoSparkles = ({ s = 16 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M3 5h4"/></svg>;
 
-// ── Daily challenge banner ────────────────────────────────────────────────────
-function DailyChallenge() {
-  const navigate = useNavigate();
-  const now = new Date();
-  const day = now.toLocaleDateString("en-US", { weekday: "long" });
-  const date = now.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
-  return (
-    <div
-      className="flex-shrink-0 cursor-pointer overflow-hidden"
-      style={{
-        borderRadius: 14,
-        background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 60%, #a855f7 100%)",
-        boxShadow: "0 4px 24px rgba(99,102,241,0.35)",
-        position: "relative",
-      }}
-    >
-      {/* Grid overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          opacity: 0.06,
-          backgroundImage:
-            "repeating-linear-gradient(0deg,transparent,transparent 24px,#fff 24px,#fff 25px), repeating-linear-gradient(90deg,transparent,transparent 24px,#fff 24px,#fff 25px)",
-        }}
-      />
-      <div className="relative flex items-center flex-wrap" style={{ padding: "18px 22px", gap: 16 }}>
-        {/* Flame icon */}
-        <div
-          className="flex items-center justify-center flex-shrink-0"
-          style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: "rgba(255,255,255,0.15)" }}
-        >
-          <IcoFlame s={24} style={{ color: "rgb(251,191,36)" }} />
-        </div>
-
-        {/* Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center flex-wrap" style={{ gap: 8, marginBottom: 3 }}>
-            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "1.2px", color: "rgba(255,255,255,0.7)", textTransform: "uppercase" }}>
-              Daily Challenge · {day}, {date}
-            </span>
-          </div>
-          <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", lineHeight: 1.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            Factorial
-          </div>
-          <div className="flex items-center" style={{ gap: 8, marginTop: 5 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 6, backgroundColor: "rgba(255,255,255,0.15)", color: "#fff", textTransform: "capitalize" }}>
-              easy
-            </span>
-          </div>
-        </div>
-
-        {/* Solve button */}
-        <div
-          onClick={() => navigate("/practice/playground")}
-          className="flex-shrink-0 flex items-center cursor-pointer"
-          style={{ gap: 6, backgroundColor: "#fff", color: "#4f46e5", padding: "8px 16px", borderRadius: 10, fontSize: 13, fontWeight: 700 }}
-        >
-          <IcoFlame s={14} style={{ color: "#4f46e5" }} />
-          Solve now
-          <IcoChevRight s={14} />
-        </div>
-      </div>
-    </div>
-  );
+function getToken() {
+  return localStorage.getItem('token') || sessionStorage.getItem('token');
 }
+
+function authHeaders() {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+import DailyChallenge from "./components/DailyChallenge.jsx";
 
 
 // ── Hero greeting card ────────────────────────────────────────────────────────
@@ -322,6 +268,21 @@ export default function Dashboard() {
       if (userObj && userObj.streak){
         setStreak(userObj.streak);
       }
+      
+      // Fetch fresh profile data to ensure streak is updated and accurate
+      fetch(`${API}/api/auth/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.streak !== undefined) {
+          setStreak(data.streak);
+          userObj.streak = data.streak;
+          localStorage.setItem("user", JSON.stringify(userObj));
+        }
+      })
+      .catch(err => console.error("Error fetching fresh profile:", err));
+
       console.log("User data loaded successfully:", { username: userObj.username, email: userObj.email, userId: userObj.userId, streak: userObj.streak });
     } catch (error) {
       console.error("Error parsing user data from localStorage:", error);

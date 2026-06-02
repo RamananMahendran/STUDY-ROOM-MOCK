@@ -67,7 +67,7 @@ const IcoEmptyUser = () => (
 function StatCard({ icon: Icon, iconColor, borderColor, label, value }) {
   return (
     <div
-      className="flex-1 min-w-[140px] rounded-xl border bg-[#0d1117] p-4 flex flex-col gap-2"
+      className="flex-1 min-w-[140px] rounded-xl border bg-[var(--surface)] p-4 flex flex-col gap-2"
       style={{ borderColor: borderColor + "66", borderTopWidth: 2, borderTopColor: borderColor }}
     >
       <div className="flex items-center gap-1.5">
@@ -120,7 +120,7 @@ export default function ReferAndEarn() {
   const navigate = useNavigate();
 
   return (
-    <div className="fixed inset-0 flex bg-[#060810] text-[#e2e8f0] font-sans overflow-hidden select-none">
+    <div className="fixed inset-0 flex bg-[var(--bg)] text-[var(--text)] font-sans overflow-hidden select-none">
       <Sidebar active="refer" />
 
       {/* Main content */}
@@ -156,12 +156,12 @@ export default function ReferAndEarn() {
 
               {/* Link row */}
               <div className="flex items-center gap-2">
-                <div className="flex-1 flex items-center px-3 py-2.5 rounded-xl border border-[#2a3048] bg-[#060810]/70 text-[12px] font-mono text-gray-400 overflow-hidden">
+                <div className="flex-1 flex items-center px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)]/70 text-[12px] font-mono text-gray-400 overflow-hidden">
                   <span className="truncate">{referralLink}</span>
                 </div>
                 <button
                   onClick={handleCopy}
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-[#2a3048] bg-[#0d1117] text-[12px] font-semibold text-gray-300 hover:border-indigo-500/40 hover:text-indigo-300 transition-all flex-shrink-0"
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[12px] font-semibold text-gray-300 hover:border-indigo-500/40 hover:text-indigo-300 transition-all flex-shrink-0"
                 >
                   {copied ? <IcoCheck /> : <IcoCopy />}
                   <span>{copied ? "Copied!" : "Copy"}</span>
@@ -184,7 +184,7 @@ export default function ReferAndEarn() {
             </div>
 
             {/* ── Milestone card ── */}
-            <div className="rounded-2xl border border-[#1e2433]/70 bg-[#0d1117] p-4">
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className="text-amber-400"><IcoCrown /></span>
@@ -219,7 +219,7 @@ export default function ReferAndEarn() {
                 <span className="text-[13px] font-bold text-[#f1f5f9]">Your referrals</span>
                 <span className="text-[11px] text-gray-600">None yet</span>
               </div>
-              <div className="rounded-2xl border border-[#1e2433]/70 bg-[#0d1117] p-10 flex flex-col items-center justify-center gap-3 text-center">
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-10 flex flex-col items-center justify-center gap-3 text-center">
                 <div className="text-gray-700">
                   <IcoEmptyUser />
                 </div>
@@ -233,7 +233,7 @@ export default function ReferAndEarn() {
             </div>
 
             {/* ── Bottom CTA banner ── */}
-            <div className="rounded-2xl border border-[#1e2433]/70 bg-[#0d1117] px-5 py-4 flex items-center justify-between gap-4">
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-5 py-4 flex items-center justify-between gap-4">
               <div>
                 <p className="text-[13px] font-bold text-[#f1f5f9]">Don't want to wait?</p>
                 <p className="text-[11px] text-gray-500 mt-0.5">

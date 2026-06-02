@@ -11,7 +11,7 @@ const IcoBar        = ({s=15}) => <svg width={s} height={s} viewBox="0 0 24 24" 
 const IcoGift       = ({s=15}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/><rect x="3" y="7" width="18" height="4" rx="1"/></svg>;
 const IcoLogout     = ({s=12}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>;
 const IcoChevron    = ({s=13, rotate="0"}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{transition:"transform var(--dur-fast)", transform:`rotate(${rotate}deg)`}}><path d="m6 9 6 6 6-6"/></svg>;
-const IcoLock       = ({s=16}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
+const IcoLock       = ({s=16, color="currentColor"}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
 const IcoSearch     = ({s=12}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>;
 const IcoBell       = ({s=15}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>;
 const IcoPlus       = ({s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>;
@@ -19,7 +19,7 @@ const IcoBookOpen   = ({s=13}) => <svg width={s} height={s} viewBox="0 0 24 24" 
 const IcoMsg        = ({s=20}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg>;
 const IcoShare      = ({s=13}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line></svg>;
 const IcoClock      = ({s=16}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>;
-const IcoTarget     = ({s=16}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>;
+const IcoTarget     = ({s=16, color="currentColor"}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>;
 const IcoStar       = ({s=16}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg>;
 const IcoSettings   = ({s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg>;
 const IcoAward      = ({s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>;
@@ -27,6 +27,18 @@ const IcoTrendingUp = ({s=16}) => <svg width={s} height={s} viewBox="0 0 24 24" 
 const IcoMoreHorizontal = ({s=16}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>;
 const IcoCheck      = ({s=16}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
 const IcoFlame      = ({s=16, color="currentColor"}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>;
+const IcoSparkle    = ({s=16, color="currentColor"}) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 4 c0 3.5 -2.5 6 -6 6 c3.5 0 6 2.5 6 6 c0 -3.5 2.5 -6 6 -6 c-3.5 0 -6 -2.5 -6 -6 z" />
+    <path d="M19 3v4M17 5h4" />
+    <circle cx="5" cy="19" r="1" />
+  </svg>
+);
+
+const IcoGauge      = ({s=16, color="currentColor"}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 14 4-4"/><path d="M3.34 16A10 10 0 1 1 20.66 16"/></svg>;
+const IcoGrid       = ({s=16, color="currentColor"}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>;
+const IcoTrend      = ({s=16, color="currentColor"}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>;
+const IcoArrowRight = ({s=16, color="currentColor"}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>;
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
 function StatCard({ icon, label, value, unit, color, gradient }) {
@@ -70,7 +82,7 @@ const SettingsSection = ({ title, children, noBg = false }) => (
 );
 
 // ── Share Modal ───────────────────────────────────────────────────────────────
-function ShareModal({ onClose, username, solvedCount }) { // 👈 1. Added username and count props
+function ShareModal({ onClose, username, solvedCount, streak }) {
   const [copied, setCopied] = useState(false);
   
   const handleCopy = () => {
@@ -124,7 +136,7 @@ function ShareModal({ onClose, username, solvedCount }) { // 👈 1. Added usern
             <div style={{ fontSize: 42, marginBottom: 12 }}>📚</div>
             
             <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 4 }}>
-              <span style={{ fontSize: 36, fontWeight: 800, letterSpacing: "-1px" }}>1</span>
+              <span style={{ fontSize: 36, fontWeight: 800, letterSpacing: "-1px" }}>{streak || 0}</span>
               <span style={{ fontSize: 18, fontWeight: 600 }}>day streak</span>
             </div>
             
@@ -348,44 +360,78 @@ function UserProblemsHistory({ onDataLoaded }) { // 👈 2. Lift up state to upd
       )}
       </div>
 
-      {/* Advanced Analytics PRO */}
-      <div style={{ marginTop: 12 }}>
+      <div style={{ marginTop: 24, paddingBottom: 40 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-          <span style={{ fontSize: 18 }}>✨</span>
-          <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>Advanced Analytics</span>
-          <span style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", backgroundColor: "rgba(99, 102, 241, 0.15)", padding: "2px 6px", borderRadius: 4 }}>PRO</span>
+          <span style={{ display: "flex", alignItems: "center", color: "rgb(139, 92, 246)" }}><IcoSparkle s={18} /></span>
+          <span style={{ fontSize: 16, fontWeight: 700, color: "var(--text)" }}>Advanced Analytics</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#818cf8", border: "1.5px solid rgba(129, 140, 248, 0.3)", backgroundColor: "rgba(129, 140, 248, 0.1)", padding: "2px 8px", borderRadius: 6, letterSpacing: "0.5px", marginLeft: 4 }}>PRO</span>
         </div>
         
         <div style={{ 
-          position: "relative", backgroundColor: "rgba(255, 255, 255, 0.02)", border: "1px solid rgba(255,255,255,0.05)", 
-          borderRadius: 14, padding: "30px", overflow: "hidden", display: "flex", flexDirection: "column", 
-          alignItems: "center", justifyContent: "center", minHeight: 300, textAlign: "center"
+          position: "relative",
+          width: "100%",
+          borderRadius: 16,
+          border: "1px solid var(--border)",
+          backgroundColor: "var(--surface)",
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          padding: "50px 20px"
         }}>
-          {/* Blurred background mockup elements */}
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", flexWrap: "wrap", gap: 16, padding: 30, opacity: 0.1, filter: "blur(4px)" }}>
-            {Array.from({ length: 12 }).map((_, i) => <div key={i} style={{ flex: "1 1 20%", height: 120, backgroundColor: ["#ef4444", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6"][i%5], borderRadius: 12 }}></div>)}
+          {/* Background Grid Heatmap simulation */}
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gridTemplateRows: "repeat(2, 1fr)", gap: 14, padding: 24 }}>
+             {[...Array(12)].map((_, i) => {
+               // Generate some random-ish colors based on purple/orange to match the design
+               const hue = [280, 290, 260, 270, 340, 350, 250, 310, 290, 270, 280, 330][i];
+               const lightness = [10, 12, 15, 14, 11, 10, 16, 13, 14, 12, 11, 15][i];
+               return (
+                 <div key={i} style={{ backgroundColor: `hsl(${hue}, 40%, ${lightness}%)`, borderRadius: 16 }}></div>
+               );
+             })}
           </div>
-          
+          {/* Fading overlay to make it look blurred/subtle at the edges */}
+          <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, transparent 0%, var(--surface) 80%)" }}></div>
+
           {/* Content */}
-          <div style={{ position: "relative", zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", maxWidth: 440 }}>
-            <div style={{ width: 56, height: 56, borderRadius: 16, backgroundColor: "rgb(139, 92, 246)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", marginBottom: 20 }}>
+          <div style={{ position: "relative", zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", maxWidth: 640, textAlign: "center" }}>
+            <div style={{ width: 56, height: 56, borderRadius: 14, background: "linear-gradient(135deg, #8b5cf6, #6366f1)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", marginBottom: 20 }}>
               <IcoLock s={24} />
             </div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text)", marginBottom: 12 }}>Advanced Analytics</div>
-            <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.6, marginBottom: 24, padding: "0 20px" }}>
-              Interview readiness score, topic mastery heatmap, difficulty ceiling, 8-week progress curve, and personalised weakness recommendations — see exactly where to focus next.
-            </div>
             
-            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8, marginBottom: 32 }}>
-              <div style={{ padding: "8px 14px", borderRadius: 8, backgroundColor: "rgba(255,255,255,0.05)", fontSize: 12, color: "var(--text-muted)", border: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", gap: 6 }}><IcoTrendingUp s={12}/> Readiness score</div>
-              <div style={{ padding: "8px 14px", borderRadius: 8, backgroundColor: "rgba(255,255,255,0.05)", fontSize: 12, color: "var(--text-muted)", border: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", gap: 6 }}>Topic heatmap</div>
-              <div style={{ padding: "8px 14px", borderRadius: 8, backgroundColor: "rgba(255,255,255,0.05)", fontSize: 12, color: "var(--text-muted)", border: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", gap: 6 }}>Difficulty ceiling</div>
-              <div style={{ padding: "8px 14px", borderRadius: 8, backgroundColor: "rgba(255,255,255,0.05)", fontSize: 12, color: "var(--text-muted)", border: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", gap: 6 }}>Weekly trend</div>
-              <div style={{ padding: "8px 14px", borderRadius: 8, backgroundColor: "rgba(255,255,255,0.05)", fontSize: 12, color: "var(--text-muted)", border: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", gap: 6 }}>Weakness recs</div>
-            </div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text)", marginBottom: 16 }}>Advanced Analytics</div>
             
-            <button onClick={() => navigate("/pricing")} style={{ padding: "12px 24px", borderRadius: 10, background: "linear-gradient(135deg, rgb(99, 102, 241), rgb(139, 92, 246))", color: "white", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-              Upgrade to Pro <span style={{ marginLeft: 4 }}>{">"}</span>
+            <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.7, marginBottom: 36, maxWidth: 520 }}>
+              Interview readiness score, topic mastery heatmap, difficulty ceiling, 8-week<br/>
+              progress curve, and personalised weakness recommendations — see<br/>
+              exactly where to focus next.
+            </div>
+
+            {/* Badges row */}
+            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 10, marginBottom: 40 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.05)", backgroundColor: "rgba(0,0,0,0.4)" }}>
+                <IcoGauge s={14} color="#818cf8"/> <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>Readiness score</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.05)", backgroundColor: "rgba(0,0,0,0.4)" }}>
+                <IcoGrid s={14} color="#818cf8"/> <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>Topic heatmap</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.05)", backgroundColor: "rgba(0,0,0,0.4)" }}>
+                <IcoTarget s={14} color="#818cf8"/> <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>Difficulty ceiling</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.05)", backgroundColor: "rgba(0,0,0,0.4)" }}>
+                <IcoTrend s={14} color="#818cf8"/> <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>Weekly trend</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.05)", backgroundColor: "rgba(0,0,0,0.4)" }}>
+                <IcoSparkle s={14} color="#818cf8"/> <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>Weakness recs</span>
+              </div>
+            </div>
+
+            <button style={{ 
+              background: "linear-gradient(135deg, rgb(139, 92, 246), rgb(99, 102, 241))", 
+              color: "white", border: "none", padding: "12px 28px", borderRadius: 10, 
+              fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 
+            }}>
+              Upgrade to Pro <IcoArrowRight s={16}/>
             </button>
           </div>
         </div>
@@ -404,6 +450,7 @@ export default function Profile() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [userId, setUserId] = useState("");
+  const [streak, setStreak] = useState(0);
   const [solvedCount, setSolvedCount] = useState(0); // 👈 3. Saved solved count profile state
   
   const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -468,8 +515,6 @@ export default function Profile() {
 
     if (!token || !storedUser) {
       console.warn("No auth token/user found. Loading as Guest...");
-      // navigate("/login");
-      // return;
     }
 
     try {
@@ -478,7 +523,24 @@ export default function Profile() {
         setUsername(userObj.username || "Guest");
         setEmail(userObj.email || "");
         setUserId(userObj.userId || "");
+        if (userObj.streak !== undefined) setStreak(userObj.streak);
       }
+      
+      // Fetch fresh profile data to sync streak
+      const API = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      fetch(`${API}/api/auth/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.streak !== undefined) {
+          setStreak(data.streak);
+          userObj.streak = data.streak;
+          localStorage.setItem("user", JSON.stringify(userObj));
+        }
+      })
+      .catch(err => console.error("Error fetching fresh profile:", err));
+      
     } catch (error) {
       console.error("Error parsing user data from localStorage:", error);
     }
@@ -511,7 +573,7 @@ export default function Profile() {
 
   return (
     <>
-        {showShareModal && <ShareModal onClose={() => setShowShareModal(false)} username={username} solvedCount={solvedCount} />}
+        {showShareModal && <ShareModal onClose={() => setShowShareModal(false)} username={username} solvedCount={solvedCount} streak={streak} />}
 
         <main className="shell-main-content route-transition" style={{ flex: "1 1 0%", minHeight: 0, display: "flex", flexDirection: "column" }}>
           <div style={{ flex: "1 1 0%", overflowY: "auto", minHeight: 0, backgroundColor: "var(--bg)" }}>
@@ -526,7 +588,7 @@ export default function Profile() {
                   <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
                     <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "var(--text)" }}>{username}</h1>
                     <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 99, backgroundColor: "rgba(234, 179, 8, 0.15)", border: "1px solid rgba(234, 179, 8, 0.3)", color: "#eab308", fontSize: 11, fontWeight: 700 }}>
-                      <IcoFlame s={12} color="#eab308" /> 1-day streak
+                      <IcoFlame s={12} color="#eab308" /> {streak}-day streak
                     </div>
                   </div>
                   <p style={{ margin: "0px", fontSize: 12, color: "var(--text-muted)" }}>{email}</p>
@@ -542,7 +604,7 @@ export default function Profile() {
               
               {/* Stats Grid */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 140px), 1fr))", gap: 12, marginBottom: 24 }}>
-                <StatCard icon={<IcoFlame s={16}/>} label="Current Streak" value="1" unit="days" color="#f59e0b" gradient="linear-gradient(90deg, #f59e0b, #ef4444)" />
+                <StatCard icon={<IcoFlame s={16}/>} label="Current Streak" value={streak} unit="days" color="#f59e0b" gradient="linear-gradient(90deg, #f59e0b, #ef4444)" />
                 <StatCard icon={<IcoClock s={16}/>} label="Total Hours" value="0.4" unit="h" color="#6366f1" gradient="linear-gradient(90deg, #6366f1, #8b5cf6)" />
                 <StatCard icon={<IcoTarget s={16}/>} label="Focus Sessions" value="1" color="#10b981" gradient="linear-gradient(90deg, #10b981, #059669)" />
                 <StatCard icon={<IcoStar s={16}/>} label="Problems Solved" value={solvedCount} color="#facc15" gradient="linear-gradient(90deg, #facc15, #eab308)" /> {/* 👈 5. Linked to state */}
@@ -603,31 +665,44 @@ export default function Profile() {
                     
                     {(() => {
                       let data = [];
+                      const today = new Date();
+                      
+                      const formatDate = (date) => `${date.getMonth() + 1}/${date.getDate()}`;
+                      const getDayName = (date) => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][date.getDay()];
+
                       if (hoursRange === "7d") {
-                        data = [
-                          { label: "Mon", height: "4px", active: false },
-                          { label: "Tue", height: "4px", active: false },
-                          { label: "Wed", height: "4px", active: false },
-                          { label: "Thu", height: "4px", active: false },
-                          { label: "Fri", height: "40px", active: false, value: "0.6h" },
-                          { label: "Sat", height: "4px", active: false },
-                          { label: "Sun", height: "4px", active: true }
-                        ];
+                        for (let i = 6; i >= 0; i--) {
+                          const d = new Date(today);
+                          d.setDate(today.getDate() - i);
+                          data.push({
+                            label: getDayName(d),
+                            height: i === 0 ? "40px" : "4px",
+                            active: i === 0,
+                            value: i === 0 ? "0.6h" : undefined
+                          });
+                        }
                       } else if (hoursRange === "14d") {
-                        data = [
-                          { label: "5/18", height: "4px" }, { label: "5/19", height: "4px" }, { label: "5/20", height: "4px" },
-                          { label: "5/21", height: "4px" }, { label: "5/22", height: "4px" }, { label: "5/23", height: "4px" },
-                          { label: "5/24", height: "4px" }, { label: "5/25", height: "4px" }, { label: "5/26", height: "4px" },
-                          { label: "5/27", height: "4px" }, { label: "5/28", height: "4px" }, { label: "5/29", height: "40px", value: "0.6h" },
-                          { label: "5/30", height: "4px" }, { label: "5/31", height: "4px", active: true }
-                        ];
+                        for (let i = 13; i >= 0; i--) {
+                          const d = new Date(today);
+                          d.setDate(today.getDate() - i);
+                          data.push({
+                            label: formatDate(d),
+                            height: i === 0 ? "4px" : (i === 1 ? "40px" : "4px"),
+                            active: i === 0,
+                            value: i === 1 ? "0.6h" : undefined
+                          });
+                        }
                       } else if (hoursRange === "30d") {
-                        data = [
-                          { label: "4 May", height: "4px" },
-                          { label: "11 May", height: "4px" },
-                          { label: "18 May", height: "4px" },
-                          { label: "This wk", height: "40px", active: true, value: "0.6h" }
-                        ];
+                        for (let i = 3; i >= 0; i--) {
+                          const d = new Date(today);
+                          d.setDate(today.getDate() - i * 7);
+                          data.push({
+                            label: i === 0 ? "This wk" : `${d.getDate()} ${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d.getMonth()]}`,
+                            height: i === 0 ? "40px" : "4px",
+                            active: i === 0,
+                            value: i === 0 ? "0.6h" : undefined
+                          });
+                        }
                       }
 
                       return (

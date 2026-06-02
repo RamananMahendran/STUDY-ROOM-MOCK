@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 
+const IcoTrophy = ({ s = 22, color = "currentColor" }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/>
+  </svg>
+);
+
 // ── Data ──────────────────────────────────────────────────────────────────────
 const problems = [
   { id: 1,  label: "E", name: "Two Sum" },
@@ -98,6 +104,29 @@ export default function LeaderboardPage() {
       {/* Main column */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
+        {/* Custom Header */}
+        <div style={{ 
+          display: 'flex', alignItems: 'center', gap: 20, 
+          padding: '16px 24px', borderBottom: '1px solid var(--border)', 
+          background: 'var(--surface)' 
+        }}>
+          <button 
+            onClick={() => navigate('/practice/problems')} 
+            style={{ 
+              background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', 
+              color: 'var(--text-muted)', display: 'flex', alignItems: 'center', 
+              gap: 8, padding: '6px 14px', borderRadius: 8, cursor: 'pointer', 
+              fontSize: 14, fontWeight: 500, fontFamily: 'inherit'
+            }}
+          >
+            <span style={{ fontSize: 14 }}>←</span> Problems
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <IcoTrophy s={24} color="#f59e0b" />
+            <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.3px' }}>Leaderboard</span>
+          </div>
+        </div>
+
         {/* Body */}
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
@@ -128,8 +157,8 @@ export default function LeaderboardPage() {
                       fontFamily: "inherit", cursor: "pointer",
                       fontWeight: isSelected ? 600 : 400,
                       color: isSelected ? "var(--accent)" : "var(--text-muted)",
-                      background: isSelected ? "var(--accent-bg)" : "transparent",
-                      border: isSelected ? "1.5px solid var(--accent)" : "1.5px solid transparent",
+                      background: isSelected ? "var(--surface-2)" : "transparent",
+                      border: "1.5px solid transparent",
                       transition: "all 0.12s",
                     }}
                   >
@@ -164,12 +193,14 @@ export default function LeaderboardPage() {
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {entries.map((entry, i) => (
+                {entries.map((entry, i) => {
+                  const isCurrentUser = entry.name.includes("SIVASABARI");
+                  return (
                   <div key={i} style={{
                     display: "flex", alignItems: "center", gap: 14,
                     padding: "14px 20px", borderRadius: 12,
-                    background: "var(--surface)",
-                    border: "1px solid var(--border)",
+                    background: isCurrentUser ? "rgba(232, 93, 4, 0.05)" : "var(--surface)",
+                    border: isCurrentUser ? "1px solid rgba(232, 93, 4, 0.2)" : "1px solid var(--border)",
                   }}>
                     {/* Rank */}
                     <div style={{ width: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -197,7 +228,7 @@ export default function LeaderboardPage() {
                     {/* Score */}
                     <span style={{ fontSize: 14, fontWeight: 700, color: "#22c55e", flexShrink: 0 }}>{entry.score}%</span>
                   </div>
-                ))}
+                )})}
               </div>
             )}
           </div>
