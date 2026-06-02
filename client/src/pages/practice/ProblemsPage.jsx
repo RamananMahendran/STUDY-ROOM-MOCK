@@ -31,7 +31,9 @@ export default function ProblemsPage() {
     setLoading(true);
     const params = new URLSearchParams({ limit: '50' });
     if (filter !== 'All') params.set('difficulty', filter);
-
+    console.log('Fetching problems with params:', params.toString());
+    console.log('Using auth headers:', authHeaders());
+    console.log('API URL:', `${API}/api/problems?${params}`);
     fetch(`${API}/api/problems?${params}`, { headers: authHeaders() })
       .then(r => r.json())
       .then(data => {
