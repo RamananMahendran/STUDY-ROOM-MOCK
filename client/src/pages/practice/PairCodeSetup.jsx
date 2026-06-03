@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar.jsx";
 import TopBar from "../components/TopBar.jsx";
+
 // ── CUSTOM REUSABLE SVG ICONS ────────────────────────────────────────────────
 const IcoPlus = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -22,12 +23,24 @@ const IcoArrowRight = () => (
   </svg>
 );
 
+// Loading spinner component
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center">
+    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
+
 export default function PairCodeSetup() {
   const [sessionCode, setSessionCode] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
   
   const handleCreateSession = async () => {
-    console.log('🔴 handleCreateSession CALLED');
+    console.log('🔴 Create session clicked');
+    setIsCreating(true);
+    setError(null);
+    
     try {
       console.log('📤 Fetching /api/pair/create...');
       const response = await fetch('http://localhost:5001/api/pair/create', {
@@ -41,6 +54,8 @@ export default function PairCodeSetup() {
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
         console.error('❌ Failed to create session', err);
+        setError(err.error || 'Failed to create session');
+        setIsCreating(false);
         return;
       }
 
@@ -50,19 +65,26 @@ export default function PairCodeSetup() {
       const roomCode = result?.data?.roomCode;
       if (roomCode) {
         console.log(`🎯 Created new session with room code: ${roomCode}`);
-        navigate(`/practice/pair/${roomCode}`);
+        // Small delay to ensure state updates
+        setTimeout(() => {
+          navigate(`/practice/pair/${roomCode}`);
+        }, 100);
       } else {
         console.error('❌ Create session: no roomCode received', result);
+        setError('No room code received from server');
+        setIsCreating(false);
       }
     } catch (err) {
       console.error('❌ Error creating session:', err);
+      setError(err.message || 'Network error - check if backend is running');
+      setIsCreating(false);
     }
   };
 
   const handleJoinSession = (e) => {
     e.preventDefault();
     if (sessionCode.length === 6) {
-      console.log(`Connecting room cluster sequence targeting node: ${sessionCode}`);
+      console.log(`Joining session with code: ${sessionCode}`);
       navigate(`/practice/pair/${sessionCode}`);
     }
   };
@@ -76,32 +98,46 @@ export default function PairCodeSetup() {
       {/* CENTER STAGE VIEWPORT CANVAS WRAPPER */}
       <div className="flex-1 flex items-center justify-center px-6">
         
-        
         <div className="w-full max-w-[840px] grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
           {/* LEFT OPTION CARD: START NEW ROOM INSTANCE */}
           <div className="rounded-xl border p-6 flex flex-col gap-6 transition-all duration-200" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-                <div>
-                    <div className="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-6">
-                    <IcoPlus />
-                    </div>
-                    <h2 className="text-base font-bold mb-2 tracking-tight" style={{ color: 'var(--text)' }}>
-                    Start a new session
-                    </h2>
-                    <p className="text-[12px] leading-relaxed max-w-[310px]" style={{ color: 'var(--text-muted)' }}>
-                    Get a fresh 6-character code. Share the link with one person and start writing code together.
-                    </p>
-                </div>
+            <div>
+              <div className="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-6">
+                <IcoPlus />
+              </div>
+              <h2 className="text-base font-bold mb-2 tracking-tight" style={{ color: 'var(--text)' }}>
+                Start a new session
+              </h2>
+              <p className="text-[12px] leading-relaxed max-w-[310px]" style={{ color: 'var(--text-muted)' }}>
+                Get a fresh 6-character code. Share the link with one person and start writing code together.
+              </p>
+            </div>
 
-                <button
-                    type="button"
-                    onClick={handleCreateSession}
-                    className="h-10 w-full mt-8 px-6 py-2.5 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] text-white text-[12px] font-bold shadow-lg shadow-indigo-600/10 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                    <span>Create session</span>
-                    <IcoPlus />
-                </button>
+            {error && (
+              <div className="text-red-500 text-xs p-2 rounded-lg bg-red-500/10 border border-red-500/20">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleCreateSession}
+              disabled={isCreating}
+              className="h-10 w-full mt-8 px-6 py-2.5 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] disabled:opacity-50 disabled:cursor-not-allowed text-white text-[12px] font-bold shadow-lg shadow-indigo-600/10 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              {isCreating ? (
+                <>
+                  <LoadingSpinner />
+                  <span>Creating...</span>
+                </>
+              ) : (
+                <>
+                  <span>Create session</span>
+                  <IcoPlus />
+                </>
+              )}
+            </button>
           </div>
-
 
           {/* RIGHT OPTION CARD: JOIN EXISTING CONSOLE CODE */}
           <div className="rounded-xl border p-8 flex flex-col justify-between transition-all duration-200" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
@@ -126,6 +162,7 @@ export default function PairCodeSetup() {
                 onChange={(e) => setSessionCode(e.target.value.toUpperCase())}
                 placeholder="A B C 1 2 3"
                 className="w-full rounded-lg py-2.5 text-center font-mono text-sm tracking-[0.5em] text-[#fbbf24] font-bold outline-none transition-all input-glass"
+                autoComplete="off"
               />
               
               <button

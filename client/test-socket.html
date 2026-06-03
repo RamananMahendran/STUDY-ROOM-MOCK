@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Socket Test</title>
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Socket.io Test</h1>
+    <div id="status">Connecting...</div>
+    <button id="joinBtn">Join Room TUFSQ3</button>
+    <div id="logs"></div>
+
+    <script>
+        const socket = io("http://localhost:5001", {
+            transports: ["websocket"]
+        });
+        
+        const statusDiv = document.getElementById('status');
+        const logsDiv = document.getElementById('logs');
+        
+        function addLog(msg) {
+            const p = document.createElement('p');
+            p.textContent = msg;
+            logsDiv.appendChild(p);
+        }
+        
+        socket.on("connect", () => {
+            statusDiv.innerHTML = "✅ Connected!";
+            addLog("Socket connected: " + socket.id);
+        });
+        
+        document.getElementById('joinBtn').onclick = () => {
+            socket.emit("join-pair-room", {
+                roomCode: "TUFSQ3",
+                userId: 1,
+                userName: "TestUser"
+            });
+            addLog("Emitted join-pair-room for TUFSQ3");
+        };
+        
+        socket.on("user-joined", (data) => {
+            addLog("🎉 User joined: " + data.userName);
+        });
+        
+        socket.on("cursor-move", (data) => {
+            addLog("📡 Cursor move: " + data.userName + " at " + data.lineNumber);
+        });
+        
+        socket.on("disconnect", () => {
+            statusDiv.innerHTML = "❌ Disconnected";
+            addLog("Socket disconnected");
+        });
+    </script>
+</body>
+</html>

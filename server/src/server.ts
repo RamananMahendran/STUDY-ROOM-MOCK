@@ -2,12 +2,11 @@ import app from './app.js';
 import prisma from './config/database.js';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
-import { setupSocketServer } from './socket/socketServer.js';
-import { initializeSocketServer } from './socket/index.js';
+import { initializeSocketServer } from './socket/index.js';  // Only use this one
 
 dotenv.config();
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5001;
 
 async function bootstrap() {
   try {
@@ -17,13 +16,20 @@ async function bootstrap() {
 
     const httpServer = createServer(app);
     
-    setupSocketServer(httpServer);
+    // Only initialize Socket.io once
     initializeSocketServer(httpServer);
 
     httpServer.listen(PORT, () => {
-      console.log(`🚀 StudyRoom server running on port ${PORT}`);
-      console.log(`📚 REST API: /api/auth, /api/problems, /api/code, /api/submissions, /api/pair, /api/interviews, /api/rooms`);
-      console.log(`🔌 Socket.io: Pair coding + Real-time engine initialized`);
+      console.log(`🚀 StudyRoom core server running actively on port ${PORT}`);
+      console.log(`📚 Available endpoints:`);
+      console.log(`   Auth: POST /api/auth/register, POST /api/auth/login`);
+      console.log(`   Problems: GET /api/problems, GET /api/problems/:id`);
+      console.log(`   Code Execution: POST /api/code/run, GET /api/code/languages`);
+      console.log(`   Submissions: POST /api/submissions, GET /api/submissions/:id`);
+      console.log(`   Pair Coding: POST /api/pair/create, POST /api/pair/join`);
+      console.log(`   Mock Interviews: POST /api/interviews/start (Pro only)`);
+      console.log(`   Rooms: /api/rooms endpoints`);
+      console.log(`🔌 Socket.io: Real-time engine initialized`);
     });
 
     process.on('SIGTERM', () => {

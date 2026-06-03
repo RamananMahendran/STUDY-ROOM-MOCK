@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import submissionModel from './submissionModel.js';
 import { runJudge0Submission } from '../codeExecution/codeExecutionService.js';
 import prisma from '../../config/database.js';
-import { getIO } from '../../socket/socketServer.js';
+import { getIO } from '../../socket/index.js';
 
 // Helper to get problem by ID
 const getProblemById = async (id: number) => {
