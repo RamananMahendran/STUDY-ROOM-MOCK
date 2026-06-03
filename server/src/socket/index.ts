@@ -8,6 +8,8 @@ import { registerTimerHandlers } from './handlers/timer.handler.js';
 import { registerChatHandlers } from './handlers/chat.handler.js';
 import { registerCollaborationHandlers } from './handlers/collaboration.handler.js';
 
+let ioInstance: Server | null = null;
+
 export const initializeSocketServer = (httpServer: HTTPServer): Server => {
   const io = new Server(httpServer, {
     cors: {
@@ -17,15 +19,26 @@ export const initializeSocketServer = (httpServer: HTTPServer): Server => {
     transports: ['websocket', 'polling'],
   });
 
-  const pubClient = new Redis({
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379'),
-    password: process.env.REDIS_PASSWORD,
-  });
+  ioInstance = io;
 
-  const subClient = pubClient.duplicate();
-
-  io.adapter(createAdapter(pubClient, subClient));
+  // Only setup Redis if available, otherwise run without it
+  try {
+    const pubClient = new Redis({
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT || '6379'),
+      password: process.env.REDIS_PASSWORD,
+      lazyConnect: true,
+    });
+    
+    const subClient = pubClient.duplicate();
+    
+    pubClient.connect().catch(() => console.log('Redis not available, running without adapter'));
+    subClient.connect().catch(() => console.log('Redis not available, running without adapter'));
+    
+    io.adapter(createAdapter(pubClient, subClient));
+  } catch (error) {
+    console.log('⚠️ Redis not configured, running Socket.io without Redis adapter');
+  }
 
   io.use(socketAuthMiddleware);
 
@@ -43,4 +56,9 @@ export const initializeSocketServer = (httpServer: HTTPServer): Server => {
   });
 
   return io;
+};
+
+// Export getIO function to get io instance from other modules
+export const getIO = (): Server | null => {
+  return ioInstance;
 };

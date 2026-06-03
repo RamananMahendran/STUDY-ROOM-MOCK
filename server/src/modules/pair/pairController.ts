@@ -20,6 +20,7 @@ const generateRoomCode = (): string => {
 };
 
 // Helper to create submission from pair session
+// Helper to create submission from pair session
 const submitCodeFromPair = async (
   sessionId: string,
   roomCode: string,
@@ -28,8 +29,8 @@ const submitCodeFromPair = async (
   language: string,
   problemId: number
 ): Promise<any> => {
-  // Get the submission endpoint URL
-  const submissionUrl = `http://localhost:${process.env.PORT || 5000}/api/submissions`;
+  // Use port 5001 to match your server
+  const submissionUrl = `http://localhost:5001/api/submissions`;
   
   const response = await fetch(submissionUrl, {
     method: 'POST',

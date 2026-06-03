@@ -60,9 +60,13 @@ function CreateRoomModal({ onClose, onNavigate }) {
   const applyQuick = (qs) => { setFocus(qs.focus); setBrk(qs.brk); };
 
   useEffect(() => {
+    document.body.classList.add("create-room-open");
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      document.body.classList.remove("create-room-open");
+      window.removeEventListener("keydown", onKey);
+    };
   }, [onClose]);
 
   return (
@@ -86,6 +90,8 @@ function CreateRoomModal({ onClose, onNavigate }) {
           fontFamily: "inherit",
           color: "#e2e8f0",
           overflow: "hidden",
+          display: "flex", flexDirection: "column",
+          maxHeight: "90vh",
         }}
       >
         {/* Header */}
@@ -100,9 +106,9 @@ function CreateRoomModal({ onClose, onNavigate }) {
         </div>
 
         {/* Body */}
-        <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: 0 }}>
+        <div className="create-room-grid" style={{ display: "grid", gap: 0, overflowY: "auto", flex: 1, minHeight: 0 }}>
           {/* Left – preview + icon + color */}
-          <div style={{ padding: "20px 16px 24px", borderRight: "1px solid #1e2433", display: "flex", flexDirection: "column", gap: 20 }}>
+          <div className="create-room-left" style={{ padding: "20px 16px 24px", display: "flex", flexDirection: "column", gap: 20 }}>
             {/* Preview card */}
             <div>
               <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Preview</div>
@@ -177,7 +183,7 @@ function CreateRoomModal({ onClose, onNavigate }) {
             {/* Quick Start */}
             <div>
               <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>Quick Start</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              <div className="create-room-quick-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                 {QUICK_STARTS.map((qs) => {
                   const isActive = focus === qs.focus && brk === qs.brk;
                   return (
@@ -252,7 +258,7 @@ function CreateRoomModal({ onClose, onNavigate }) {
             </div>
 
             {/* Expires + Pomodoro */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "start" }}>
+            <div className="create-room-expires-grid" style={{ display: "grid", gap: 16, alignItems: "start" }}>
               {/* Expires */}
               <div>
                 <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>Expires In</div>
@@ -400,6 +406,19 @@ function CreateRoomModal({ onClose, onNavigate }) {
           </button>
         </div>
       </div>
+      <style>{`
+        .create-room-grid { grid-template-columns: 200px 1fr; }
+        .create-room-left { border-right: 1px solid #1e2433; }
+        .create-room-expires-grid { grid-template-columns: 1fr 1fr; }
+        @media (max-width: 768px) {
+          .create-room-grid { grid-template-columns: 1fr; }
+          .create-room-left { border-right: none; border-bottom: 1px solid #1e2433; }
+          .create-room-expires-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+          .create-room-quick-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   );
 }

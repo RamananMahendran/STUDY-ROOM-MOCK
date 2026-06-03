@@ -181,7 +181,7 @@ export default function LeaderboardPage() {
           </div>
 
           {/* ── Leaderboard panel ── */}
-          <div style={{ flex: 1, overflowY: "auto", padding: "28px 36px", background: "var(--bg)" }}>
+          <div className="leaderboard-main-panel" style={{ flex: 1, overflowY: "auto", padding: "28px 36px", background: "var(--bg)" }}>
             <h2 style={{ margin: "0 0 20px", fontSize: 16, fontWeight: 700, color: "var(--text)" }}>
               {selectedProblem}
             </h2>
@@ -245,6 +245,9 @@ export default function LeaderboardPage() {
             max-height: 220px !important; 
             border-right: none !important;
             border-bottom: 1px solid var(--border) !important;
+          }
+          .leaderboard-main-panel {
+            padding: 20px 16px 80px !important;
           }
         }
       `}</style>

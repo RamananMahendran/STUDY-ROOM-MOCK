@@ -1,111 +1,26 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 import Sidebar from "../components/Sidebar.jsx";
 import Editor from "@monaco-editor/react";
 
-
-// ── Icons ─────────────────────────────────────────────────────────────────────
-const IcoPlay = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-    <polygon points="5,3 19,12 5,21" />
-  </svg>
-);
-const IcoReset = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-    <path d="M3 3v5h5" />
-  </svg>
-);
-const IcoPairCode = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="6" cy="18" r="2"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/>
-    <path d="M6 8v8"/><path d="M8 6h7a3 3 0 0 1 3 3v1"/>
-  </svg>
-);
-const IcoChevronRight = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m9 18 6-6-6-6"/>
-  </svg>
-);
-const IcoTerminal = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m4 17 6-6-6-6"/><path d="M12 19h8"/>
-  </svg>
-);
-const IcoCheck = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-  </svg>
-);
-const IcoCross = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"></circle>
-    <line x1="15" y1="9" x2="9" y2="15"></line>
-    <line x1="9" y1="9" x2="15" y2="15"></line>
-  </svg>
-);
-const IcoClockSmall = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"></circle>
-    <polyline points="12 6 12 12 16 14"></polyline>
-  </svg>
-);
-
-// ── Language config ───────────────────────────────────────────────────────────
+// Language configuration
 const LANGUAGES = [
-  {
-    id: "javascript",
-    label: "JavaScript",
-    abbr: "JS",
-    color: "#f7df1e",
-    bgColor: "#f7df1e22",
-    judge0Id: 63,
-    defaultCode: `console.log("Hello, World!");`,
-  },
   {
     id: "python",
     label: "Python",
-    abbr: "PY",
-    color: "#3572A5",
-    bgColor: "#3572A522",
     judge0Id: 71,
     defaultCode: `print("Hello, World!")`,
   },
   {
-    id: "c",
-    label: "C",
-    abbr: "C",
-    color: "#555555",
-    bgColor: "#55555522",
-    judge0Id: 50,
-    defaultCode: `#include <stdio.h>
-
-int main() {
-    printf("Hello, World!\\n");
-    return 0;
-}`,
-  },
-  {
-    id: "cpp",
-    label: "C++",
-    abbr: "C+",
-    color: "#f34b7d",
-    bgColor: "#f34b7d22",
-    judge0Id: 54,
-    defaultCode: `#include <iostream>
-
-int main() {
-    std::cout << "Hello, World!";
-    return 0;
-}`,
+    id: "javascript",
+    label: "JavaScript",
+    judge0Id: 63,
+    defaultCode: `console.log("Hello, World!");`,
   },
   {
     id: "java",
     label: "Java",
-    abbr: "JV",
-    color: "#b07219",
-    bgColor: "#b0721922",
     judge0Id: 62,
     defaultCode: `public class Main {
     public static void main(String[] args) {
@@ -113,301 +28,477 @@ int main() {
     }
 }`,
   },
+  {
+    id: "cpp",
+    label: "C++",
+    judge0Id: 54,
+    defaultCode: `#include <iostream>
+using namespace std;
+
+int main() {
+    cout << "Hello, World!" << endl;
+    return 0;
+}`,
+  },
 ];
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-
-// ── Main Component ────────────────────────────────────────────────────────────
 export default function PairCode() {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const [activeLang, setActiveLang] = useState(LANGUAGES[0]);
   const [code, setCode] = useState(LANGUAGES[0].defaultCode);
-  const [outputResult, setOutputResult] = useState(null);
-  const [running, setRunning] = useState(false);
-  const [showStdin, setShowStdin] = useState(false);
-  const [stdin, setStdin] = useState("");
-  const [editorTheme, setEditorTheme] = useState("vs-dark");
-
-  useEffect(() => {
-    const checkTheme = () => {
-      const isLight = document.documentElement.getAttribute("data-theme") === "light";
-      setEditorTheme(isLight ? "light" : "vs-dark");
-    };
-    checkTheme();
-    const observer = new MutationObserver(checkTheme);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => observer.disconnect();
-  }, []);
+  const [output, setOutput] = useState("");
+  const [isRunning, setIsRunning] = useState(false);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   
-  const handleCopyRoomId = () => {
-    navigator.clipboard.writeText(roomId || "BB0F55");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  // Socket.io states
+  const [socket, setSocket] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [partnerConnected, setPartnerConnected] = useState(false);
+  const [partnerCursor, setPartnerCursor] = useState(null);
+  const [partnerName, setPartnerName] = useState("");
   
+  const editorRef = useRef(null);
+  const isLocalChange = useRef(false);
+  const API_BASE = "http://localhost:5001";
 
-  const handleLangSwitch = (lang) => {
+  // Get auth token and user info from localStorage (set by your login system)
+  const token = localStorage.getItem("token");
+  const currentUser = {
+    id: parseInt(localStorage.getItem("userId") || "1"),
+    name: localStorage.getItem("userName") || "User",
+  };
+
+  const addDebugLog = (msg) => {
+    console.log(`[${new Date().toLocaleTimeString()}] ${msg}`);
+  };
+
+  // Fetch session details with AUTH
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        addDebugLog(`🔍 Fetching session for room: ${roomId}`);
+        
+        if (!token) {
+          setError("❌ No authentication token found. Please login first.");
+          setLoading(false);
+          return;
+        }
+        
+        const response = await fetch(`${API_BASE}/api/pair/room/${roomId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        addDebugLog(`📥 Response status: ${response.status}`);
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            setError("❌ Authentication failed. Please login again.");
+          } else if (response.status === 404) {
+            setError("❌ Session not found. Please check the room code.");
+          } else {
+            setError(`❌ Failed to load session (Status: ${response.status})`);
+          }
+          setLoading(false);
+          return;
+        }
+        
+        const data = await response.json();
+        addDebugLog(`✅ Session loaded: ${data.data.status}`);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching session:", err);
+        setError(`❌ Cannot connect to server: ${err.message}`);
+        setLoading(false);
+      }
+    };
+    
+    if (roomId) {
+      fetchSession();
+    }
+  }, [roomId, token]);
+
+  // Initialize Socket.io with AUTH
+  useEffect(() => {
+    if (loading || error || !token) {
+      addDebugLog(`⏳ Waiting - loading:${loading}, error:${!!error}, token:${!!token}`);
+      return;
+    }
+
+    addDebugLog(`🔌 Initializing Socket.io with auth as ${currentUser.name} (ID: ${currentUser.id})`);
+    
+    const socketIo = io(API_BASE, {
+      transports: ["websocket", "polling"],
+      withCredentials: true,
+      auth: {
+        token: token,
+      },
+    });
+
+    // Debug: log all events
+    socketIo.onAny((eventName, ...args) => {
+      addDebugLog(`📡 Event: ${eventName}`);
+    });
+
+    socketIo.on("connect", () => {
+      addDebugLog(`✅ Socket connected: ${socketIo.id}`);
+      setIsConnected(true);
+      
+      socketIo.emit("join-pair-room", {
+        roomCode: roomId,
+        userId: currentUser.id,
+        userName: currentUser.name,
+      });
+      addDebugLog(`📤 Emitted join-pair-room for: ${roomId} as ${currentUser.name}`);
+    });
+
+    socketIo.on("connect_error", (err) => {
+      addDebugLog(`❌ Socket error: ${err.message}`);
+      setError(`Connection error: ${err.message}`);
+    });
+
+    socketIo.on("user-joined", (data) => {
+      addDebugLog(`👥 USER JOINED: ${data.userName} (ID: ${data.userId})`);
+      setPartnerConnected(true);
+      setPartnerName(data.userName);
+    });
+
+    socketIo.on("user-left", (data) => {
+      addDebugLog(`👋 User left: ${data.userName}`);
+      setPartnerConnected(false);
+      setPartnerCursor(null);
+    });
+
+    socketIo.on("room-users", (users) => {
+      addDebugLog(`🏠 Already in room: ${users.map(u => u.userName).join(', ')}`);
+      if (users && users.length > 0) {
+        setPartnerConnected(true);
+        setPartnerName(users[0].userName);
+      }
+    });
+
+    socketIo.on("cursor-move", (data) => {
+      addDebugLog(`📡 Received cursor: ${data.userName} at L${data.lineNumber}:C${data.columnNumber}`);
+      setPartnerCursor({
+        lineNumber: data.lineNumber,
+        columnNumber: data.columnNumber,
+        userName: data.userName,
+        color: data.color,
+      });
+    });
+
+    socketIo.on("code-change", (data) => {
+      addDebugLog(`📝 Code changed by partner`);
+      if (!isLocalChange.current) {
+        setCode(data.code);
+      }
+    });
+
+    socketIo.on("code-execution-result", (data) => {
+      addDebugLog(`📡 Received execution result from ${data.userName}`);
+      setOutput(`[${data.userName} ran code]\n${data.output}`);
+    });
+
+    socketIo.on("cursors-initial", (cursors) => {
+      addDebugLog(`🎯 Initial cursors: ${cursors.length}`);
+      if (cursors && cursors.length > 0) {
+        setPartnerConnected(true);
+        setPartnerCursor(cursors[0]);
+        if (cursors[0].userName) {
+          setPartnerName(cursors[0].userName);
+        }
+      }
+    });
+
+    socketIo.on("disconnect", (reason) => {
+      addDebugLog(`🔌 Disconnected: ${reason}`);
+      setIsConnected(false);
+      setPartnerConnected(false);
+    });
+
+    setSocket(socketIo);
+
+    return () => {
+      if (socketIo) {
+        socketIo.emit("leave-pair-room", {
+          roomCode: roomId,
+          userId: currentUser.id,
+          userName: currentUser.name,
+        });
+        socketIo.disconnect();
+      }
+    };
+  }, [loading, error, roomId, token, currentUser.id, currentUser.name]);
+
+  const handleCodeChange = (value) => {
+    setCode(value || "");
+    isLocalChange.current = true;
+    
+    if (socket && isConnected) {
+      socket.emit("code-change", {
+        roomCode: roomId,
+        code: value || "",
+      });
+      addDebugLog(`📤 Sent code change (length: ${(value || "").length})`);
+    }
+    
+    setTimeout(() => {
+      isLocalChange.current = false;
+    }, 100);
+  };
+
+  const handleCursorMove = (position) => {
+    if (socket && isConnected) {
+      socket.emit("cursor-move", {
+        roomCode: roomId,
+        userId: currentUser.id,
+        userName: currentUser.name,
+        lineNumber: position.lineNumber,
+        columnNumber: position.column,
+        color: "#6366f1",
+      });
+      addDebugLog(`📤 Sent cursor: L${position.lineNumber}:C${position.column}`);
+    }
+  };
+
+  const handleEditorMount = (editor, monaco) => {
+    editorRef.current = editor;
+    
+    editor.onDidChangeCursorPosition((e) => {
+      handleCursorMove({
+        lineNumber: e.position.lineNumber,
+        column: e.position.column,
+      });
+    });
+    
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
+      () => handleRunCode()
+    );
+  };
+
+  const handleLanguageChange = (lang) => {
     setActiveLang(lang);
     setCode(lang.defaultCode);
-    setOutputResult(null);
+    setOutput("");
   };
 
- 
-
-  const handleRun = async () => {
-    setRunning(true);
-    setOutputResult({ status: "running" });
+  const handleRunCode = async () => {
+    setIsRunning(true);
+    setOutput("Running...");
     
     try {
-      const response = await fetch("http://localhost:5001/api/code/run", {
+      const response = await fetch(`${API_BASE}/api/code/run`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           sourceCode: code,
           languageId: activeLang.judge0Id,
-          stdin: stdin || undefined,
         }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to execute code");
-      }
-
       const result = await response.json();
-      const data = result.data;
-
-      if (data.compile_output) {
-        setOutputResult({ status: "error", title: "Compilation Error", message: data.compile_output, time: data.time });
-      } else if (data.stderr) {
-        setOutputResult({ status: "error", title: "Runtime Error", message: data.stderr, time: data.time });
-      } else if (data.message) {
-        setOutputResult({ status: "error", title: data.status?.description || "Error", message: data.message, time: data.time });
+      let outputText = "";
+      
+      if (result.data?.stdout) {
+        outputText = result.data.stdout;
+        setOutput(outputText);
+      } else if (result.data?.stderr) {
+        outputText = `Error: ${result.data.stderr}`;
+        setOutput(outputText);
+      } else if (result.data?.compile_output) {
+        outputText = `Compilation Error: ${result.data.compile_output}`;
+        setOutput(outputText);
       } else {
-        setOutputResult({ status: "success", title: "Execution successful", message: data.stdout || "(no output)", time: data.time });
+        outputText = result.message || "No output";
+        setOutput(outputText);
       }
+      
+      // Broadcast to partner
+      if (socket && isConnected) {
+        addDebugLog(`📤 Broadcasting execution result to partner...`);
+        socket.emit("code-execution-result", {
+          roomCode: roomId,
+          output: outputText,
+          userName: currentUser.name,
+        });
+      }
+      
     } catch (err) {
-      console.error("Error executing code:", err);
-      setOutputResult({ status: "error", title: "System Error", message: err.message });
+      console.error("Error:", err);
+      const errorMsg = `Error: ${err.message}`;
+      setOutput(errorMsg);
+      
+      if (socket && isConnected) {
+        socket.emit("code-execution-result", {
+          roomCode: roomId,
+          output: errorMsg,
+          userName: currentUser.name,
+        });
+      }
     } finally {
-      setRunning(false);
+      setIsRunning(false);
     }
   };
 
-  const handleReset = () => {
-    setCode(activeLang.defaultCode);
-    setOutputResult(null);
+  const copyRoomId = () => {
+    navigator.clipboard.writeText(roomId);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  
+  if (error) {
+    return (
+      <div className="fixed inset-0 flex" style={{ background: '#0f0f1a' }}>
+        <Sidebar active="pair-code" />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-red-500 mb-4">{error}</div>
+            <div className="text-yellow-500 text-sm mb-4">
+              Token: {token ? '✅ YES' : '❌ NO'}
+              <br />
+              User: {currentUser.name} (ID: {currentUser.id})
+            </div>
+            <button 
+              onClick={() => navigate("/login")}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg mr-2"
+            >
+              Go to Login
+            </button>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 flex" style={{ background: '#0f0f1a' }}>
+        <Sidebar active="pair-code" />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-white">Loading session...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="fixed inset-0 flex font-sans overflow-hidden select-none" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
-      <Sidebar active="pair-code" />
-
-      {/* Main area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-
-        {/* ── Top bar ── */}
-        <div className="flex items-center justify-between px-5 py-3 border-b flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate("/practice/playground")}
-              className="flex items-center gap-1.5 text-[12px] font-semibold text-gray-400 hover:text-gray-200 transition-colors"
-            >
-              <span>←</span>
-              <span>Playground</span>
-            </button>
-            <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-              <span className="text-[12px] font-mono font-bold tracking-widest flex items-center gap-1.5" style={{ color: 'var(--text)' }}>
-                <span className="text-gray-500">🔗</span> {roomId || "BB0F55"}
-              </span>
-              <button 
-                onClick={handleCopyRoomId}
-                className={`${copied ? 'text-emerald-500' : 'text-gray-500 hover:text-gray-300'} transition-colors`}
-              >
-                {copied ? (
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                ) : (
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                )}
-              </button>
-            </div>
-            
-            <div className="flex items-center gap-2 text-[12px] font-semibold text-gray-500">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Waiting for partner
-            </div>
-            
-            <button 
-              onClick={handleCopyRoomId}
-              className="px-3 py-1.5 rounded-lg border border-indigo-500/30 text-indigo-400 text-[12px] font-bold hover:bg-indigo-500/10 transition-colors cursor-pointer w-[72px] flex justify-center items-center"
-            >
-              {copied ? "Copied!" : "Invite"}
-            </button>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {/* Run button */}
-            <button
-              onClick={handleRun}
-              disabled={running}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] disabled:opacity-60 text-white text-[12px] font-bold shadow-lg shadow-indigo-600/20 transition-all cursor-pointer"
-            >
-              <IcoPlay />
-              <span>{running ? "Running…" : "Run"}</span>
-              {!running && <span className="text-indigo-200/60 text-[10px] font-normal ml-0.5">⌃↵</span>}
-            </button>
-          </div>
-        </div>
-
-        {/* ── Language tabs ── */}
-        <div className="flex items-center gap-2 px-5 pt-3 pb-2 flex-shrink-0">
-          {LANGUAGES.map((lang) => {
-            const isActive = activeLang.id === lang.id;
-            return (
-              <button
-                key={lang.id}
-                onClick={() => handleLangSwitch(lang)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] font-semibold transition-all"
-                style={{
-                  backgroundColor: isActive ? lang.bgColor : "transparent",
-                  borderColor: isActive ? lang.color + "55" : "#1e2433",
-                  color: isActive ? lang.color : "#6b7280",
-                }}
-              >
-                <span
-                  className="text-[9px] font-black px-1 py-0.5 rounded"
-                  style={{
-                    backgroundColor: isActive ? lang.color + "33" : "#1e243322",
-                    color: isActive ? lang.color : "#6b7280",
-                    letterSpacing: "0.05em",
-                  }}
-                >
-                  {lang.abbr}
-                </span>
-                <span>{lang.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* ── Editor + Output ── */}
-        <div className="flex flex-1 overflow-hidden mx-5 mb-0 gap-3">
-
-          {/* Editor pane */}
-            <div className="flex-1 rounded-t-xl border border-b-0 overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-            <Editor
-                height="100%"
-                language={activeLang.id}
-                theme={editorTheme}
-                value={code}
-                onChange={(value) => setCode(value || "")}
-                onMount={(editor, monaco) => {
-                editor.addCommand(
-                monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
-                () => handleRun()
-                );
-            }}
-                options={{
-                minimap: {
-                    enabled: false,
-                },
-                fontSize: 14,
-                fontFamily: "JetBrains Mono, monospace",
-                automaticLayout: true,
-                scrollBeyondLastLine: false,
-                wordWrap: "on",
-                padding: {
-                    top: 16,
-                },
-                tabSize: 2,
-                lineNumbers: "on",
-                renderLineHighlight: "all",
-                }}
-            />
-            </div>
-
-          {/* Output pane */}
-          <div className="w-[380px] flex-shrink-0 flex flex-col rounded-t-xl border border-b-0 overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-            <div className="px-4 pt-4 pb-2 flex-shrink-0">
-              <span className="text-[10px] font-bold text-gray-500 tracking-widest uppercase">Output</span>
-            </div>
-            <div className="flex-1 overflow-auto p-4 pt-2 font-mono text-[13px]">
-              {outputResult ? (
-                outputResult.status === "running" ? (
-                  <div className="h-full flex flex-col items-center justify-center gap-3 text-center">
-                    <span className="flex h-4 w-4 rounded-full bg-[#6366f1] animate-ping"></span>
-                    <p className="text-[12px] text-gray-500">Executing…</p>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-4">
-                    {/* Status header */}
-                    <div className="flex items-center justify-between border-b border-[#1e2433]/50 pb-3">
-                      <div className={`flex items-center gap-2 text-[12px] font-bold ${outputResult.status === 'success' ? 'text-emerald-500' : 'text-red-500'}`}>
-                        {outputResult.status === 'success' ? <IcoCheck /> : <IcoCross />}
-                        <span>{outputResult.title}</span>
-                      </div>
-                      {outputResult.time && (
-                        <div className="flex items-center gap-1.5 text-gray-500 text-[11px] font-medium">
-                          <IcoClockSmall />
-                          <span>{(parseFloat(outputResult.time) * 1000).toFixed(0)}ms</span>
-                        </div>
-                      )}
-                    </div>
-                    {/* Raw output */}
-                    <div className="flex flex-col gap-2">
-                      <span className="text-[10px] font-bold text-gray-500 tracking-widest uppercase">Output</span>
-                      <div className="rounded-lg p-3 overflow-x-auto border" style={{ background: 'var(--surface-2)', borderColor: 'var(--border)' }}>
-                        <pre className="whitespace-pre-wrap leading-relaxed text-[12px]" style={{ color: 'var(--text)' }}>{outputResult.message}</pre>
-                      </div>
-                    </div>
-                  </div>
-                )
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center gap-3 text-center pt-10">
-                  <div className="text-gray-700">
-                    <IcoTerminal />
-                  </div>
-                  <p className="text-[12px] text-gray-600">Press Run (Ctrl+Enter) to execute</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* ── Custom input (stdin) ── */}
-        <div className="mx-5 mb-5 border border-t-0 rounded-b-xl flex-shrink-0" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-          <button
-            onClick={() => setShowStdin(o => !o)}
-            className="flex items-center gap-2 w-full px-4 py-2.5 text-[12px] text-gray-500 hover:text-gray-400 transition-colors"
+    <div className="fixed inset-0 flex flex-col" style={{ background: '#0f0f1a' }}>
+      {/* Top Bar */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => navigate("/practice/pair-code")}
+            className="text-gray-400 hover:text-white"
           >
-            <span
-              style={{
-                display: "inline-block",
-                transform: showStdin ? "rotate(90deg)" : "rotate(0deg)",
-                transition: "transform 0.2s",
-              }}
-            >
-              <IcoChevronRight />
-            </span>
-            <span>Custom input (stdin)</span>
+            ← Back
           </button>
-          {showStdin && (
-            <div className="px-4 pb-3">
-              <textarea
-                value={stdin}
-                onChange={(e) => setStdin(e.target.value)}
-                placeholder="Enter custom input here…"
-                rows={3}
-                className="w-full rounded-lg p-3 font-mono text-[12px] outline-none resize-none transition-colors input-glass"
-              />
+          
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-900 border border-gray-700">
+            <span className="text-gray-400 text-sm">Room:</span>
+            <span className="text-yellow-500 font-mono font-bold">{roomId}</span>
+            <button onClick={copyRoomId} className="text-gray-500 hover:text-gray-300">
+              {copied ? "✓" : "📋"}
+            </button>
+          </div>
+
+          {/* Status */}
+          <div className="flex items-center gap-2">
+            {!isConnected ? (
+              <span className="text-yellow-500 text-sm flex items-center gap-1">
+                <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
+                Connecting...
+              </span>
+            ) : !partnerConnected ? (
+              <span className="text-gray-400 text-sm flex items-center gap-1">
+                <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
+                Waiting for partner...
+              </span>
+            ) : (
+              <span className="text-green-500 text-sm flex items-center gap-1">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                {partnerName} connected
+              </span>
+            )}
+          </div>
+        </div>
+        
+        <button
+          onClick={handleRunCode}
+          disabled={isRunning}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-medium"
+        >
+          ▶ {isRunning ? "Running..." : "Run Code"}
+        </button>
+      </div>
+
+      {/* Language Tabs */}
+      <div className="flex gap-2 px-4 py-2 border-b border-gray-800">
+        {LANGUAGES.map((lang) => (
+          <button
+            key={lang.id}
+            onClick={() => handleLanguageChange(lang)}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              activeLang.id === lang.id
+                ? "bg-indigo-600 text-white"
+                : "bg-gray-900 text-gray-400 hover:bg-gray-800"
+            }`}
+          >
+            {lang.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Editor and Output */}
+      <div className="flex-1 flex gap-4 p-4 overflow-hidden">
+        <div className="flex-1 rounded-lg overflow-hidden border border-gray-700 relative">
+          <Editor
+            height="100%"
+            language={activeLang.id}
+            theme="vs-dark"
+            value={code}
+            onChange={handleCodeChange}
+            onMount={handleEditorMount}
+            options={{
+              minimap: { enabled: false },
+              fontSize: 14,
+              automaticLayout: true,
+              scrollBeyondLastLine: false,
+              padding: { top: 16 },
+            }}
+          />
+          
+          {partnerCursor && (
+            <div className="absolute bottom-2 right-2 bg-indigo-500/20 rounded-lg px-2 py-1 text-xs">
+              <span className="text-indigo-400">👤 {partnerCursor.userName}</span>
+              <span className="text-gray-500 ml-2">L{partnerCursor.lineNumber}</span>
             </div>
           )}
+        </div>
+
+        <div className="w-96 rounded-lg border border-gray-700 bg-gray-900 flex flex-col overflow-hidden">
+          <div className="px-4 py-2 border-b border-gray-700">
+            <span className="text-sm font-medium text-gray-400">Output</span>
+          </div>
+          <div className="flex-1 p-4 overflow-auto">
+            <pre className="text-sm text-gray-300 whitespace-pre-wrap font-mono">
+              {output || "Click 'Run Code' to see output"}
+            </pre>
+          </div>
         </div>
       </div>
     </div>

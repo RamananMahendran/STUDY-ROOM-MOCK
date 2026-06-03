@@ -103,7 +103,33 @@ const SPRINT_DAYS = [
 
 export default function PlacementSprint30() {
   const navigate = useNavigate();
-  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [enrolledDate, setEnrolledDate] = useState(() => {
+    return localStorage.getItem("placementSprintEnrollDate") || null;
+  });
+
+  const isEnrolled = !!enrolledDate;
+
+  let currentDayNumber = 1;
+  if (enrolledDate) {
+    const start = new Date(enrolledDate);
+    start.setHours(0, 0, 0, 0);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const diff = now.getTime() - start.getTime();
+    currentDayNumber = Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
+    if (currentDayNumber > 30) currentDayNumber = 30;
+  }
+
+  const handleEnroll = () => {
+    const now = new Date().toISOString();
+    localStorage.setItem("placementSprintEnrollDate", now);
+    setEnrolledDate(now);
+  };
+
+  const handleUnenroll = () => {
+    localStorage.removeItem("placementSprintEnrollDate");
+    setEnrolledDate(null);
+  };
 
   return (
     <div className="flex-1 overflow-y-auto w-full px-6 py-8">
@@ -142,7 +168,7 @@ export default function PlacementSprint30() {
                 </div>
                 {isEnrolled && (
                   <div className="flex items-center gap-1.5 ml-2">
-                    <span className="font-bold text-[#6366f1]">Day 1 of 30</span>
+                    <span className="font-bold text-[#6366f1]">Day {currentDayNumber} of 30</span>
                   </div>
                 )}
               </div>
@@ -157,7 +183,7 @@ export default function PlacementSprint30() {
             </div>
           ) : (
             <button
-              onClick={() => setIsEnrolled(true)}
+              onClick={handleEnroll}
               className="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] text-white text-[12px] font-extrabold shadow-lg shadow-indigo-600/10 transition-colors flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
             >
               <IcoPlay />
@@ -169,12 +195,12 @@ export default function PlacementSprint30() {
         {/* ACTION ROW */}
         {isEnrolled && (
           <div className="flex items-center gap-3">
-            <button className="px-3 py-1.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-muted)] text-[12px] font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer flex-shrink-0">
+            <button onClick={handleEnroll} className="px-3 py-1.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-muted)] text-[12px] font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer flex-shrink-0">
               <IcoRefresh />
               <span>Reset schedule</span>
             </button>
             <button
-              onClick={() => setIsEnrolled(false)}
+              onClick={handleUnenroll}
               className="px-3 py-1.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-2)] border border-rose-500/30 hover:border-rose-500/50 text-rose-500 text-[12px] font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
             >
               <IcoTrash />
@@ -186,18 +212,18 @@ export default function PlacementSprint30() {
         {/* CURRICULUM SCHEDULING TRAILER PIPELINE STACK */}
         <div className="flex flex-col gap-4 mt-2">
           {SPRINT_DAYS.map((day) => (
-            <div key={day.dayNumber} className={`bg-[var(--surface)] border rounded-xl overflow-hidden shadow-[var(--card-shadow)] ${isEnrolled && day.dayNumber === 1 ? 'border-indigo-500/80 shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'border-[var(--border)]'}`}>
+            <div key={day.dayNumber} className={`bg-[var(--surface)] border rounded-xl overflow-hidden shadow-[var(--card-shadow)] ${isEnrolled && day.dayNumber === currentDayNumber ? 'border-indigo-500/80 shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'border-[var(--border)]'}`}>
 
               {/* SUB-HEADER DAY META BLOCK SECTION CARD HEAD ROW */}
-              <div className={`px-5 py-4 border-b flex items-center justify-between ${isEnrolled && day.dayNumber === 1 ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-[var(--surface-2)]/30 border-[var(--border)]'}`}>
+              <div className={`px-5 py-4 border-b flex items-center justify-between ${isEnrolled && day.dayNumber === currentDayNumber ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-[var(--surface-2)]/30 border-[var(--border)]'}`}>
                 <div className="flex items-center gap-4">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[12px] font-black font-mono ${isEnrolled && day.dayNumber === 1 ? 'bg-indigo-500/20 text-indigo-500 border border-indigo-500/30' : 'bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-muted)]'}`}>
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[12px] font-black font-mono ${isEnrolled && day.dayNumber === currentDayNumber ? 'bg-indigo-500/20 text-indigo-500 border border-indigo-500/30' : 'bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-muted)]'}`}>
                     {day.dayNumber}
                   </div>
                   <div>
                     <div className="text-[10px] font-black tracking-wider uppercase font-mono mb-0.5 flex items-center gap-1.5">
-                      <span className={isEnrolled && day.dayNumber === 1 ? 'text-indigo-500' : 'text-[var(--text-muted)]'}>DAY {day.dayNumber}</span>
-                      {isEnrolled && day.dayNumber === 1 && (
+                      <span className={isEnrolled && day.dayNumber === currentDayNumber ? 'text-indigo-500' : 'text-[var(--text-muted)]'}>DAY {day.dayNumber}</span>
+                      {isEnrolled && day.dayNumber === currentDayNumber && (
                         <>
                           <span className="text-[var(--text-subtle)]">·</span>
                           <span className="text-indigo-500">TODAY</span>
