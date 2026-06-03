@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import DailyChallenge from '../components/DailyChallenge.jsx';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+const PAGE_SIZE = 20;
 
 const DIFFICULTY_COLORS = {
   Easy:   { bg: 'rgba(74,222,128,0.1)',  color: '#4ade80', border: 'rgba(74,222,128,0.25)' },
@@ -26,15 +27,18 @@ export default function ProblemsPage() {
   const [error, setError]           = useState('');
   const [search, setSearch]         = useState('');
   const [filter, setFilter]         = useState('All');
+  const [page, setPage]             = useState(1);
   const [solved]                    = useState(new Set());
+
+  // Reset to page 1 whenever filter changes
+  useEffect(() => { setPage(1); }, [filter]);
 
   useEffect(() => {
     setLoading(true);
-    const params = new URLSearchParams({ limit: '50' });
-    if (filter !== 'All') params.set('difficulty', filter);
-    console.log('Fetching problems with params:', params.toString());
-    console.log('Using auth headers:', authHeaders());
-    console.log('API URL:', `${API}/api/problems?${params}`);
+    setError('');
+    const params = new URLSearchParams({ limit: String(PAGE_SIZE), page: String(page) });
+    if (filter !== 'All') params.set('difficulty', filter.toLowerCase());
+
     fetch(`${API}/api/problems?${params}`, { headers: authHeaders() })
       .then(r => r.json())
       .then(data => {
@@ -47,10 +51,11 @@ export default function ProblemsPage() {
       })
       .catch(() => setError('Network error. Is the server running?'))
       .finally(() => setLoading(false));
-  }, [filter]);
+  }, [filter, page]);
 
+  // Client-side search filter (within the current page's results)
   const filtered = useMemo(() => {
-    if (!search) return problems;
+    if (!search.trim()) return problems;
     const q = search.toLowerCase();
     return problems.filter(p =>
       p.title.toLowerCase().includes(q) ||
@@ -58,7 +63,8 @@ export default function ProblemsPage() {
     );
   }, [problems, search]);
 
-  const dailyProblem = filtered[0] || null;
+  const totalPages = pagination?.totalPages ?? 1;
+  const totalItems = pagination?.totalItems ?? 0;
 
   return (
     <div style={{ flex: 1, padding: '32px 40px', overflowY: 'auto', background: 'var(--bg)', color: 'var(--text)' }}>
@@ -70,11 +76,11 @@ export default function ProblemsPage() {
           <p style={{ color: 'var(--text-muted)', fontSize: 14, margin: '6px 0 0' }}>
             Sharpen your skills one problem at a time
             {pagination && (
-              <span style={{ color: 'var(--text-muted)', marginLeft: 8 }}>· {pagination.total} problems</span>
+              <span style={{ color: 'var(--text-muted)', marginLeft: 8 }}>· {totalItems} problems</span>
             )}
           </p>
         </div>
-        <button 
+        <button
           onClick={() => navigate('/practice/leaderboard')}
           style={{
             display: 'flex', alignItems: 'center', gap: 8,
@@ -88,7 +94,7 @@ export default function ProblemsPage() {
       </div>
 
       {/* Daily Challenge Banner */}
-      {dailyProblem && !loading && (
+      {!loading && problems.length > 0 && page === 1 && (
         <div style={{ marginBottom: 28 }}>
           <DailyChallenge />
         </div>
@@ -152,21 +158,91 @@ export default function ProblemsPage() {
               problem={problem}
               idx={idx}
               solved={solved.has(problem.id)}
-
-              onClick={ () => {
-                console.log(problem)
-                navigate(`/practice/problems/${problem.id}`)
-              }
-              }
+              onClick={() => navigate(`/practice/problems/${problem.id}`)}
               isLast={idx === filtered.length - 1}
             />
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      {!loading && totalPages > 1 && (
+        <Pagination page={page} totalPages={totalPages} totalItems={totalItems} onPageChange={setPage} />
+      )}
     </div>
   );
 }
 
+// ─── Pagination Bar ────────────────────────────────────────────────────────────
+function Pagination({ page, totalPages, totalItems, onPageChange }) {
+  // Build page number list with ellipsis
+  const pages = buildPageList(page, totalPages);
+  const start = (page - 1) * PAGE_SIZE + 1;
+  const end   = Math.min(page * PAGE_SIZE, totalItems);
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      marginTop: 20, flexWrap: 'wrap', gap: 12,
+    }}>
+      <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+        Showing {start}–{end} of {totalItems} problems
+      </span>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        {/* Prev */}
+        <PageBtn label="‹" disabled={page === 1} onClick={() => onPageChange(page - 1)} />
+
+        {pages.map((p, i) =>
+          p === '…' ? (
+            <span key={`ellipsis-${i}`} style={{ padding: '0 6px', color: 'var(--text-muted)', fontSize: 14 }}>…</span>
+          ) : (
+            <PageBtn key={p} label={String(p)} active={p === page} onClick={() => onPageChange(p)} />
+          )
+        )}
+
+        {/* Next */}
+        <PageBtn label="›" disabled={page === totalPages} onClick={() => onPageChange(page + 1)} />
+      </div>
+    </div>
+  );
+}
+
+function PageBtn({ label, active, disabled, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        minWidth: 36, height: 36, padding: '0 10px',
+        borderRadius: 8, border: `1px solid ${active ? 'var(--accent)' : 'var(--border)'}`,
+        background: active ? 'var(--accent)' : 'var(--surface)',
+        color: active ? '#fff' : disabled ? 'var(--text-muted)' : 'var(--text)',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        fontSize: 13, fontWeight: active ? 600 : 400,
+        opacity: disabled ? 0.4 : 1,
+        transition: 'all 0.15s',
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
+/** Returns an array like [1, 2, '…', 7, 8, 9, '…', 20] */
+function buildPageList(current, total) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages = new Set([1, total, current, current - 1, current + 1].filter(p => p >= 1 && p <= total));
+  const sorted = [...pages].sort((a, b) => a - b);
+  const result = [];
+  for (let i = 0; i < sorted.length; i++) {
+    if (i > 0 && sorted[i] - sorted[i - 1] > 1) result.push('…');
+    result.push(sorted[i]);
+  }
+  return result;
+}
+
+// ─── Problem Row ───────────────────────────────────────────────────────────────
 function ProblemRow({ problem, idx, solved, onClick, isLast }) {
   const [hovered, setHovered] = useState(false);
   return (
@@ -221,7 +297,6 @@ function ProblemRow({ problem, idx, solved, onClick, isLast }) {
 }
 
 function DifficultyBadge({ difficulty }) {
-  // Normalize difficulty string (e.g., 'easy' -> 'Easy')
   const normalized = difficulty ? (difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase()) : 'Easy';
   const c = DIFFICULTY_COLORS[normalized] || DIFFICULTY_COLORS.Easy;
   return (

@@ -2,23 +2,23 @@
   "name": "server",
   "version": "1.0.0",
   "description": "Study Room Backend API Setup",
-  "main": "dist/server.js",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
   "type": "module",
+  "main": "dist/server.js",
+  "directories": {
+    "example": "examples"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc -w",
-    "start": "node dist/server.js",
+    "start": "node dist/src/server.js",
     "docker:start": "ts-node-esm src/server.ts",
     "db:push": "prisma db push",
     "test:db": "npm run build && node dist/test-db.js",
     "seed": "prisma db seed"
   },
-  "prisma": {
-    "seed": "node --import ts-node/esm prisma/seed.ts"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
@@ -52,5 +52,8 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3"
+  },
+  "prisma": {
+    "seed": "node --import ts-node/esm prisma/seed.ts"
   }
 }

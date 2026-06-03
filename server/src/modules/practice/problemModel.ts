@@ -41,7 +41,7 @@ class Problem {
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' }
+        orderBy: { id: 'asc' }
       })
     ]);
 

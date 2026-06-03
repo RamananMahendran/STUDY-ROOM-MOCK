@@ -3,6 +3,10 @@
 -- ============================================================
 
 -- ============================================================
+-- SEED SCRIPT: 120 Problems (40 Easy + 50 Medium + 30 Hard)
+-- ============================================================
+
+-- ============================================================
 -- EASY PROBLEMS (40 problems)
 -- ============================================================
 
@@ -11,7 +15,7 @@ INSERT INTO problems (title, slug, description, difficulty, tags, test_cases) VA
 ('Palindrome Number', 'palindrome-number', 'Given an integer x, return true if x is a palindrome.', 'easy', ARRAY['math', 'string'], '[{"input":{"x":121},"expected":true},{"input":{"x":-121},"expected":false},{"input":{"x":10},"expected":false}]'::jsonb),
 ('FizzBuzz', 'fizzbuzz', 'Write a program that outputs numbers from 1 to n. For multiples of three output "Fizz", for multiples of five output "Buzz".', 'easy', ARRAY['math', 'string'], '[{"input":{"n":3},"expected":["1","2","Fizz"]},{"input":{"n":5},"expected":["1","2","Fizz","4","Buzz"]}]'::jsonb),
 ('Valid Parentheses', 'valid-parentheses', 'Given a string containing just the characters "(", ")", "{", "}", "[" and "]", determine if the input string is valid.', 'easy', ARRAY['stack', 'string'], '[{"input":{"s":"()"},"expected":true},{"input":{"s":"()[]{}"},"expected":true},{"input":{"s":"(]"},"expected":false}]'::jsonb),
-('Reverse String', 'reverse-string', 'Write a function that reverses a string. The input string is given as an array of characters s.', 'easy', ARRAY['two-pointers', 'string'], '[{"input":{"s":["h","e","l","l","o"]},"expected":["o","l","l","e","h"]},{"input":{"s":["H","a","n","n","a","h"]},"expected":["h","a","n","n","a","H"]}]'::jsonb),
+('Reverse String', 'reverse-string', 'Write a function that reverses a string. The input string is given as an array of characters s.', 'easy', ARRAY['two-pointers', 'string'], '[{"input":{"s":["h","e","l","l","o"]},"expected":["o","l","l","e","h"]},{"input":{"s":["H","a","n","n","a","H"]},"expected":["h","a","n","n","a","H"]}]'::jsonb),
 ('Contains Duplicate', 'contains-duplicate', 'Given an integer array nums, return true if any value appears at least twice in the array.', 'easy', ARRAY['array', 'hash-table'], '[{"input":{"nums":[1,2,3,1]},"expected":true},{"input":{"nums":[1,2,3,4]},"expected":false}]'::jsonb),
 ('Missing Number', 'missing-number', 'Given an array nums containing n distinct numbers in the range [0, n], return the only number in the range that is missing from the array.', 'easy', ARRAY['array', 'math', 'bit-manipulation'], '[{"input":{"nums":[3,0,1]},"expected":2},{"input":{"nums":[0,1]},"expected":2}]'::jsonb),
 ('Move Zeroes', 'move-zeroes', 'Given an integer array nums, move all 0s to the end while maintaining the relative order of non-zero elements.', 'easy', ARRAY['array', 'two-pointers'], '[{"input":{"nums":[0,1,0,3,12]},"expected":[1,3,12,0,0]}]'::jsonb),
@@ -48,17 +52,6 @@ INSERT INTO problems (title, slug, description, difficulty, tags, test_cases) VA
 ('Majority Element', 'majority-element', 'Find the element that appears more than ⌊n / 2⌋ times.', 'easy', ARRAY['hash-table', 'divide-conquer', 'sorting'], '[{"input":{"nums":[3,2,3]},"expected":3}]'::jsonb)
 ON CONFLICT (title) DO NOTHING;
 
--- Add remaining easy problems to reach 40
-INSERT INTO problems (title, slug, description, difficulty, tags, test_cases)
-SELECT 
-  'Easy Problem ' || n,
-  'easy-problem-' || n,
-  'Practice problem number ' || n || '.',
-  'easy',
-  ARRAY['algorithms', 'problem-solving'],
-  '[{"input":{"test":1},"expected":"pass"},{"input":{"test":2},"expected":"pass"}]'::jsonb
-FROM generate_series(41, 40) AS n
-ON CONFLICT (title) DO NOTHING;
 
 -- ============================================================
 -- MEDIUM PROBLEMS (50 problems)
@@ -92,18 +85,6 @@ INSERT INTO problems (title, slug, description, difficulty, tags, test_cases) VA
 ('Decode Ways', 'decode-ways', 'Find the number of ways to decode a message.', 'medium', ARRAY['string', 'dp'], '[{"input":{"s":"12"},"expected":2}]'::jsonb)
 ON CONFLICT (title) DO NOTHING;
 
--- Generate remaining medium problems to reach 50
-INSERT INTO problems (title, slug, description, difficulty, tags, test_cases)
-SELECT 
-  'Medium Problem ' || n,
-  'medium-problem-' || n,
-  'This is a medium difficulty problem ' || n || '. Practice solving it to master algorithms.',
-  'medium',
-  ARRAY['algorithms', 'problem-solving', 'data-structures'],
-  '[{"input":{"test":1},"expected":"pass"},{"input":{"test":2},"expected":"pass"},{"input":{"test":3},"expected":"pass"},{"input":{"test":4},"expected":"pass"},{"input":{"test":5},"expected":"pass"},{"input":{"test":6},"expected":"pass"}]'::jsonb
-FROM generate_series(26, 50) AS n
-ON CONFLICT (title) DO NOTHING;
-
 -- ============================================================
 -- HARD PROBLEMS (30 problems)
 -- ============================================================
@@ -131,16 +112,59 @@ INSERT INTO problems (title, slug, description, difficulty, tags, test_cases) VA
 ('Reverse Nodes in k-Group', 'reverse-nodes-in-k-group', 'Reverse the nodes of a linked list k at a time.', 'hard', ARRAY['linked-list', 'recursion'], '[{"input":{"head":[1,2,3,4,5],"k":2},"expected":[2,1,4,3,5]}]'::jsonb)
 ON CONFLICT (title) DO NOTHING;
 
--- Generate remaining hard problems to reach 30
-INSERT INTO problems (title, slug, description, difficulty, tags, test_cases)
-SELECT 
-  'Hard Problem ' || n,
-  'hard-problem-' || n,
-  'This is a hard difficulty problem ' || n || '. Practice solving it to master advanced algorithms.',
-  'hard',
-  ARRAY['advanced-algorithms', 'problem-solving', 'optimization'],
-  '[{"input":{"test":1},"expected":"pass"},{"input":{"test":2},"expected":"pass"},{"input":{"test":3},"expected":"pass"},{"input":{"test":4},"expected":"pass"},{"input":{"test":5},"expected":"pass"},{"input":{"test":6},"expected":"pass"},{"input":{"test":7},"expected":"pass"},{"input":{"test":8},"expected":"pass"},{"input":{"test":9},"expected":"pass"},{"input":{"test":10},"expected":"pass"},{"input":{"test":11},"expected":"pass"},{"input":{"test":12},"expected":"pass"}]'::jsonb
-FROM generate_series(21, 30) AS n
+-- Replace the placeholder generator block at the bottom with this:
+
+INSERT INTO problems (title, slug, description, difficulty, tags, test_cases) VALUES 
+('Longest Consecutive Sequence', 'longest-consecutive-sequence', 
+ 'Given an unsorted array of integers nums, return the length of the longest consecutive elements sequence.', 
+ 'hard', ARRAY['array', 'hash-table', 'union-find'], 
+ '[{"input":{"nums":[100,4,200,1,3,2]},"expected":4}]'::jsonb),
+
+('Alien Dictionary', 'alien-dictionary', 
+ 'Given a list of words sorted lexicographically by the rules of an alien language, derive the order of letters.',
+ 'hard', ARRAY['graph', 'topological-sort', 'bfs'],
+ '[{"input":{"words":["wrt","wrf","er","ett","rftt"]},"expected":"wertf"}]'::jsonb),
+
+('Bus Routes', 'bus-routes', 
+ 'You are given an array routes representing bus routes. Return the least number of buses you must take to travel from source to target.',
+ 'hard', ARRAY['bfs', 'hash-table', 'graph'],
+ '[{"input":{"routes":[[1,2,7],[3,6,7]],"source":1,"target":6},"expected":2}]'::jsonb),
+
+('Swim in Rising Water', 'swim-in-rising-water', 
+ 'On an N x N grid, find a path from (0,0) to (N-1,N-1) that minimizes the maximum elevation encountered.',
+ 'hard', ARRAY['binary-search', 'heap', 'union-find', 'graph'],
+ '[{"input":{"grid":[[0,2],[1,3]]},"expected":3}]'::jsonb),
+
+('Critical Connections in a Network', 'critical-connections-in-a-network', 
+ 'Find all critical connections (bridges) in a network of n servers.',
+ 'hard', ARRAY['graph', 'dfs', 'biconnected-component'],
+ '[{"input":{"n":4,"connections":[[0,1],[1,2],[2,0],[1,3]]},"expected":[[1,3]]}]'::jsonb),
+
+('K-th Smallest in Lexicographical Order', 'k-th-smallest-in-lexicographical-order', 
+ 'Given integers n and k, find the k-th smallest integer in lexicographical order from 1 to n.',
+ 'hard', ARRAY['trie', 'prefix-sum'],
+ '[{"input":{"n":13,"k":2},"expected":10}]'::jsonb),
+
+('Count of Smaller Numbers After Self', 'count-of-smaller-numbers-after-self', 
+ 'Return a counts array where counts[i] is the number of smaller elements to the right of nums[i].',
+ 'hard', ARRAY['array', 'binary-search', 'merge-sort', 'segment-tree'],
+ '[{"input":{"nums":[5,2,6,1]},"expected":[2,1,1,0]}]'::jsonb),
+
+('Minimum Cost to Hire K Workers', 'minimum-cost-to-hire-k-workers', 
+ 'Find the minimum cost to hire exactly k workers such that every worker is paid at least their minimum wage ratio.',
+ 'hard', ARRAY['array', 'greedy', 'sorting', 'heap'],
+ '[{"input":{"quality":[10,20,5],"wage":[70,50,30],"k":2},"expected":105.0}]'::jsonb),
+
+('Shortest Path to Get All Keys', 'shortest-path-to-get-all-keys', 
+ 'Find the shortest path in a grid to collect all keys.',
+ 'hard', ARRAY['bfs', 'bit-manipulation', 'graph'],
+ '[{"input":{"grid":["@.a..","###.#","b.A.B"]},"expected":8}]'::jsonb),
+
+('Zuma Game', 'zuma-game', 
+ 'Find the minimum number of balls you have to insert to clear all the balls on the board.',
+ 'hard', ARRAY['string', 'dp', 'memoization'],
+ '[{"input":{"board":"WRRBBW","hand":"RRB"},"expected":-1}]'::jsonb)
+
 ON CONFLICT (title) DO NOTHING;
 
 -- ============================================================
