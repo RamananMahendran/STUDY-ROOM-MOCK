@@ -32,11 +32,21 @@ export default function DailyChallenge() {
   const [problem, setProblem] = useState(null);
 
   useEffect(() => {
-    fetch(`${API}/api/problems?limit=1`, { headers: authHeaders() })
+    // Fetch problems to select one deterministically based on the current day of the year
+    fetch(`${API}/api/problems`, { headers: authHeaders() })
       .then(r => r.json())
       .then(data => {
         if (data.success && data.data && data.data.length > 0) {
-          setProblem(data.data[0]);
+          const problems = data.data;
+          // Calculate day of the year
+          const now = new Date();
+          const start = new Date(now.getFullYear(), 0, 0);
+          const diff = now - start;
+          const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+          
+          // Select problem based on day of year so it changes daily but is consistent for all users
+          const index = dayOfYear % problems.length;
+          setProblem(problems[index]);
         }
       })
       .catch(err => console.error("Failed to fetch daily challenge", err));

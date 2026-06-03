@@ -237,6 +237,24 @@ export default function Dashboard() {
   const [streak, setStreak] = useState(0);
   const navigate = useNavigate();
 
+  const [enrolledDate, setEnrolledDate] = useState(() => {
+    return localStorage.getItem("placementSprintEnrollDate") || null;
+  });
+
+  const isEnrolled = !!enrolledDate;
+  let currentDayNumber = 1;
+  if (enrolledDate) {
+    const start = new Date(enrolledDate);
+    start.setHours(0, 0, 0, 0);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const diff = now.getTime() - start.getTime();
+    currentDayNumber = Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
+    if (currentDayNumber > 30) currentDayNumber = 30;
+  }
+  
+  const progressPercent = Math.min((currentDayNumber / 30) * 100, 100);
+
   useEffect(() => {
     // 1. Fetch the stringified user object from localStorage
     const storedUser = localStorage.getItem("user");
@@ -327,6 +345,7 @@ export default function Dashboard() {
         >
           <div style={{ flex: "1 1 0%", overflowY: "auto", minHeight: 0 }}>
             <div
+              className="dashboard-container"
               style={{
                 maxWidth: 1240,
                 margin: "0 auto",
@@ -466,6 +485,60 @@ export default function Dashboard() {
                 <SolveVelocityChart />
               </div>
 
+              {/* Active Study Plan */}
+              {isEnrolled && (
+                <div style={{
+                  padding: "20px 24px", borderRadius: 14, backgroundColor: "var(--surface)", border: "1px solid var(--border)",
+                  boxShadow: "var(--card-shadow)", marginTop: 8
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>
+                        30-Day Placement Sprint <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>· 30-day plan</span>
+                      </div>
+                      <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
+                        Day {currentDayNumber} · 0 / 59 problems
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => navigate("/practice/study-plans/placement-sprint-30")}
+                      style={{
+                        padding: "8px 16px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,255,255,0.15)",
+                        color: "var(--text)", fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "0.2s"
+                      }}
+                    >
+                      View plan
+                    </button>
+                  </div>
+                  
+                  <div style={{ position: "relative", marginTop: 32, marginBottom: 16 }}>
+                    {/* Today Marker */}
+                    <div style={{ position: "absolute", left: `${progressPercent}%`, top: -30, transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", transition: "left 0.5s ease" }}>
+                      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.5px", color: "var(--text)", marginBottom: 2 }}>TODAY</div>
+                      <div style={{ width: 2, height: 26, background: "var(--text)" }} />
+                    </div>
+
+                    {/* Progress Bar Container */}
+                    <div style={{ display: "flex", height: 12, borderRadius: 6, overflow: "hidden", background: "var(--surface-2)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                      {/* Fill */}
+                      <div style={{ width: `${progressPercent}%`, height: "100%", background: "linear-gradient(90deg, #10b981, #3b82f6)", transition: "width 0.5s ease" }} />
+                      {/* Remaining Segments */}
+                      <div style={{ flex: 1, display: "flex" }}>
+                        {[...Array(5)].map((_, i) => (
+                           <div key={i} style={{ flex: 1, borderLeft: "1px solid rgba(255,255,255,0.08)", background: `rgba(99,102,241,${0.03 + i * 0.015})` }} />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11, color: "var(--text-muted)", fontWeight: 500 }}>
+                    <span>Day 1</span>
+                    <span style={{ color: "var(--text)", fontWeight: 600 }}>{Math.round(progressPercent)}% through</span>
+                    <span>Day 30</span>
+                  </div>
+                </div>
+              )}
+
               {/* Insights Section */}
               <div style={{ marginTop: 8 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
@@ -522,6 +595,7 @@ export default function Dashboard() {
           .hero-analytics  { grid-template-columns: minmax(0,1fr) !important; }
           .kpi-row         { grid-template-columns: repeat(2,1fr) !important; }
           .home-charts-row { grid-template-columns: minmax(0,1fr) !important; }
+          .dashboard-container { padding-bottom: 80px !important; }
         }
         @media (max-width: 480px) {
           .kpi-row         { grid-template-columns: 1fr !important; }

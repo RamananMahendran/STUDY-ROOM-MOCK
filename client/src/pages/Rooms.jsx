@@ -154,6 +154,7 @@ export default function Rooms() {
         >
           <div style={{ flex: "1 1 0%", overflowY: "auto", minHeight: 0 }}>
             <div
+              className="rooms-container"
               style={{
                 maxWidth: 1240, margin: "0 auto",
                 padding: "clamp(20px,3vw,28px) clamp(16px,2.5vw,28px) 48px",
@@ -555,6 +556,7 @@ export default function Rooms() {
       <style>{`
         @media (max-width: 768px) {
           .quick-start-grid { grid-template-columns: repeat(2,1fr) !important; }
+          .rooms-container { padding-bottom: 80px !important; }
         }
         @media (max-width: 480px) {
           .quick-start-grid { grid-template-columns: 1fr !important; }

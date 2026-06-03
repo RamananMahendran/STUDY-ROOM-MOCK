@@ -612,7 +612,7 @@ export default function Profile() {
 
               {/* Tabs navigation */}
               <div style={{ marginBottom: 20 }}>
-                <div className="ui-tabs" style={{ display: "flex", gap: 8, borderBottom: "1px solid var(--border)" }}>
+                <div className="ui-tabs" style={{ display: "flex", gap: 8, borderBottom: "1px solid var(--border)", overflowX: "auto" }}>
                   {[
                     { id: "Overview", icon: IcoBar },
                     { id: "Study", icon: IcoBookOpen },
@@ -640,7 +640,7 @@ export default function Profile() {
               {activeTab === "Overview" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "22px 24px" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
+                    <div className="chart-header-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>Study hours</span>
                         <span style={{ fontSize: 13, fontWeight: 700, color: "var(--accent)" }}>0.6h total</span>
@@ -706,17 +706,19 @@ export default function Profile() {
                       }
 
                       return (
-                        <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 110 }}>
-                          {data.map((item, idx) => (
-                            <div key={idx} style={{ flex: "1 1 0%", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, height: "100%", position: "relative" }}>
-                              {item.value && <div style={{ position: "absolute", top: 10, fontSize: 10, color: item.active ? "var(--accent)" : "var(--text-muted)", fontWeight: 700 }}>{item.value}</div>}
-                              <div style={{ flex: "1 1 0%", width: "100%", display: "flex", alignItems: "flex-end", position: "relative", padding: hoursRange === "14d" ? "0 2px" : "0 10px" }}>
-                                <div style={{ width: "100%", borderRadius: "5px 5px 0px 0px", background: item.height !== "4px" || item.active ? "linear-gradient(rgb(129, 140, 248), rgb(99, 102, 241))" : "var(--surface-2)", height: item.height }}></div>
+                        <div className="study-hours-chart-scroll" style={{ width: "100%", overflowX: "auto", paddingBottom: 4 }}>
+                          <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 110, minWidth: hoursRange === "14d" ? 480 : 280 }}>
+                            {data.map((item, idx) => (
+                              <div key={idx} style={{ flex: "1 1 0%", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, height: "100%", position: "relative" }}>
+                                {item.value && <div style={{ position: "absolute", top: 10, fontSize: 10, color: item.active ? "var(--accent)" : "var(--text-muted)", fontWeight: 700 }}>{item.value}</div>}
+                                <div style={{ flex: "1 1 0%", width: "100%", display: "flex", alignItems: "flex-end", position: "relative", padding: hoursRange === "14d" ? "0 2px" : "0 10px" }}>
+                                  <div style={{ width: "100%", borderRadius: "5px 5px 0px 0px", background: item.height !== "4px" || item.active ? "linear-gradient(rgb(129, 140, 248), rgb(99, 102, 241))" : "var(--surface-2)", height: item.height }}></div>
+                                </div>
+                                <div style={{ width: "100%", height: 2, backgroundColor: item.active ? "var(--accent)" : "var(--surface-2)", marginBottom: 4, borderRadius: 2 }}></div>
+                                <span style={{ fontSize: 11, color: item.active ? "var(--accent)" : "var(--text-subtle)", fontWeight: item.active ? 700 : 400 }}>{item.label}</span>
                               </div>
-                              <div style={{ width: "100%", height: 2, backgroundColor: item.active ? "var(--accent)" : "var(--surface-2)", marginBottom: 4, borderRadius: 2 }}></div>
-                              <span style={{ fontSize: 11, color: item.active ? "var(--accent)" : "var(--text-subtle)", fontWeight: item.active ? 700 : 400 }}>{item.label}</span>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
                       );
                     })()}
@@ -878,7 +880,7 @@ export default function Profile() {
                     <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "1px", marginBottom: 20, textTransform: "uppercase" }}>Sign-in Methods</div>
                     
                     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px", backgroundColor: "rgba(255,255,255,0.02)", borderRadius: 12, border: "1px solid rgba(255,255,255,0.05)" }}>
+                      <div className="account-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px", backgroundColor: "rgba(255,255,255,0.02)", borderRadius: 12, border: "1px solid rgba(255,255,255,0.05)" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                           <div style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                             {/* Google icon simple replacement */}
@@ -909,7 +911,7 @@ export default function Profile() {
                           </div>
                         </div>
                       ) : (
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px", backgroundColor: "rgba(255,255,255,0.02)", borderRadius: 12, border: "1px solid rgba(255,255,255,0.05)" }}>
+                        <div className="account-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px", backgroundColor: "rgba(255,255,255,0.02)", borderRadius: 12, border: "1px solid rgba(255,255,255,0.05)" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                             <div style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", color: passwordSet ? "#10b981" : "var(--text-muted)" }}>
                               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7" opacity="0"/><circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
@@ -936,7 +938,7 @@ export default function Profile() {
                   {/* BILLING */}
                   <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "20px 24px" }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "1px", marginBottom: 20, textTransform: "uppercase" }}>Billing</div>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div className="billing-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <div>
                         <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>Free tier</div>
                         <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 4 }}>Study rooms, coding practice, pair coding, and leaderboard — all free, forever.</div>
@@ -975,10 +977,15 @@ export default function Profile() {
       <style>{`
         @media (max-width: 640px) {
           .profile-header { padding: 20px 16px 0px !important; }
-          .profile-content { padding: 0px 16px 48px !important; }
+          .profile-content { padding: 0px 16px 80px !important; }
           .profile-hero { flex-direction: column; text-align: center; }
           .profile-name-row { justify-content: center; }
           .share-btn { width: 100%; justify-content: center; }
+          .ui-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+          .ui-tabs::-webkit-scrollbar { display: none; }
+          .chart-header-row { flex-direction: column; align-items: flex-start !important; gap: 12px; }
+          .billing-row { flex-direction: column; align-items: flex-start !important; gap: 16px; }
+          .account-row { flex-direction: column; align-items: flex-start !important; gap: 12px; }
         }
       `}</style>
     </>

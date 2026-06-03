@@ -95,7 +95,7 @@ export default function Contests() {
   ];
 
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-12 md:py-16 bg-[var(--bg)] text-[var(--text)] font-sans h-full">
+    <div className="flex-1 overflow-y-auto px-6 pt-12 pb-24 md:py-16 bg-[var(--bg)] text-[var(--text)] font-sans h-full">
       <div className="max-w-4xl mx-auto space-y-16">
         
         {/* Hero Card */}

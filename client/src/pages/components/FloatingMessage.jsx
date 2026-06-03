@@ -196,28 +196,37 @@ export default function FloatingMessage() {
   const [showMessage, setShowMessage] = useState(false);
 
   return (
-    <div style={{ position: "fixed", bottom: 24, right: 24, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10, zIndex: 1000 }}>
-      <div style={{ display: showMessage ? "block" : "none" }}>
-        <MessageWidget />
+    <>
+      <div className="floating-message-container" style={{ position: "fixed", right: 24, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10, zIndex: 1000 }}>
+        <div style={{ display: showMessage ? "block" : "none" }}>
+          <MessageWidget />
+        </div>
+        <button
+          onClick={() => setShowMessage(v => !v)}
+          style={{
+            width: 44, height: 44, borderRadius: "50%",
+            border: "none", cursor: "pointer",
+            background: "linear-gradient(135deg,#6366f1,#8b5cf6)",
+            color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 4px 20px rgba(99,102,241,0.4)",
+            transition: "transform 0.2s, box-shadow 0.2s",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
+        >
+          {showMessage
+            ? <svg width="18" height="18" fill="none" stroke="white" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            : <svg width="18" height="18" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          }
+        </button>
       </div>
-      <button
-        onClick={() => setShowMessage(v => !v)}
-        style={{
-          width: 44, height: 44, borderRadius: "50%",
-          border: "none", cursor: "pointer",
-          background: "linear-gradient(135deg,#6366f1,#8b5cf6)",
-          color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 4px 20px rgba(99,102,241,0.4)",
-          transition: "transform 0.2s, box-shadow 0.2s",
-        }}
-        onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
-      >
-        {showMessage
-          ? <svg width="18" height="18" fill="none" stroke="white" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
-          : <svg width="18" height="18" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <style>{`
+        .floating-message-container { bottom: 24px; transition: opacity 0.2s, visibility 0.2s; }
+        body.create-room-open .floating-message-container { opacity: 0; visibility: hidden; pointer-events: none; }
+        @media (max-width: 768px) {
+          .floating-message-container { bottom: 80px; }
         }
-      </button>
-    </div>
+      `}</style>
+    </>
   );
 }
