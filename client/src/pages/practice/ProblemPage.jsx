@@ -24,28 +24,196 @@ const STARTER_CODE = {
 var twoSum = function(nums, target) {
     // Write your code here
     return [];
-};`,
-  python: `class Solution:
+};
+
+// ─── DRIVER CODE TO HANDLE SYSTEM INPUT ───
+const fs = require('fs');
+
+try {
+    const inputData = fs.readFileSync(0, 'utf-8').trim();
+    if (inputData) {
+        const data = JSON.parse(inputData);
+        const nums = data.nums || [];
+        const target = data.target !== undefined ? data.target : 0;
+        
+        const result = twoSum(nums, target);
+        
+        // Print minimized JSON format without trailing spaces
+        console.log(JSON.stringify(result));
+    }
+} catch (e) {
+    process.stderr.write('Error parsing input: ' + e.message + '\\n');
+}`,
+
+  python: `from typing import List
+import sys
+import json
+
+class Solution:
     def twoSum(self, nums: List[int], target: int) -> List[int]:
         # Write your code here
-        pass`,
-  java: `class Solution {
+        pass
+
+# ─── DRIVER CODE TO HANDLE SYSTEM INPUT ───
+if __name__ == "__main__":
+    try:
+        input_data = sys.stdin.read().strip()
+        if input_data:
+            data = json.loads(input_data)
+            nums = data.get("nums", [])
+            target = data.get("target", 0)
+            
+            solution = Solution()
+            result = solution.twoSum(nums, target)
+            
+            # Print minimized JSON layout (removes spaces after commas)
+            print(json.dumps(result, separators=(',', ':')))
+    except Exception as e:
+        print(f"Error parsing input: {e}", file=sys.stderr)`,
+
+  java: `import java.util.*;
+import java.io.*;
+
+class Solution {
     public int[] twoSum(int[] nums, int target) {
         // Write your code here
         return new int[]{};
     }
+}
+
+// ─── DRIVER CODE TO HANDLE SYSTEM INPUT ───
+public class Main {
+    public static void main(String[] args) {
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+            String input = sb.toString().trim();
+            
+            if (!input.isEmpty()) {
+                // Manual parse for simple standard structured string {"nums":[...],"target":X}
+                String numsPart = input.substring(input.indexOf("[") + 1, input.indexOf("]"));
+                String targetPart = input.substring(input.lastIndexOf(":") + 1, input.indexOf("}"));
+                
+                String[] elements = numsPart.split(",");
+                int[] nums = new int[elements.length];
+                for (int i = 0; i < elements.length; i++) {
+                    nums[i] = Integer.parseInt(elements[i].trim());
+                }
+                int target = Integer.parseInt(targetPart.trim());
+                
+                Solution solution = new Solution();
+                int[] result = solution.twoSum(nums, target);
+                
+                // Print back exactly as [0,1] format without space gaps
+                if (result.length == 2) {
+                    System.out.println("[" + result[0] + "," + result[1] + "]");
+                } else {
+                    System.out.println("[]");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error parsing input: " + e.getMessage());
+        }
+    }
 }`,
+
   cpp: `// All standard headers are pre-included (vector, map, string, etc.)
+#include <iostream>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <algorithm>
+
 using namespace std;
 
 vector<int> twoSum(vector<int>& nums, int target) {
     // Write your code here
     return {};
-}`,
-  c: `#include <stdio.h>
+}
 
-void twoSum() {
+// ─── DRIVER CODE TO HANDLE SYSTEM INPUT ───
+int main() {
+    string input;
+    if (getline(cin, input)) {
+        if (input.empty()) return 0;
+        
+        // Custom lightweight scanner to bypass linking heavyweight JSON engines in basic execution containers
+        size_t start_bracket = input.find('[');
+        size_t end_bracket = input.find(']');
+        size_t last_colon = input.find_last_of(':');
+        size_t close_brace = input.find('}');
+        
+        if (start_bracket == string::npos || end_bracket == string::npos) return 0;
+        
+        string numsStr = input.substr(start_bracket + 1, end_bracket - start_bracket - 1);
+        string targetStr = input.substr(last_colon + 1, close_brace - last_colon - 1);
+        
+        vector<int> nums;
+        stringstream ss(numsStr);
+        string item;
+        while (getline(ss, item, ',')) {
+            if(!item.empty()) nums.push_back(stoi(item));
+        }
+        int target = stoi(targetStr);
+        
+        vector<int> result = twoSum(nums, target);
+        
+        if (result.size() == 2) {
+            cout << "[" << result[0] << "," << result[1] << "]" << endl;
+        } else {
+            cout << "[]" << endl;
+        }
+    }
+    return 0;
+}`,
+
+  c: `#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Note: Modifying standard typical dynamic arrays structures to capture typical output 
+void twoSum(int* nums, int numsSize, int target, int* returnSize) {
     // Write your code here
+    // Remember to allocate your return array or fill a pointer array.
+    returnSize[0] = 0; 
+}
+
+// ─── DRIVER CODE TO HANDLE SYSTEM INPUT ───
+int main() {
+    char input[4096];
+    if (fgets(input, sizeof(input), stdin) != NULL) {
+        char *start = strchr(input, '[');
+        char *end = strchr(input, ']');
+        char *targetPtr = strrchr(input, ':');
+        
+        if (!start || !end || !targetPtr) return 0;
+        
+        int nums[500];
+        int numsSize = 0;
+        
+        char *token = strtok(start + 1, ",]");
+        while (token != NULL && token < end) {
+            nums[numsSize++] = atoi(token);
+            token = strtok(NULL, ",]");
+        }
+        
+        int target = atoi(targetPtr + 1);
+        int returnSize = 0;
+        int result[2];
+        
+        // Call user function
+        // Note: For C implementation, logic expects pointer array assignments
+        // Below executes standard validation logic tracking
+        twoSum(nums, numsSize, target, &returnSize);
+        
+        // Print layout to match [0,1] format
+        printf("[%d,%d]\\n", result[0], result[1]);
+    }
+    return 0;
 }`,
 };
 
@@ -475,29 +643,48 @@ function ResultsPanel({ result, loading }) {
     return <div className="p-5 text-gray-500 text-[13px]">Run your code or submit to see results here.</div>;
   }
 
+  // UPDATED: run mode with structural test-case assessment
   if (result.mode === 'run') {
+    if (result.stderr) {
+      return (
+        <div className="p-4 font-mono text-[13px]">
+          <div className="text-rose-400 bg-rose-400/5 border border-rose-400/10 p-3 rounded-lg whitespace-pre-wrap">{result.stderr}</div>
+        </div>
+      );
+    }
+
     return (
-      <div className="p-4 font-mono text-[13px]">
-        {result.stdout && (
-          <div className="mb-4">
-            <div className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mb-1.5">Output</div>
-            <div className="text-emerald-400 bg-emerald-400/5 border border-emerald-400/10 p-3 rounded-lg whitespace-pre-wrap">{result.stdout}</div>
+      <div className="p-4 font-mono text-[13px] space-y-4">
+        {result.testResults && result.testResults.map((tr, i) => (
+          <div key={i} className={`rounded-xl p-3.5 border ${tr.passed ? 'bg-emerald-500/5 border-emerald-500/10' : 'bg-rose-500/5 border-rose-500/10'}`}>
+            <div className="flex justify-between mb-2">
+              <span className="text-gray-500 font-bold">Sample Case {tr.test_case_index}</span>
+              <span className={`font-bold ${tr.passed ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {tr.passed ? '✓ Passed' : '✗ Failed'}
+              </span>
+            </div>
+            {tr.stderr ? (
+              <div className="text-rose-400 text-[12px] bg-rose-950/20 p-2 rounded border border-rose-900/30 whitespace-pre-wrap">{tr.stderr}</div>
+            ) : (
+              <div className="space-y-1 text-[12px]">
+                <div className="text-gray-400">
+                  Input: <span className="text-indigo-300">{typeof tr.input === 'object' ? JSON.stringify(tr.input) : String(tr.input)}</span>
+                </div>
+                <div className="text-gray-400">
+                  Expected: <span className="text-emerald-300">{typeof tr.expected === 'object' ? JSON.stringify(tr.expected) : String(tr.expected)}</span>
+                </div>
+                <div className="text-gray-400">
+                  Got: <span className={tr.passed ? 'text-emerald-300 font-bold' : 'text-rose-400 font-bold'}>{tr.actual || '(empty)'}</span>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-        {result.stderr && (
-          <div>
-            <div className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mb-1.5">Error</div>
-            <div className="text-rose-400 bg-rose-400/5 border border-rose-400/10 p-3 rounded-lg whitespace-pre-wrap">{result.stderr}</div>
-          </div>
-        )}
-        {!result.stdout && !result.stderr && (
-          <div className="text-gray-500 italic">No output</div>
-        )}
+        ))}
       </div>
     );
   }
 
-  // submit mode
+  // submit mode remains exactly as you wrote it...
   const passed = (result.testResults || []).filter(t => t.passed).length;
   const total  = (result.testResults || []).length;
 
@@ -603,29 +790,66 @@ export default function ProblemPage() {
   };
 
   // Run
+// Run Sample Test Cases
   const handleRun = async () => {
-    if (!problem) return;
-    setRunLoading(true); setShowResults(true); setRunResult(null);
+    if (!problem || !problem.testCases) return;
+    setRunLoading(true); 
+    setShowResults(true); 
+    setRunResult(null);
+    
     try {
-      const firstCase = (problem.testCases || [])[0];
-      const stdin = firstCase
-        ? (typeof firstCase.input === 'object' ? JSON.stringify(firstCase.input) : String(firstCase.input))
-        : '';
+      // Grab up to 2 sample test cases for dry running
+      const samplesToRun = problem.testCases.slice(0, 2);
       const langMap = { python: 71, javascript: 63, java: 62, cpp: 54, c: 50 };
-      const res = await fetch(`${API}/api/code/run`, {
-        method: 'POST',
-        headers: authHeaders(),
-        body: JSON.stringify({ sourceCode: code, languageId: langMap[language] || 63, stdin }),
+
+      const runPromises = samplesToRun.map(async (tc, index) => {
+        // Correctly format string inputs for the compiler runner
+        const stdin = typeof tc.input === 'object' 
+          ? JSON.stringify(tc.input) 
+          : String(tc.input);
+
+        const res = await fetch(`${API}/api/code/run`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ 
+            sourceCode: code, 
+            languageId: langMap[language] || 63, 
+            stdin 
+          }),
+        });
+        
+        const data = await res.json();
+        
+        const stdout = (data.stdout || data.data?.stdout || '').replace(/\s+/g, '');
+        const stderr = data.stderr || data.data?.stderr || data.compile_output || data.data?.compile_output || '';
+        
+        // Simple validation matching logic
+        const expectedStr = typeof tc.expected === 'object' 
+          ? JSON.stringify(tc.expected).replace(/\s+/g, '') 
+          : String(tc.expected).replace(/\s+/g, '');
+          
+        const passed = !stderr && stdout === expectedStr;
+
+        return {
+          test_case_index: index + 1,
+          input: tc.input,
+          expected: tc.expected,
+          actual: stdout,
+          stderr: stderr,
+          passed
+        };
       });
-      const data = await res.json();
+
+      const processedResults = await Promise.all(runPromises);
+
       setRunResult({
         mode: 'run',
-        stdout: data.stdout || data.data?.stdout || '',
-        stderr: data.stderr || data.data?.stderr || data.compile_output || data.data?.compile_output || '',
-        status: data.status?.description || 'Done',
+        testResults: processedResults,
+        status: processedResults.every(r => r.passed) ? 'accepted' : 'wrong_answer'
       });
-    } catch {
-      setRunResult({ mode: 'run', stdout: '', stderr: 'Network error', status: 'Error' });
+
+    } catch (err) {
+      setRunResult({ mode: 'run', testResults: [], status: 'error', stderr: 'Network or Execution Error' });
     } finally {
       setRunLoading(false);
     }
@@ -666,7 +890,7 @@ export default function ProblemPage() {
       };
       poll();
     } catch (err) {
-      setRunResult({ mode: 'run', stdout: '', stderr: err.message || 'Submission failed', status: 'Error' });
+      setRunResult({ mode: 'run', testResults: [], status: 'error', stderr: err.message || 'Submission failed' });
       setSubmitLoading(false);
     }
   };
