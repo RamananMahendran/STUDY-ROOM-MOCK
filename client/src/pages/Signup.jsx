@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useGoogleLogin } from "@react-oauth/google";
 
 function BrandMark({ size = 28 }) {
   return (
@@ -129,6 +130,42 @@ export default function Signup() {
   const [email, setEmail]     = useState("");
   const [password, setPassword] = useState("");
 
+  // ── Google OAuth handler ─────────────────────────────────────────
+  const handleGoogleSuccess = async (tokenResponse) => {
+    try {
+      const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+      });
+      const userInfo = await userInfoRes.json();
+
+      const backendRes = await fetch('http://localhost:5001/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: tokenResponse.access_token, userInfo }),
+      });
+      const data = await backendRes.json();
+      if (!backendRes.ok) throw new Error(data.message || 'Google sign-up failed.');
+
+      if (data.token) localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify({
+        username: data.username,
+        email: data.email,
+        userId: data.id,
+        streak: data.streak || 0,
+      }));
+      if (window.addNotification) window.addNotification('Signed up with Google successfully!');
+      navigate('/home');
+    } catch (err) {
+      console.error('Google sign-up error:', err);
+      alert(err.message || 'Google sign-up failed. Please try again.');
+    }
+  };
+
+  const signupWithGoogle = useGoogleLogin({
+    onSuccess: handleGoogleSuccess,
+    onError: () => alert('Google sign-up was cancelled or failed.'),
+  });
+
   const handleSubmit = (e) => {
   e.preventDefault(); 
   console.log("Form submitted with:", { name, email, password });
@@ -248,7 +285,7 @@ export default function Signup() {
 
             <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
               {/* Google */}
-              <button id="signup-google-btn" type="button" style={{ width:"100%", display:"inline-flex", alignItems:"center", justifyContent:"center", gap:10, padding:"13px 16px", borderRadius:10, fontSize:14, fontWeight:600, background:"var(--surface)", color:"var(--text)", border:"1px solid var(--border)", cursor:"pointer", boxShadow:"0 1px 2px rgba(0,0,0,0.04)", transition:"border-color 0.15s", fontFamily:"inherit" }}>
+              <button id="signup-google-btn" type="button" onClick={() => signupWithGoogle()} style={{ width:"100%", display:"inline-flex", alignItems:"center", justifyContent:"center", gap:10, padding:"13px 16px", borderRadius:10, fontSize:14, fontWeight:600, background:"var(--surface)", color:"var(--text)", border:"1px solid var(--border)", cursor:"pointer", boxShadow:"0 1px 2px rgba(0,0,0,0.04)", transition:"border-color 0.15s", fontFamily:"inherit" }}>
                 <GoogleIcon />Sign up with Google
               </button>
 

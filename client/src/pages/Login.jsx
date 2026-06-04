@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useGoogleLogin } from "@react-oauth/google";
 
 // ── Brand Mark ────────────────────────────────────────────────────────────────
 function BrandMark({ size = 28 }) {
@@ -223,6 +224,49 @@ export default function Login() {
   const [email, setEmail]     = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+
+  // ── Google OAuth handler ─────────────────────────────────────────
+  const handleGoogleSuccess = async (tokenResponse) => {
+    try {
+      // tokenResponse.access_token is a Google access token.
+      // We use the implicit flow here so the server receives a credential.
+      // For ID token flow we use oneTap; here we exchange via userinfo.
+      const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+      });
+      const userInfo = await userInfoRes.json();
+
+      // Send to our backend for verification and JWT issuance.
+      // We embed the sub + email directly — backend re-verifies via google-auth-library.
+      const backendRes = await fetch('http://localhost:5001/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // Pass the raw token so the backend can verify it; fallback to userinfo fields.
+        body: JSON.stringify({ credential: tokenResponse.access_token, userInfo }),
+      });
+      const data = await backendRes.json();
+      if (!backendRes.ok) throw new Error(data.message || 'Google login failed.');
+
+      if (data.token) localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify({
+        username: data.username,
+        email: data.email,
+        userId: data.id,
+        streak: data.streak || 0,
+      }));
+      if (window.addNotification) window.addNotification('Logged in with Google successfully!');
+      navigate('/home');
+    } catch (err) {
+      console.error('Google login error:', err);
+      alert(err.message || 'Google login failed. Please try again.');
+    }
+  };
+
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: handleGoogleSuccess,
+    onError: () => alert('Google login was cancelled or failed.'),
+  });
+
   return (
     <div
       data-theme="dark"
@@ -306,11 +350,7 @@ export default function Login() {
             <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
               {/* Google */}
               <button id="login-google-btn" type="button" 
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (window.addNotification) window.addNotification("Logged in with Google successfully!");
-                  window.location.href = "/home"; 
-                }}
+                onClick={() => loginWithGoogle()}
                 style={{ width:"100%", display:"inline-flex", alignItems:"center", justifyContent:"center", gap:10, padding:"13px 16px", borderRadius:10, fontSize:14, fontWeight:600, background:"var(--surface)", color:"var(--text)", border:"1px solid var(--border)", cursor:"pointer", boxShadow:"0 1px 2px rgba(0,0,0,0.04)", transition:"border-color 0.15s, background 0.15s, box-shadow 0.15s", fontFamily:"inherit" }}>
                 <GoogleIcon />
                 Continue with Google
