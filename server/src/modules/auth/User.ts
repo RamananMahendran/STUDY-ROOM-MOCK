@@ -151,6 +151,77 @@ const User = {
       WHERE id = ${userId}
     `;
   },
+
+  // ── OAuth Methods ─────────────────────────────────────────────────────────
+
+  /**
+   * Find a user by their OAuth provider ID (e.g. Google sub).
+   * Returns the user row if found, else undefined.
+   */
+  async findByOAuthId(provider: string, providerClientId: string) {
+    const rows: any = await prisma.$queryRaw`
+      SELECT u.id, u.name AS username, u.email, u.streak_count AS streak, u.last_active_at, u.avatar_url
+      FROM users u
+      INNER JOIN oauth_accounts oa ON oa.user_id = u.id
+      WHERE oa.provider = ${provider}
+        AND oa.provider_client_id = ${providerClientId}
+    `;
+    return rows[0];
+  },
+
+  /**
+   * Link an existing user (found by email) to a Google account.
+   * Idempotent — uses ON CONFLICT DO NOTHING so calling it twice is safe.
+   */
+  async linkOAuthAccount(userId: number, provider: string, providerClientId: string) {
+    await prisma.$executeRaw`
+      INSERT INTO oauth_accounts (user_id, provider, provider_client_id)
+      VALUES (${userId}, ${provider}, ${providerClientId})
+      ON CONFLICT (provider, provider_client_id) DO NOTHING
+    `;
+  },
+
+  /**
+   * Create a brand-new user from a Google profile and record the OAuth link
+   * in a single transaction. Password is an unusable random string so they
+   * can only log in via Google unless they later set a password via reset.
+   */
+  async createOAuthUser({
+    username,
+    email,
+    avatarUrl,
+    provider,
+    providerClientId,
+  }: {
+    username: string;
+    email: string;
+    avatarUrl?: string;
+    provider: string;
+    providerClientId: string;
+  }) {
+    // Unusable random password — 32 bytes of entropy
+    const crypto = await import('crypto');
+    const randomPassword = crypto.randomBytes(32).toString('hex');
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(randomPassword, salt);
+
+    // Insert user
+    const userRows: any = await prisma.$queryRaw`
+      INSERT INTO users (name, email, password, avatar_url, streak_count, updated_at)
+      VALUES (${username}, ${email}, ${hashedPassword}, ${avatarUrl ?? null}, 0, CURRENT_TIMESTAMP)
+      RETURNING id, name AS username, email, streak_count AS streak, avatar_url
+    `;
+    const newUser = userRows[0];
+
+    // Link OAuth account
+    await prisma.$executeRaw`
+      INSERT INTO oauth_accounts (user_id, provider, provider_client_id)
+      VALUES (${newUser.id}, ${provider}, ${providerClientId})
+      ON CONFLICT (provider, provider_client_id) DO NOTHING
+    `;
+
+    return newUser;
+  },
 };
 
 export default User;

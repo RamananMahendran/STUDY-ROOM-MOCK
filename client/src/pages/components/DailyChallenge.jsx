@@ -101,7 +101,7 @@ export default function DailyChallenge() {
 
         {/* Solve button */}
         <div
-          onClick={() => navigate(`/practice/problems/${problem.slug}`)}
+          onClick={() => navigate(`/practice/problems/${problem.id}`)}
           className="flex-shrink-0 flex items-center cursor-pointer"
           style={{ gap: 6, backgroundColor: "#fff", color: "#4f46e5", padding: "8px 16px", borderRadius: 10, fontSize: 13, fontWeight: 700 }}
         >

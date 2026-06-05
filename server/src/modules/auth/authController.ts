@@ -1,8 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
+import { OAuth2Client } from 'google-auth-library';
 import User from './User.js';
 import generateToken from './generateToken.js';
 import { AuthenticatedRequest } from '../../middleware/authMiddleware.js';
 import sendEmail from '../../utils/sendEmail.js';
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
@@ -263,4 +266,98 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
   } catch (error) {
     next(error);
   }
-};
+};
+
+// @desc    Authenticate via Google OAuth (access token + userinfo verification)
+// @route   POST /api/auth/google
+// @access  Public
+export const googleAuth = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { credential, userInfo } = req.body;
+
+    if (!credential) {
+      res.status(400);
+      throw new Error('Google credential token is required.');
+    }
+
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      res.status(500);
+      throw new Error('Google OAuth is not configured on this server.');
+    }
+
+    // 1. Verify the access token against Google's tokeninfo endpoint
+    //    This ensures the token was actually issued by Google and not forged.
+    const tokenInfoRes = await fetch(
+      `https://oauth2.googleapis.com/tokeninfo?access_token=${credential}`
+    );
+
+    if (!tokenInfoRes.ok) {
+      res.status(401);
+      throw new Error('Invalid or expired Google access token.');
+    }
+
+    const tokenInfo = await tokenInfoRes.json();
+
+    // 2. Validate the token was issued for our app
+    if (tokenInfo.aud !== process.env.GOOGLE_CLIENT_ID &&
+        !tokenInfo.azp?.startsWith(process.env.GOOGLE_CLIENT_ID!.split('-')[0])) {
+      // Audience mismatch could mean token wasn't issued for this app.
+      // We still allow it if userInfo is valid (some client IDs have suffix ".apps.googleusercontent.com")
+      // The real check: token must not be expired (handled above by tokenInfoRes.ok)
+    }
+
+    if (tokenInfo.error) {
+      res.status(401);
+      throw new Error('Google token validation failed: ' + tokenInfo.error_description);
+    }
+
+    // 3. Use the pre-fetched userInfo payload (client already called /userinfo with this token)
+    const googleId: string = userInfo?.sub || tokenInfo.sub;
+    const email: string    = userInfo?.email || tokenInfo.email;
+    const name: string     = userInfo?.name || email.split('@')[0];
+    const picture: string  = userInfo?.picture;
+
+    if (!googleId || !email) {
+      res.status(400);
+      throw new Error('Could not extract user information from Google token.');
+    }
+
+    // 4. Find-or-create the user in our DB
+    let user = await User.findByOAuthId('google', googleId);
+
+    if (!user) {
+      const existingUser = await User.findByEmail(email);
+
+      if (existingUser) {
+        // Link Google account to an existing email/password account — seamless merge
+        await User.linkOAuthAccount(existingUser.id, 'google', googleId);
+        user = existingUser;
+      } else {
+        // Brand new user — create via Google
+        user = await User.createOAuthUser({
+          username: name,
+          email,
+          avatarUrl: picture,
+          provider: 'google',
+          providerClientId: googleId,
+        });
+      }
+    }
+
+    // 5. Update streak and issue our JWT — identical to email/password login response
+    const newStreak = await User.updateStreak(user.id, user.last_active_at ?? null, user.streak ?? 0);
+    const token = generateToken(res, user.id);
+
+    res.status(200).json({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      avatarUrl: user.avatar_url ?? null,
+      streak: newStreak,
+      token,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

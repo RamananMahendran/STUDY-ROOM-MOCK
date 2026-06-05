@@ -13,6 +13,8 @@ services:
       DATABASE_URL: postgresql://studyadmin:studypass123@postgres_db:5432/studyroom_db?schema=public
       JUDGE0_URL: https://ce.judge0.com
       JUDGE0_AUTH_TOKEN: ${JUDGE0_AUTH_TOKEN:-}
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:5173}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
     depends_on:
       postgres_db:
         condition: service_healthy
