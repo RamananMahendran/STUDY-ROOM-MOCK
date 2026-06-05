@@ -11,6 +11,12 @@ import { registerCollaborationHandlers } from './handlers/collaboration.handler.
 let ioInstance: Server | null = null;
 
 export const initializeSocketServer = (httpServer: HTTPServer): Server => {
+  // 🛡️ SINGLETON GUARD: If an instance already exists, do not attach listeners again!
+  if (ioInstance) {
+    console.log('⚠️ Socket.io instance already exists. Returning active instance to prevent crash.');
+    return ioInstance;
+  }
+
   const io = new Server(httpServer, {
     cors: {
       origin: process.env.CLIENT_URL || 'http://localhost:5173',

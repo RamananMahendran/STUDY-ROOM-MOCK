@@ -192,9 +192,16 @@ export default function PairCode() {
       });
     });
 
+    socketIo.on("code-sync", (data) => {
+      addDebugLog(`📥 Received initial code-sync from server`);
+      if (!isLocalChange.current && data && data.code !== undefined) {
+        setCode(data.code);
+      }
+    });
+
     socketIo.on("code-change", (data) => {
       addDebugLog(`📝 Code changed by partner`);
-      if (!isLocalChange.current) {
+      if (!isLocalChange.current && data && data.code !== undefined) {
         setCode(data.code);
       }
     });

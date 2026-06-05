@@ -41,11 +41,16 @@ export default function PairCodeSetup() {
     setIsCreating(true);
     setError(null);
     
+    const token = localStorage.getItem("token"); // 👈 Retrieve token
+    
     try {
       console.log('📤 Fetching /api/pair/create...');
       const response = await fetch('http://localhost:5001/api/pair/create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ language: 'python' }),
       });
 
