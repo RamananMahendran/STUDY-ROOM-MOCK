@@ -541,12 +541,21 @@ function ChatPanel({ messages, sendMessage, currentUserId }) {
 
   // Determine if a message belongs to the current user
   const isMine = (m) => {
-    // Primary: compare numeric user IDs
-    if (currentUserId && m.userId != null) {
-      return Number(m.userId) === Number(currentUserId);
+    // We now rely on the 'self' flag which is reliably set by the server (for history)
+    // or set locally (for optimistic updates and incoming new messages)
+    if (m.self === true) return true;
+
+    // Fallback: If the user accidentally logged in with a different account (different ID) 
+    // but the same/similar name, we can heuristically treat it as "their" message.
+    const localUser = JSON.parse(localStorage.getItem("user") || "{}");
+    if (m.userName && localUser.name) {
+      const normalize = (s) => s.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+      if (normalize(m.userName) === normalize(localUser.name)) {
+        return true;
+      }
     }
-    // Fallback: use the self flag set at message creation time
-    return m.self === true;
+
+    return false;
   };
 
   return (
@@ -1590,11 +1599,12 @@ export default function App() {
     socketIo.on("chat_history", (history) => {
       setMessages(history.map(m => ({
         id: m.id,
-        userId: m.userId,  // keep raw userId for ChatPanel.isMine()
+        userId: m.userId,
         text: m.message,
         time: new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        self: currentUser && Number(m.userId) === Number(currentUser.id),
-        userName: m.user?.name || `User ${m.userId}`
+        // Use the reliable isMine flag computed by the server during auth
+        self: m.isMine != null ? m.isMine : (currentUser && Number(m.userId) === Number(currentUser.id)),
+        userName: m.userName || m.user?.name || `User ${m.userId}`
       })));
     });
 
