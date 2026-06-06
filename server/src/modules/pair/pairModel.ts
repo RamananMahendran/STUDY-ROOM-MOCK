@@ -11,6 +11,7 @@ class PairModel {
   async createSession(data: CreatePairSessionData) {
     return await prisma.pairSession.create({
       data: {
+        id: data.roomCode,
         roomCode: data.roomCode,
         problemId: data.problemId,
         hostId: data.hostId,

@@ -3,17 +3,32 @@ import prisma from '../../config/database.js';
 import { addTypingUser } from '../../services/redis.service.js';
 
 const persistChatMessage = async (roomId: string, userId: number, text: string, timestamp: Date): Promise<void> => {
-  console.log(`[STUB] Persisting message: roomId=${roomId}, userId=${userId}, text=${text}`);
+  try {
+    console.log(`[Chat] Persisting message: roomId=${roomId} userId=${userId}`);
+    await prisma.chatMessage.create({
+      data: {
+        roomId,
+        userId,
+        message: text,
+        createdAt: timestamp,
+      },
+    });
+    console.log(`[Chat] Message persisted successfully`);
+  } catch (err: any) {
+    console.error('[Chat] Failed to persist chat message:', err.message, err.code);
+  }
 };
 
 export const registerChatHandlers = (io: Server, socket: Socket) => {
   const handleSendMessage = async (data: { roomId: string; message: string }) => {
     try {
       const userId = socket.data.userId;
+      const userName = socket.data.userName;
       const timestamp = new Date();
 
       const messagePayload = {
         userId,
+        userName,
         message: data.message,
         timestamp: timestamp.toISOString(),
       };

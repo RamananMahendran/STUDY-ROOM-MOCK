@@ -268,6 +268,17 @@ export const registerCollaborationHandlers = (io: Server, socket: Socket) => {
   };
 
   // ============================================================
+  // Study Room Collaboration Handlers
+  // ============================================================
+  const handleNotesChange = (data: { roomId: string; text: string }) => {
+    socket.to(data.roomId).emit('notes_update', data.text);
+  };
+
+  const handleFileShared = (data: { roomId: string; file: any }) => {
+    socket.to(data.roomId).emit('file_shared', data.file);
+  };
+
+  // ============================================================
   // Register all event listeners
   // ============================================================
 
@@ -282,7 +293,11 @@ export const registerCollaborationHandlers = (io: Server, socket: Socket) => {
   socket.on('join-pair-room', handleJoinPairRoom);
   socket.on('cursor-move', handlePairCursorMove);
   socket.on('code-change', handlePairCodeChange);
-  socket.on('code-execution-result', handleCodeExecutionResult); // 👈 NEW
+  socket.on('code-execution-result', handleCodeExecutionResult);
   socket.on('leave-pair-room', handleLeavePairRoom);
   socket.on('submission:result', handleSubmissionResult);
+
+  // Study room collaboration listeners
+  socket.on('notes_change', handleNotesChange);
+  socket.on('file_shared', handleFileShared);
 };

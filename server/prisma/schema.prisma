@@ -130,7 +130,7 @@ model Friendship {
 // ============================================================
 
 model StudyRoom {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id         String   @id
   name       String
   slug       String   @unique
   ownerId    Int      @map("owner_id")
@@ -150,8 +150,8 @@ model StudyRoom {
 
 model RoomMember {
   id       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  roomId   String    @db.Uuid @map("room_id")
-  userId   Int       @map("user_id")
+  roomId   String    @map("room_id")
+  userId   Int       @map("user_id") // 👈 FIXED: Changed String @db.Uuid to Int
   isOnline Boolean   @default(false) @map("is_online")
   socketId String?   @map("socket_id")
   joinedAt DateTime  @default(now()) @db.Timestamptz @map("joined_at")
@@ -165,8 +165,8 @@ model RoomMember {
 
 model ChatMessage {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  roomId    String   @db.Uuid @map("room_id")
-  userId    Int      @map("user_id")
+  roomId    String   @map("room_id")
+  userId    Int      @map("user_id") // 👈 FIXED: Changed String @db.Uuid to Int
   message   String
   createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
 
@@ -178,7 +178,7 @@ model ChatMessage {
 
 model RoomTask {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  roomId      String   @db.Uuid @map("room_id")
+  roomId      String   @map("room_id")
   title       String
   isCompleted Boolean  @default(false) @map("is_completed")
   createdAt   DateTime @default(now()) @db.Timestamptz @map("created_at")
@@ -190,7 +190,7 @@ model RoomTask {
 
 model WhiteboardSession {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  roomId    String   @unique @db.Uuid @map("room_id")
+  roomId    String   @unique @map("room_id")
   elements  Json     @default("[]")
   updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
 
@@ -247,7 +247,7 @@ model Submission {
   errorMessage   String?  @map("error_message")
   testResults    Json?    @map("test_results")
   submittedFrom  String?  @map("submitted_from")
-  pairSessionId  String?  @map("pair_session_id") @db.Uuid
+  pairSessionId  String?  @map("pair_session_id")
   
   createdAt      DateTime @default(now()) @db.Timestamptz @map("created_at")
   updatedAt      DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
@@ -422,7 +422,7 @@ model MockInterviewResult {
 // ============================================================
 
 model PairSession {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id          String   @id
   roomCode    String   @unique @map("room_code")
   problemId   Int?     @map("problem_id")
   hostId      Int      @map("host_id")
@@ -445,7 +445,7 @@ model PairSession {
 
 model PairCursor {
   id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  sessionId    String   @db.Uuid @map("session_id")
+  sessionId    String   @map("session_id")
   userId       Int      @map("user_id")
   lineNumber   Int      @default(1) @map("line_number")
   columnNumber Int      @default(1) @map("column_number")
