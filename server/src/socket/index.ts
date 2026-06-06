@@ -55,6 +55,16 @@ export const initializeSocketServer = (httpServer: HTTPServer): Server => {
       socket.emit('pong');
     });
 
+    socket.on('contest:join', (contestId: string) => {
+      socket.join(`contest:${contestId}`);
+      console.log(`Socket ${socket.id} joined contest room contest:${contestId}`);
+    });
+
+    socket.on('contest:leave', (contestId: string) => {
+      socket.leave(`contest:${contestId}`);
+      console.log(`Socket ${socket.id} left contest room contest:${contestId}`);
+    });
+
     registerPresenceHandlers(io, socket);
     registerTimerHandlers(io, socket);
     registerChatHandlers(io, socket);

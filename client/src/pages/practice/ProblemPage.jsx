@@ -755,7 +755,13 @@ export default function ProblemPage() {
       .then(data => {
         if (data.success) {
           setProblem(data.data);
-          // Set title dynamically if needed, but not required.
+          const p = data.data;
+          const starter = p.starterCode || p.starter_code;
+          if (starter && starter[language]) {
+            setCode(starter[language]);
+          } else {
+            setCode(STARTER_CODE[language] || '// Write your code here');
+          }
         } else {
           setProblemError(data.error || data.message || 'Problem not found');
         }
@@ -786,7 +792,12 @@ export default function ProblemPage() {
 
   const handleLanguageChange = lang => {
     setLanguage(lang);
-    setCode(STARTER_CODE[lang] || '// Write your code here');
+    const starter = problem?.starterCode || problem?.starter_code;
+    if (starter && starter[lang]) {
+      setCode(starter[lang]);
+    } else {
+      setCode(STARTER_CODE[lang] || '// Write your code here');
+    }
   };
 
   // Run

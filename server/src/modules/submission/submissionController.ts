@@ -175,6 +175,35 @@ const processSubmissionInBackground = async (
         console.error('Failed to emit socket event:', socketError);
       }
     }
+
+    // EMIT SOCKET.IO EVENT IF FROM CONTEST
+    if (submittedFrom && submittedFrom.startsWith('contest:')) {
+      try {
+        const contestId = submittedFrom.split(':')[1];
+        const io = getIO();
+        if (io) {
+          const subObj = await prisma.submission.findUnique({
+            where: { id: submissionId },
+            select: { problemId: true }
+          });
+          
+          if (subObj) {
+            io.to(`contest:${contestId}`).emit('contest:submission', {
+              submission_id: submissionId,
+              userId,
+              problemId: subObj.problemId,
+              status,
+              runtime_ms: totalRuntime,
+              memory_kb: maxMemory,
+              submitted_at: new Date().toISOString()
+            });
+            console.log(`📡 Emitted contest:submission to contest:${contestId}`);
+          }
+        }
+      } catch (socketError) {
+        console.error('Failed to emit contest socket event:', socketError);
+      }
+    }
   } catch (error: any) {
     console.error(`Error processing submission ${submissionId}:`, error);
     await submissionModel.updateStatus(submissionId, 'error', {

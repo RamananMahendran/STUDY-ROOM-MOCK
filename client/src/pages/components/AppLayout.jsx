@@ -16,7 +16,7 @@ const getPageInfo = (pathname) => {
   if (pathname.startsWith("/community")) return { title: "Community", subtitle: "Invite friends and study together.", activeNav: "community" };
   if (pathname.startsWith("/refer")) return { title: "Refer & Earn", subtitle: "Invite friends and get rewards", activeNav: "refer" };
   if (pathname.startsWith("/profile")) return { title: "Profile", subtitle: "Manage your account and settings", activeNav: "profile" };
-  if (pathname.startsWith("/contests")) return { title: "Contests", subtitle: "Coming soon", activeNav: "contests" };
+  if (pathname.startsWith("/contests")) return { title: "Contests", subtitle: "Join coding battles and compete live", activeNav: "contests" };
   return { title: "Study Room", subtitle: "", activeNav: "" };
 };
 

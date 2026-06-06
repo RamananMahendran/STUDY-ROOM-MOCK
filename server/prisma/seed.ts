@@ -2,6 +2,8 @@ import { Client } from 'pg';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import prisma from '../src/config/database.js';
+import { generateStarterCode } from '../src/utils/starterCodeGenerator.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,12 +36,24 @@ async function seedDatabase() {
       await client.query(statement);
     }
     
+    console.log('Generating starter codes for all problems...');
+    const problems = await prisma.problem.findMany();
+    for (const problem of problems) {
+      const starter = generateStarterCode(problem.title, problem.slug, problem.testCases);
+      await prisma.problem.update({
+        where: { id: problem.id },
+        data: { starterCode: starter },
+      });
+    }
+    console.log(`Generated starter codes for ${problems.length} problems!`);
+
     // Log the final row counts returned by the SELECT statements at the end of your file
     console.log('Seeding completed successfully!');
   } catch (err) {
     console.error('Error seeding database:', err);
   } finally {
     await client.end();
+    await prisma.$disconnect();
   }
 }
 

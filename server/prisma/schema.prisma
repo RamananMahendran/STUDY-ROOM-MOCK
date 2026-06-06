@@ -206,6 +206,7 @@ model Problem {
   difficulty     String
   tags           String[]
   testCases      Json     @default("[]")    @map("test_cases")
+  starterCode    Json     @default("{}")    @map("starter_code")
   isPremium      Boolean  @default(false) @map("is_premium")
   acceptanceRate Float    @default(0.0)   @map("acceptance_rate")
   createdAt      DateTime @default(now()) @db.Timestamptz @map("created_at")

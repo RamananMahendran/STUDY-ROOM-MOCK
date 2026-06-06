@@ -23,6 +23,8 @@ import StudyPlans from './pages/practice/StudyPlans.jsx';
 import PairCodeSetup from './pages/practice/PairCodeSetup.jsx';
 import PairCode from './pages/practice/PairCode.jsx';
 import Contests from './pages/Contests.jsx';
+import ContestArena from './pages/ContestArena.jsx';
+import ContestEditor from './pages/ContestEditor.jsx';
 import AppLayout from './pages/components/AppLayout.jsx';
 import PlacementSprint30 from './pages/practice/plans/placement-sprint-30.jsx';
 import FaangPrep45 from './pages/practice/plans/faang-prep-45.jsx';
@@ -59,6 +61,8 @@ function App() {
           <Route path="/practice/pair-code" element={<PairCodeSetup />} />
           <Route path="/practice/pair/:roomId" element={<PairCode />} />
           <Route path="/contests" element={<Contests />} />
+          <Route path="/contests/:id" element={<ContestArena />} />
+          <Route path="/contests/:id/problem/:problemId" element={<ContestEditor />} />
         </Route>
         
         <Route path="/pricing" element={<Pricing />} />

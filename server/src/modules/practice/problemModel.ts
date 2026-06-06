@@ -60,15 +60,19 @@ class Problem {
   static async findById(id: any) {
     if (!id) return undefined;
 
-    // TypeScript clean casting: if the schema expects a number, convert it to a number.
-    // If it's a UUID string, keep it as a string.
-    const targetId = typeof id === 'string' && !isNaN(Number(id)) && !id.includes('-') 
-      ? Number(id) 
+    const targetId = typeof id === 'string' && !isNaN(Number(id))
+      ? Number(id)
       : id;
 
-    return await prisma.problem.findUnique({
-      where: { id: targetId as any }
-    });
+    if (typeof targetId === 'number') {
+      return await prisma.problem.findUnique({
+        where: { id: targetId }
+      });
+    } else {
+      return await prisma.problem.findUnique({
+        where: { slug: String(targetId) }
+      });
+    }
   }
 
   // 3. Create a new entry

@@ -7,6 +7,7 @@ import submissionRoutes from './modules/submission/submissionRoutes.js';
 import pairRoutes from './modules/pair/pairRoutes.js';
 import interviewRoutes from './modules/interview/interviewRoutes.js';
 import roomRoutes from './modules/rooms/roomRoutes.js';
+import contestRoutes from './modules/contests/contestRoutes.js';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 
 const app: Application = express();
@@ -34,6 +35,7 @@ app.use('/api/submissions', submissionRoutes); // Submissions (Day 3)
 app.use('/api/pair', pairRoutes);            // Pair Coding (Day 4)
 app.use('/api/interviews', interviewRoutes);  // Mock Interviews (Day 5) - PRO ONLY
 app.use('/api/rooms', roomRoutes);           // Real-time Study Rooms (BE2)
+app.use('/api/contests', contestRoutes);      // Competitive Contests (BE3 Day 3 addition)
 
 // 404 Handler
 app.use(notFound);
