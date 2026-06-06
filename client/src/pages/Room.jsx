@@ -1,5 +1,34 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
+
+// Error Boundary to catch render crashes
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null, info: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, info) {
+    this.setState({ error, info });
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: 40, color: 'white', backgroundColor: 'red' }}>
+          <h1>Something went wrong.</h1>
+          <pre>{this.state.error?.toString()}</pre>
+          <pre>{this.state.info?.componentStack}</pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
 // ─── CSS Variables injected globally (Removed hardcoded styles to use index.css) ──────────
 
@@ -431,9 +460,22 @@ function TabBar({ active, setActive, badge }) {
 }
 
 // ─── Notes Panel ──────────────────────────────────────────────────────────────
-function NotesPanel() {
+function NotesPanel({ socket, roomId }) {
   const [text, setText] = useState("");
   const [viewMode, setViewMode] = useState("write"); // write, split, preview
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleUpdate = (newText) => setText(newText);
+    socket.on("notes_update", handleUpdate);
+    return () => socket.off("notes_update", handleUpdate);
+  }, [socket]);
+
+  const handleChange = (e) => {
+    const val = e.target.value;
+    setText(val);
+    if (socket) socket.emit("notes_change", { roomId, text: val });
+  };
 
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -464,7 +506,7 @@ function NotesPanel() {
             }}
             placeholder="Start typing shared notes..."
             value={text}
-            onChange={e => setText(e.target.value)}
+            onChange={handleChange}
           />
         )}
         
@@ -485,62 +527,121 @@ function NotesPanel() {
 }
 
 // ─── Chat Panel ───────────────────────────────────────────────────────────────
-function ChatPanel() {
+function ChatPanel({ messages, sendMessage, currentUserId }) {
   const [msg, setMsg] = useState("");
-  const [messages, setMessages] = useState([
-    { id: 1, text: "hiii", time: "07:91", self: true },
-  ]);
   const bottomRef = useRef(null);
 
   const send = () => {
     if (!msg.trim()) return;
-    setMessages(prev => [...prev, { id: Date.now(), text: msg, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), self: true }]);
+    sendMessage(msg);
     setMsg("");
   };
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
+  // Determine if a message belongs to the current user
+  const isMine = (m) => {
+    // Primary: compare numeric user IDs
+    if (currentUserId && m.userId != null) {
+      return Number(m.userId) === Number(currentUserId);
+    }
+    // Fallback: use the self flag set at message creation time
+    return m.self === true;
+  };
+
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-      <div style={{ flex: 1, overflowY: "auto", padding: "32px 24px", display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: "24px 16px 16px", display: "flex", flexDirection: "column" }}>
         {/* header */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 32 }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 24 }}>
           <div style={{
-            width: 48, height: 48, borderRadius: 12,
+            width: 44, height: 44, borderRadius: 12,
             display: "flex", alignItems: "center", justifyContent: "center",
             backgroundColor: "var(--accent-bg)", border: "1px solid rgba(108,99,255,0.25)",
-            color: "var(--accent)", marginBottom: 12,
+            color: "var(--accent)", marginBottom: 10,
           }}>
             <Icon.Chat />
           </div>
-          <p style={{ fontSize: "1rem", fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>Room Chat</p>
-          <p style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>This is the beginning of the conversation.</p>
+          <p style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--text)", marginBottom: 2 }}>Room Chat</p>
+          <p style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>This is the beginning of the conversation.</p>
         </div>
+
         {/* messages */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
-          {messages.map(m => (
-            <div key={m.id} style={{ display: "flex", justifyContent: m.self ? "flex-end" : "flex-start" }}>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: m.self ? "flex-end" : "flex-start", gap: 3 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {messages.map((m, idx) => {
+            const mine = isMine(m);
+            const prevMsg = messages[idx - 1];
+            // Show name if this is the first message in a group from this sender (left-side only)
+            const showName = !mine && (!prevMsg || isMine(prevMsg) || prevMsg.userName !== m.userName);
+
+            return (
+              <div key={m.id} style={{
+                display: "flex",
+                justifyContent: mine ? "flex-end" : "flex-start",
+                marginBottom: showName && !mine ? 2 : 1,
+                marginTop: showName && !mine ? 8 : 0,
+              }}>
                 <div style={{
-                  padding: "8px 14px", borderRadius: 18,
-                  fontSize: "0.85rem", maxWidth: 280,
-                  backgroundColor: m.self ? "var(--accent)" : "var(--surface-2)",
-                  color: "#fff",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: mine ? "flex-end" : "flex-start",
+                  maxWidth: "72%",
                 }}>
-                  {m.text}
+                  {/* Sender name — only for others, only at start of group */}
+                  {showName && (
+                    <span style={{
+                      fontSize: "0.72rem",
+                      fontWeight: 600,
+                      color: "var(--accent)",
+                      marginLeft: 12,
+                      marginBottom: 3,
+                    }}>
+                      {m.userName || "Unknown"}
+                    </span>
+                  )}
+
+                  {/* Bubble */}
+                  <div style={{
+                    padding: "9px 14px",
+                    borderRadius: mine
+                      ? "18px 18px 4px 18px"
+                      : "18px 18px 18px 4px",
+                    fontSize: "0.875rem",
+                    lineHeight: 1.4,
+                    backgroundColor: mine ? "var(--accent)" : "var(--surface-2)",
+                    color: mine ? "#fff" : "var(--text)",
+                    wordBreak: "break-word",
+                    boxShadow: mine
+                      ? "0 1px 6px rgba(99,102,241,0.25)"
+                      : "0 1px 4px rgba(0,0,0,0.15)",
+                  }}>
+                    {m.text}
+                  </div>
+
+                  {/* Timestamp */}
+                  <span style={{
+                    fontSize: "0.65rem",
+                    color: "var(--text-subtle)",
+                    marginTop: 3,
+                    marginLeft: mine ? 0 : 12,
+                    marginRight: mine ? 4 : 0,
+                  }}>
+                    {m.time}
+                  </span>
                 </div>
-                <span style={{ fontSize: "0.68rem", color: "var(--text-subtle)" }}>{m.time}</span>
               </div>
-            </div>
-          ))}
+            );
+          })}
           <div ref={bottomRef} />
         </div>
       </div>
+
+      {/* Input */}
       <div style={{ padding: "10px 14px", borderTop: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 8 }}>
         <input
           style={{
-            flex: 1, borderRadius: 12, padding: "10px 16px",
-            fontSize: "0.85rem", outline: "none",
+            flex: 1, borderRadius: 24, padding: "10px 18px",
+            fontSize: "0.875rem", outline: "none",
             backgroundColor: "var(--surface)", color: "var(--text)",
             border: "1px solid var(--border)",
           }}
@@ -552,9 +653,11 @@ function ChatPanel() {
         <button
           onClick={send}
           style={{
-            width: 36, height: 36, borderRadius: 10,
+            width: 38, height: 38, borderRadius: "50%",
             display: "flex", alignItems: "center", justifyContent: "center",
-            backgroundColor: "var(--accent)", color: "#fff", cursor: "pointer",
+            backgroundColor: msg.trim() ? "var(--accent)" : "var(--surface-2)",
+            color: "#fff", cursor: "pointer", border: "none",
+            transition: "background 0.2s",
           }}
         >
           <Icon.Send />
@@ -859,9 +962,16 @@ function TasksPanel() {
 }
 
 // ─── Files Panel ──────────────────────────────────────────────────────────────
-function FilesPanel({ onUpload, showToast }) {
+function FilesPanel({ socket, roomId, currentUser, showToast }) {
   const [files, setFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleFileShared = (file) => setFiles(prev => [file, ...prev]);
+    socket.on("file_shared", handleFileShared);
+    return () => socket.off("file_shared", handleFileShared);
+  }, [socket]);
 
   const handleUpload = (e) => {
     const file = e.target.files[0];
@@ -876,15 +986,16 @@ function FilesPanel({ onUpload, showToast }) {
       const newFile = {
         id: Date.now(),
         name: file.name,
-        author: "Mayur K S",
+        author: currentUser?.name || "Anonymous",
         url: fileUrl,
       };
 
       setFiles(prev => [newFile, ...prev]);
       setIsUploading(false);
       showToast("File shared", "success");
-      if (onUpload) {
-        onUpload(file.name);
+      
+      if (socket) {
+        socket.emit("file_shared", { roomId, file: newFile });
       }
     }, 1000);
   };
@@ -982,11 +1093,11 @@ function ActivityPanel({ items = [] }) {
             <div style={{
               width: 30, height: 30, borderRadius: "50%",
               display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-              backgroundColor: item.type === "file" ? "rgba(217, 119, 6, 0.15)" : "var(--accent-bg)", 
-              border: item.type === "file" ? "1px solid rgba(217, 119, 6, 0.25)" : "1px solid rgba(108,99,255,0.2)", 
-              color: item.type === "file" ? "#d97706" : "var(--accent)",
+              backgroundColor: item.type === "file" ? "rgba(217, 119, 6, 0.15)" : item.type === "join" ? "rgba(34,197,94,0.15)" : "var(--accent-bg)", 
+              border: item.type === "file" ? "1px solid rgba(217, 119, 6, 0.25)" : item.type === "join" ? "1px solid rgba(34,197,94,0.25)" : "1px solid rgba(108,99,255,0.2)", 
+              color: item.type === "file" ? "#d97706" : item.type === "join" ? "var(--success)" : "var(--accent)",
             }}>
-              {item.type === "file" ? <Icon.Paperclip /> : <Icon.Clock />}
+              {item.type === "file" ? <Icon.Paperclip /> : item.type === "join" ? <Icon.AddUser /> : <Icon.Clock />}
             </div>
             <span style={{ flex: 1, fontSize: "0.85rem", color: "var(--text)" }}>{item.label}</span>
             <span style={{ fontSize: "0.72rem", color: "var(--text-subtle)" }}>{formatAgo(item.ts)}</span>
@@ -998,7 +1109,9 @@ function ActivityPanel({ items = [] }) {
 }
 
 // ─── Members Panel ────────────────────────────────────────────────────────────
-function MembersPanel({ showToast }) {
+function MembersPanel({ members, currentUser, friendStatus, onAddFriend, onAcceptFriend, showToast }) {
+  const onlineCount = members.filter(m => m.isOnline).length;
+
   return (
     <div style={{ flex: 1, overflowY: "auto" }}>
       {/* Voice & Video */}
@@ -1025,33 +1138,67 @@ function MembersPanel({ showToast }) {
 
       <div style={{ padding: "12px 16px" }}>
         <p style={{ fontSize: "0.68rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-subtle)", marginBottom: 10 }}>
-          Study Group · 1 Online / 1 Total
+          Study Group · {onlineCount} Online / {members.length} Total
         </p>
-        <div style={{
-          display: "flex", alignItems: "center", gap: 12,
-          padding: "12px 14px", borderRadius: 12,
-          backgroundColor: "rgba(108,99,255,0.08)", border: "1px solid rgba(108,99,255,0.15)",
-        }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: "50%",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            backgroundColor: "var(--accent)", color: "#fff",
-            fontSize: "0.78rem", fontWeight: 700, flexShrink: 0,
-          }}>
-            MK
-          </div>
-          <div style={{ flex: 1 }}>
-            <p style={{ fontSize: "0.85rem", color: "var(--text)", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-              Mayur K S
-              <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>(you)</span>
-              <span style={{
-                fontSize: "0.68rem", padding: "1px 6px", borderRadius: 4,
-                border: "1px solid var(--border)", color: "var(--text-muted)",
-              }}>⚙ Admin</span>
-            </p>
-            <p style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>mayur2310574@ssn.edu.in</p>
-          </div>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "var(--success)" }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {members.map(member => {
+            const isMe = currentUser && Number(member.userId) === Number(currentUser.id);
+            const initials = (member.userName || "U").substring(0, 2).toUpperCase();
+            const status = friendStatus[member.userId];
+
+            return (
+              <div key={member.userId} style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "12px 14px", borderRadius: 12,
+                backgroundColor: isMe ? "rgba(108,99,255,0.08)" : "var(--surface)", 
+                border: isMe ? "1px solid rgba(108,99,255,0.15)" : "1px solid var(--border)",
+              }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: "50%",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  backgroundColor: "var(--accent)", color: "#fff",
+                  fontSize: "0.78rem", fontWeight: 700, flexShrink: 0,
+                }}>
+                  {initials}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: "0.85rem", color: "var(--text)", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                    {member.userName || `User ${member.userId}`}
+                    {isMe && <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>(you)</span>}
+                  </p>
+                  {member.email && (
+                    <p style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{member.email}</p>
+                  )}
+                </div>
+                
+                {/* Friend Request UI */}
+                {!isMe && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    {status === "accepted" ? (
+                      <span style={{ fontSize: "0.7rem", color: "var(--success)", padding: "4px 8px", backgroundColor: "rgba(34,197,94,0.1)", borderRadius: 6 }}>Friends</span>
+                    ) : status === "pending_sent" ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", backgroundColor: "rgba(217, 119, 6, 0.15)", border: "1px solid rgba(217,119,6,0.3)", borderRadius: 6, color: "#d97706", fontSize: "0.7rem" }}>
+                        <Icon.Clock /> Pending
+                      </div>
+                    ) : status === "pending_received" ? (
+                      <button onClick={() => onAcceptFriend(member.userId)} style={{ padding: "4px 10px", borderRadius: 6, backgroundColor: "var(--success)", color: "#fff", fontSize: "0.7rem", fontWeight: 600, border: "none", cursor: "pointer" }}>
+                        Accept
+                      </button>
+                    ) : (
+                      <button onClick={() => onAddFriend(member.userId)} style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", borderRadius: 6, backgroundColor: "var(--surface-2)", color: "var(--text)", border: "1px solid var(--border)", fontSize: "0.7rem", cursor: "pointer" }}>
+                        <Icon.AddUser />
+                      </button>
+                    )}
+                    <div style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: member.isOnline ? "var(--success)" : "var(--text-muted)" }} />
+                  </div>
+                )}
+                
+                {isMe && (
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: member.isOnline ? "var(--success)" : "var(--text-muted)" }} />
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -1384,6 +1531,146 @@ export default function App() {
   const { roomId } = useParams();
   const navigate = useNavigate();
 
+  // Socket, Chat, and Sync State
+  const [socket, setSocket] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [members, setMembers] = useState([]);
+  
+  // ── Activity log ─────────────────────────────────────────────────────────────
+  const [activityLog, setActivityLog] = useState([]);
+  const [lastSeenActivityCount, setLastSeenActivityCount] = useState(0);
+
+  const addActivity = (label, type = "info") => {
+    setActivityLog(prev => [{ id: Date.now(), label, ts: Date.now(), type }, ...prev]);
+  };
+
+  const _rawUser = JSON.parse(localStorage.getItem("user") || "null");
+  // Normalize: support both old format (userId only) and new format (id + userId)
+  const currentUser = _rawUser ? { ..._rawUser, id: _rawUser.id || _rawUser.userId } : null;
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const socketIo = io(API_BASE, {
+      transports: ["websocket", "polling"],
+      auth: { token }
+    });
+
+    socketIo.on("connect", () => {
+      console.log("[Socket] Connected:", socketIo.id);
+      socketIo.emit("join_room", roomId);
+    });
+
+    socketIo.on("connect_error", (err) => {
+      console.error("[Socket] Connection error:", err.message);
+    });
+
+    socketIo.on("room_state", ({ users }) => {
+      setMembers(users || []);
+    });
+
+    socketIo.on("user_joined", (data) => {
+      setMembers(prev => {
+        if (prev.find(m => m.userId == data.userId)) return prev;
+        return [...prev, { ...data, isOnline: true }];
+      });
+      addActivity(`${data.userName || data.userId} joined`, "join");
+    });
+
+    socketIo.on("user_left", (data) => {
+      setMembers(prev => prev.filter(m => m.userId != data.userId));
+      addActivity(`${data.userName || data.userId} left`, "leave");
+    });
+
+    socketIo.on("file_shared", (file) => {
+      addActivity(`${file.author} shared ${file.name}`, "file");
+    });
+
+    socketIo.on("chat_history", (history) => {
+      setMessages(history.map(m => ({
+        id: m.id,
+        userId: m.userId,  // keep raw userId for ChatPanel.isMine()
+        text: m.message,
+        time: new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        self: currentUser && Number(m.userId) === Number(currentUser.id),
+        userName: m.user?.name || `User ${m.userId}`
+      })));
+    });
+
+    socketIo.on("new_message", (m) => {
+      const isMine = currentUser && Number(m.userId) === Number(currentUser.id);
+      const confirmed = {
+        id: m.id || Date.now(),
+        userId: m.userId,   // needed for ChatPanel.isMine()
+        text: m.message,
+        time: new Date(m.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        self: isMine,
+        userName: m.userName || `User ${m.userId}`
+      };
+      setMessages(prev => {
+        // Replace last optimistic message from self, or just append for others
+        if (isMine) {
+          const idx = [...prev].reverse().findIndex(x => x.id && String(x.id).startsWith("optimistic-") && x.self);
+          if (idx !== -1) {
+            const realIdx = prev.length - 1 - idx;
+            const next = [...prev];
+            next[realIdx] = confirmed;
+            return next;
+          }
+        }
+        return [...prev, confirmed];
+      });
+    });
+
+    socketIo.on("friend_request_received", (data) => {
+      if (currentUser && String(data.targetUserId) === String(currentUser.id || currentUser.userId)) {
+        setFriendStatus(prev => ({ ...prev, [data.fromUserId]: "pending_received" }));
+      }
+    });
+
+    socketIo.on("friend_request_accepted", (data) => {
+      if (currentUser && String(data.fromUserId) === String(currentUser.id || currentUser.userId)) {
+        setFriendStatus(prev => ({ ...prev, [data.targetUserId]: "accepted" }));
+        showToast("Friend request accepted!", "success");
+      }
+    });
+
+    setSocket(socketIo);
+    return () => socketIo.disconnect();
+  }, [roomId, currentUser?.id, currentUser?.userId]);
+
+  const sendMessage = (msg) => {
+    if (!socket) {
+      console.warn("[Chat] Socket not ready, cannot send message");
+      return;
+    }
+    // Show message immediately in UI (optimistic update)
+    const optimistic = {
+      id: `optimistic-${Date.now()}`,
+      userId: currentUser?.id,   // needed for ChatPanel.isMine()
+      text: msg,
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      self: true,
+      userName: currentUser?.name || currentUser?.username || "You",
+    };
+    setMessages(prev => [...prev, optimistic]);
+    socket.emit("send_message", { roomId, message: msg });
+  };
+
+  const handleAddFriend = (targetUserId) => {
+    if (!socket) return;
+    socket.emit("send_friend_request", { targetUserId });
+    setFriendStatus(prev => ({ ...prev, [targetUserId]: "pending_sent" }));
+    showToast("Friend request sent!", "success");
+  };
+
+  const handleAcceptFriend = (targetUserId) => {
+    if (!socket) return;
+    socket.emit("accept_friend_request", { fromUserId: targetUserId });
+    setFriendStatus(prev => ({ ...prev, [targetUserId]: "accepted" }));
+  };
+
   // Load from sessionStorage or use defaults
   const [initialRoom] = useState(() => {
     const saved = sessionStorage.getItem("currentRoom");
@@ -1418,7 +1705,9 @@ export default function App() {
   const seconds = timeLeft % 60;
   const [focusMode, setFocusMode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [toast, setToast] = useState(null);
   const [showInvite, setShowInvite] = useState(false);
+  const [friendStatus, setFriendStatus] = useState({}); // { [userId]: "pending_sent" | "pending_received" | "accepted" }
   const intervalRef = useRef(null);
 
   // ── Settings state (lifted so timer chips and header react) ─────────────────
@@ -1427,7 +1716,6 @@ export default function App() {
   const [roomName, setRoomName] = useState(initialRoom.name || "try");
 
   // ── Toast Notifications ──────────────────────────────────────────────────────
-  const [toast, setToast] = useState(null);
   const showToast = (message, type = "success") => {
     setToast({ message, type, id: Date.now() });
     if (type !== "loading") {
@@ -1435,18 +1723,11 @@ export default function App() {
     }
   };
 
-  // ── Activity log ─────────────────────────────────────────────────────────────
-  const [activityLog, setActivityLog] = useState([]);
-  const [lastSeenActivityCount, setLastSeenActivityCount] = useState(0);
-
   useEffect(() => {
     if (tab === "activity") {
       setLastSeenActivityCount(activityLog.length);
     }
   }, [tab, activityLog.length]);
-  const addActivity = (label, type = "info") => {
-    setActivityLog(prev => [{ id: Date.now(), label, ts: Date.now(), type }, ...prev]);
-  };
 
   const isBreak = mode === "break";
 
@@ -1553,20 +1834,28 @@ export default function App() {
   const activityBadge = activityLog.length - lastSeenActivityCount;
 
   const tabContent = {
-    notes: <NotesPanel />,
-    chat: <ChatPanel />,
+    notes: <NotesPanel socket={socket} roomId={roomId} />,
+    chat: <ChatPanel messages={messages} sendMessage={sendMessage} currentUserId={currentUser?.id} />,
     tasks: <TasksPanel />,
     files: <FilesPanel 
+      socket={socket} roomId={roomId} currentUser={currentUser}
       showToast={showToast}
-      onUpload={(name) => addActivity(`Mayur K S shared ${name}`, "file")} 
     />,
     activity: <ActivityPanel items={activityLog} />,
-    members: <MembersPanel showToast={showToast} />,
+    members: <MembersPanel 
+      members={members} 
+      currentUser={currentUser} 
+      friendStatus={friendStatus}
+      onAddFriend={handleAddFriend}
+      onAcceptFriend={handleAcceptFriend}
+      showToast={showToast} 
+    />,
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", backgroundColor: "var(--bg)", color: "var(--text)", fontFamily: "var(--font-sans)" }}>
-      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+    <ErrorBoundary>
+      <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", backgroundColor: "var(--bg)", color: "var(--text)", fontFamily: "var(--font-sans)" }}>
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
 
       {toast && (
         <div style={{
@@ -1652,6 +1941,7 @@ export default function App() {
         />
       )}
       {showInvite && <InviteModal onClose={() => setShowInvite(false)} roomName={roomName} roomCode={roomId || "ffaaae"} />}
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }

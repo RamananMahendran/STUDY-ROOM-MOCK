@@ -249,9 +249,11 @@ export default function Login() {
 
       if (data.token) localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify({
-        username: data.username,
-        email: data.email,
+        id: data.id,
         userId: data.id,
+        username: data.username,
+        name: data.username,
+        email: data.email,
         streak: data.streak || 0,
       }));
       if (window.addNotification) window.addNotification('Logged in with Google successfully!');
@@ -389,9 +391,11 @@ export default function Login() {
                       localStorage.setItem("token", data.token);
                     }
                     localStorage.setItem("user", JSON.stringify({
+                      id: data.id,
+                      userId: data.id,
                       username: data.username,
+                      name: data.username,
                       email: data.email,
-                      userId: data.userId,
                       streak: data.streak || 10
                     }));
 

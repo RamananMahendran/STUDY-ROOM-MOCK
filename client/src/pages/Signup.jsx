@@ -148,9 +148,11 @@ export default function Signup() {
 
       if (data.token) localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify({
-        username: data.username,
-        email: data.email,
+        id: data.id,
         userId: data.id,
+        username: data.username,
+        name: data.username,
+        email: data.email,
         streak: data.streak || 0,
       }));
       if (window.addNotification) window.addNotification('Signed up with Google successfully!');
@@ -197,9 +199,11 @@ export default function Signup() {
     // Optional: Save the token to localStorage for authenticated requests later
      localStorage.setItem("token", data.token);
      localStorage.setItem("user", JSON.stringify({
-        username: data.username,
-        email: data.email,
+        id: data.id,
         userId: data.id,
+        username: data.username,
+        name: data.username,
+        email: data.email,
         streak: data.streak || 0
      }));
   })
