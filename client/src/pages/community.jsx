@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 // ── CUSTOM SVG ICONS ─────────────────────────────────────────────────────────
 const IcoUserCheck = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -61,24 +61,9 @@ const TABS = [
   { id: "invite", label: "Invite" }
 ];
 
-const studyLeaders = [
-  { name: "Gokul", score: 4, label: "pomodoros", bg: "#1f2937", initial: "" },
-  { name: "Mayur K S", score: 4, label: "pomodoros", bg: "#10b981", initial: "M", isYou: true },
-  { name: "MADHUMITHA S CSBS", score: 2, label: "pomodoros", bg: "#8b5cf6", initial: "M" },
-  { name: "SWETHA", score: 1, label: "pomodoros", bg: "#3b82f6", initial: "S" },
-  { name: "Chahat Kingar", score: 1, label: "pomodoros", bg: "#0ea5e9", initial: "C" },
-  { name: "Jainth", score: 1, label: "pomodoros", bg: "#4f46e5", initial: "J" },
-  { name: "RAMANAN MAHENDRAN", score: 1, label: "pomodoros", bg: "#2563eb", initial: "RM" },
-];
 
-const codingLeaders = [
-  { name: "H Vikash", score: 9, label: "solved", bg: "#64748b", initial: "H" },
-  { name: "SIVASABARI GANESAN A 230701321", score: 7, label: "solved", bg: "#ea580c", initial: "S" },
-  { name: "dhanusri", score: 4, label: "solved", bg: "#10b981", initial: "d" },
-  { name: "Naveetha", score: 1, label: "solved", bg: "#22c55e", initial: "N" },
-  { name: "SUBHASH K 250701748", score: 1, label: "solved", bg: "#059669", initial: "S" },
-  { name: "Logitha Logitha", score: 1, label: "solved", bg: "#475569", initial: "L" },
-];
+
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
 export default function Community() {
   const [activeTab, setActiveTab] = useState("friends");
@@ -88,18 +73,85 @@ export default function Community() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [toast, setToast] = useState(null);
 
-  // Mock global state (replace with real Auth/API context later)
-  const currentUser = { email: "mayur2310574@ssn.edu.in", name: "Mayur" };
-  const pendingRequests = [
-    { email: "gksmh20@gmail.com", name: "Mayur K S" }
-  ];
+  const [friends, setFriends] = useState([]);
+  const [incomingRequests, setIncomingRequests] = useState([]);
+  const [outgoingRequests, setOutgoingRequests] = useState([]);
+  const [studyLeadersList, setStudyLeadersList] = useState([]);
+  const [codingLeadersList, setCodingLeadersList] = useState([]);
 
   const showToast = (message, type) => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleInvite = (e) => {
+  const fetchFriendships = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const res = await fetch(`${API}/api/friendships`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFriends(data.data || []);
+      }
+    } catch (err) {
+      console.error("Error fetching friendships:", err);
+    }
+  };
+
+  const fetchRequests = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const res = await fetch(`${API}/api/friendships/requests`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIncomingRequests(data.incoming || []);
+        setOutgoingRequests(data.outgoing || []);
+      }
+    } catch (err) {
+      console.error("Error fetching requests:", err);
+    }
+  };
+
+  const fetchLeaderboards = async () => {
+    const token = localStorage.getItem("token");
+    const headers = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    try {
+      const [studyRes, codingRes] = await Promise.all([
+        fetch(`${API}/api/leaderboards/study`, { headers }),
+        fetch(`${API}/api/leaderboards/coding`, { headers })
+      ]);
+      const studyData = await studyRes.json();
+      const codingData = await codingRes.json();
+      if (studyData.success) {
+        setStudyLeadersList(studyData.data || []);
+      }
+      if (codingData.success) {
+        setCodingLeadersList(codingData.data || []);
+      }
+    } catch (err) {
+      console.error("Error fetching leaderboards:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchFriendships();
+    fetchRequests();
+    fetchLeaderboards();
+  }, []);
+
+  const handleInvite = async (e) => {
     if (e) e.preventDefault();
     const email = inviteEmail.trim().toLowerCase();
     
@@ -108,19 +160,89 @@ export default function Community() {
       return;
     }
 
-    const existingPending = pendingRequests.find(req => req.email === email);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      showToast("You must be logged in to send invites.", "error");
+      return;
+    }
 
-    if (email === currentUser.email) {
-      alert("You can't invite yourself.");
-      showToast("You can't invite yourself.", "error");
-    } else if (existingPending) {
-      alert(`A friend request to ${existingPending.name} is already pending.`);
-      showToast(`A friend request to ${existingPending.name} is already pending.`, "error");
-    } else {
-      alert("Friend request sent successfully!");
-      showToast("Friend request sent successfully!", "success");
+    try {
+      const res = await fetch(`${API}/api/friendships/invite`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        showToast(data.error || "Failed to send invite.", "error");
+        return;
+      }
+
+      showToast(data.message || "Invite sent successfully!", "success");
       setInviteEmail("");
       setIsInviting(false);
+      fetchFriendships();
+      fetchRequests();
+    } catch (err) {
+      console.error(err);
+      showToast("An error occurred. Please try again.", "error");
+    }
+  };
+
+  const handleAccept = async (friendshipId) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const res = await fetch(`${API}/api/friendships/requests/${friendshipId}/accept`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(data.message || "Friend request accepted!", "success");
+        fetchFriendships();
+        fetchRequests();
+        fetchLeaderboards();
+      } else {
+        showToast(data.error || "Failed to accept request.", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("An error occurred.", "error");
+    }
+  };
+
+  const handleDeclineOrCancel = async (friendshipId, actionType) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const res = await fetch(`${API}/api/friendships/requests/${friendshipId}/decline`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        let msg = "Friend request declined.";
+        if (actionType === "cancel") msg = "Friend request cancelled.";
+        if (actionType === "unfriend") msg = "Friend removed.";
+        showToast(data.message || msg, "success");
+        fetchFriendships();
+        fetchRequests();
+        fetchLeaderboards();
+      } else {
+        showToast(data.error || "Failed to process request.", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("An error occurred.", "error");
     }
   };
 
@@ -183,7 +305,7 @@ export default function Community() {
               })}
             </div>
 
-            {/* TAB CONTENT CONDITIONAL SWITCH: FRIENDS EMPTY STATE DISPLAY */}
+            {/* TAB CONTENT CONDITIONAL SWITCH: FRIENDS LIST OR EMPTY STATE DISPLAY */}
             {activeTab === "friends" && (
               <div className="flex flex-col items-center justify-center w-full">
                 
@@ -213,27 +335,69 @@ export default function Community() {
                   </div>
                 )}
 
-                <div className="flex flex-col items-center justify-center text-center py-8 px-6">
-                  <div className="mb-4 animate-pulse" style={{ color: "var(--text-muted)" }}>
-                    <IcoUsersEmpty />
-                  </div>
-                  
-                  <h3 className="text-[14px] font-bold mb-2 tracking-tight" style={{ color: "var(--text)" }}>
-                    Your friends list is empty
-                  </h3>
-                  <p className="text-[12px] leading-relaxed max-w-[340px] mb-6 font-normal" style={{ color: "var(--text-muted)" }}>
-                    Invite someone by email — you get a free study buddy, they get a personal invite with your name on it.
-                  </p>
+                {friends.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center text-center py-8 px-6">
+                    <div className="mb-4 animate-pulse" style={{ color: "var(--text-muted)" }}>
+                      <IcoUsersEmpty />
+                    </div>
+                    
+                    <h3 className="text-[14px] font-bold mb-2 tracking-tight" style={{ color: "var(--text)" }}>
+                      Your friends list is empty
+                    </h3>
+                    <p className="text-[12px] leading-relaxed max-w-[340px] mb-6 font-normal" style={{ color: "var(--text-muted)" }}>
+                      Invite someone by email — you get a free study buddy, they get a personal invite with your name on it.
+                    </p>
 
-                  {!isInviting && (
-                    <button 
-                      onClick={() => setIsInviting(true)}
-                      className="px-4 py-2 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] text-white text-[11px] font-bold shadow-lg shadow-indigo-600/10 transition-colors cursor-pointer border-none"
-                    >
-                      Invite a friend
-                    </button>
-                  )}
-                </div>
+                    {!isInviting && (
+                      <button 
+                        onClick={() => setIsInviting(true)}
+                        className="px-4 py-2 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] text-white text-[11px] font-bold shadow-lg shadow-indigo-600/10 transition-colors cursor-pointer border-none"
+                      >
+                        Invite a friend
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2.5 w-full">
+                    {friends.map((friend) => {
+                      const bgColors = ['#6366f1', '#10b981', '#ec4899', '#f59e0b', '#8b5cf6', '#3b82f6'];
+                      const bg = bgColors[friend.id % bgColors.length];
+                      const initial = friend.name ? friend.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : '?';
+                      return (
+                        <div key={friend.id} className="flex items-center justify-between p-3.5 rounded-xl w-full" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-[12px] flex-shrink-0 overflow-hidden" style={{ backgroundColor: bg }}>
+                              {initial}
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[13px] font-bold text-[var(--text)] truncate">{friend.name}</span>
+                                {friend.streakCount > 0 && (
+                                  <span className="text-[10px] font-bold flex items-center gap-0.5 text-orange-500 flex-shrink-0">
+                                    <IcoFire /> {friend.streakCount}
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-[var(--text-muted)] truncate">{friend.email}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="text-right hidden sm:flex flex-col">
+                              <span className="text-[11px] font-bold text-[var(--text)]">{friend.totalStudyHours || 0}h study</span>
+                              <span className="text-[9px] text-[var(--text-muted)]">{friend.problemsSolved || 0} solved</span>
+                            </div>
+                            <button
+                              onClick={() => handleDeclineOrCancel(friend.friendshipId, "unfriend")}
+                              className="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 text-[10px] font-bold border-none cursor-pointer transition-colors"
+                            >
+                              Unfriend
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 
@@ -242,20 +406,86 @@ export default function Community() {
               <div className="flex flex-col gap-8 w-full">
                 <div className="flex flex-col gap-3">
                   <h4 className="text-[10px] font-bold tracking-[0.1em] text-[var(--text-muted)] uppercase">Incoming</h4>
-                  <div className="flex items-center justify-center py-12 rounded-xl" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
-                    <div className="flex items-center gap-2 text-[var(--text-muted)] text-[12px] font-medium">
-                      <IcoUserCheck /> No pending requests
+                  {incomingRequests.length === 0 ? (
+                    <div className="flex items-center justify-center py-12 rounded-xl" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
+                      <div className="flex items-center gap-2 text-[var(--text-muted)] text-[12px] font-medium">
+                        <IcoUserCheck /> No pending requests
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      {incomingRequests.map((req) => {
+                        const bgColors = ['#6366f1', '#10b981', '#ec4899', '#f59e0b', '#8b5cf6', '#3b82f6'];
+                        const bg = bgColors[req.id % bgColors.length];
+                        const initial = req.name ? req.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : '?';
+                        return (
+                          <div key={req.friendshipId} className="flex items-center justify-between p-3.5 rounded-xl w-full" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-[12px] flex-shrink-0 overflow-hidden" style={{ backgroundColor: bg }}>
+                                {initial}
+                              </div>
+                              <div className="flex flex-col min-w-0">
+                                <span className="text-[13px] font-bold text-[var(--text)] truncate">{req.name}</span>
+                                <span className="text-[10px] text-[var(--text-muted)] truncate">{req.email}</span>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleAccept(req.friendshipId)}
+                                className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold border-none cursor-pointer transition-colors"
+                              >
+                                Accept
+                              </button>
+                              <button
+                                onClick={() => handleDeclineOrCancel(req.friendshipId, "decline")}
+                                className="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 text-[10px] font-bold border-none cursor-pointer transition-colors"
+                              >
+                                Decline
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex flex-col gap-3">
                   <h4 className="text-[10px] font-bold tracking-[0.1em] text-[var(--text-muted)] uppercase">Sent</h4>
-                  <div className="flex items-center justify-center py-12 rounded-xl" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
-                    <div className="flex items-center gap-2 text-[var(--text-muted)] text-[12px] font-medium">
-                      No outgoing requests
+                  {outgoingRequests.length === 0 ? (
+                    <div className="flex items-center justify-center py-12 rounded-xl" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
+                      <div className="flex items-center gap-2 text-[var(--text-muted)] text-[12px] font-medium">
+                        No outgoing requests
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      {outgoingRequests.map((req) => {
+                        const bgColors = ['#6366f1', '#10b981', '#ec4899', '#f59e0b', '#8b5cf6', '#3b82f6'];
+                        const bg = bgColors[req.id % bgColors.length];
+                        const initial = req.name ? req.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : '?';
+                        return (
+                          <div key={req.friendshipId} className="flex items-center justify-between p-3.5 rounded-xl w-full" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-[12px] flex-shrink-0 overflow-hidden" style={{ backgroundColor: bg }}>
+                                {initial}
+                              </div>
+                              <div className="flex flex-col min-w-0">
+                                <span className="text-[13px] font-bold text-[var(--text)] truncate">{req.name}</span>
+                                <span className="text-[10px] text-[var(--text-muted)] truncate">{req.email}</span>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => handleDeclineOrCancel(req.friendshipId, "cancel")}
+                              className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[var(--text-muted)] text-[10px] font-bold border-none cursor-pointer transition-colors"
+                            >
+                              Cancel Request
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -292,7 +522,7 @@ export default function Community() {
                 </div>
                 
                 <div className="flex flex-col gap-2">
-                  {(leaderboardTab === "study" ? studyLeaders : codingLeaders).map((user, idx) => (
+                  {(leaderboardTab === "study" ? studyLeadersList : codingLeadersList).map((user, idx) => (
                     <div key={idx} className="flex items-center justify-between p-3.5 rounded-xl" style={{ backgroundColor: "var(--surface)", border: user.isYou ? "1px solid rgba(251, 191, 36, 0.4)" : "1px solid var(--border)" }}>
                         <div className="flex items-center gap-3">
                           <div className="w-5 flex justify-center text-[12px] font-bold text-[var(--text-muted)]">

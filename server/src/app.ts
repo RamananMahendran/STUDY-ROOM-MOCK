@@ -11,6 +11,8 @@ import contestRoutes from './modules/contests/contestRoutes.js';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 import studyPlanRoutes from './modules/studyPlan/studyPlanRoutes.js';
 import sessionRoutes from './modules/sessions/sessionRoutes.js';
+import friendshipRoutes from './modules/friendship/friendshipRoutes.js';
+import leaderboardRoutes from './modules/leaderboard/leaderboardRoutes.js';
 
 const app: Application = express();
 
@@ -40,6 +42,8 @@ app.use('/api/rooms', roomRoutes);           // Real-time Study Rooms (BE2)
 app.use('/api/contests', contestRoutes);      // Competitive Contests (BE3 Day 3 addition)
 app.use('/api/study-plans', studyPlanRoutes);
 app.use('/api/sessions', sessionRoutes);
+app.use('/api/friendships', friendshipRoutes);
+app.use('/api/leaderboards', leaderboardRoutes);
 
 // 404 Handler
 app.use(notFound);
