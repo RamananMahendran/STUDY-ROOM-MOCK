@@ -48,7 +48,7 @@ const pomoBtnStyle = {
   lineHeight: 1,
 };
 
-function CreateRoomModal({ onClose, onNavigate }) {
+export function CreateRoomModal({ onClose, onNavigate }) {
   const [roomName, setRoomName]   = useState("");
   const [goal, setGoal]           = useState("");
   const [selectedIcon, setIcon]   = useState(0);

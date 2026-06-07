@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
+import { CreateRoomModal } from "./components/TopBar";
 
 // Error Boundary to catch render crashes
 class ErrorBoundary extends React.Component {
@@ -1727,6 +1728,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [toast, setToast] = useState(null);
   const [showInvite, setShowInvite] = useState(false);
+  const [showCreateRoom, setShowCreateRoom] = useState(false);
   const [friendStatus, setFriendStatus] = useState({}); // { [userId]: "pending_sent" | "pending_received" | "accepted" }
   const intervalRef = useRef(null);
 
@@ -1734,6 +1736,25 @@ export default function App() {
   const [focusMins, setFocusMins] = useState(initialRoom.focusMin || 90);
   const [breakMins, setBreakMins] = useState(initialRoom.breakMin || 15);
   const [roomName, setRoomName] = useState(initialRoom.name || "try");
+
+  // Check if room is expired based on createdAt and expires duration
+  const [isRoomExpired, setIsRoomExpired] = useState(false);
+  
+  useEffect(() => {
+    if (!initialRoom || !initialRoom.createdAt || !initialRoom.expires) return;
+    const expiresHours = parseInt(initialRoom.expires);
+    if (isNaN(expiresHours)) return;
+    
+    const checkExpiry = () => {
+      const expiresMs = expiresHours * 60 * 60 * 1000;
+      const endMs = initialRoom.createdAt + expiresMs;
+      setIsRoomExpired(endMs - Date.now() <= 0);
+    };
+    
+    checkExpiry();
+    const intervalId = setInterval(checkExpiry, 60000); // Check every minute
+    return () => clearInterval(intervalId);
+  }, [initialRoom]);
 
   // ── Toast Notifications ──────────────────────────────────────────────────────
   const showToast = (message, type = "success") => {
@@ -1918,7 +1939,60 @@ export default function App() {
           focusMins={focusMins} breakMins={breakMins}
         />
 
-        <main style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", backgroundColor: "var(--bg)" }}>
+        <main style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", backgroundColor: "var(--bg)", position: "relative" }}>
+          {isRoomExpired && (
+            <div style={{
+              position: "absolute", inset: 0, zIndex: 50,
+              backgroundColor: "rgba(10, 12, 16, 0.8)", backdropFilter: "blur(4px)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: 20
+            }}>
+              <div style={{
+                background: "#12151c", border: "1px solid #1e2433",
+                borderRadius: 16, padding: "32px", width: "100%", maxWidth: 360,
+                display: "flex", flexDirection: "column", alignItems: "center",
+                textAlign: "center", boxShadow: "0 20px 40px rgba(0,0,0,0.5)"
+              }}>
+                <div style={{
+                  width: 48, height: 48, borderRadius: "50%",
+                  background: "rgba(239, 68, 68, 0.1)", color: "#ef4444",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  marginBottom: 20
+                }}>
+                  <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+                <h2 style={{ margin: "0 0 12px 0", fontSize: 18, fontWeight: 700, color: "#f1f5f9" }}>This room has expired</h2>
+                <p style={{ margin: "0 0 24px 0", fontSize: 13, color: "#94a3b8", lineHeight: 1.5 }}>Rooms expire after their set duration. Start a new room to continue with your group.</p>
+                <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 12 }}>
+                  <button
+                    onClick={() => setShowCreateRoom(true)}
+                    style={{
+                      width: "100%", padding: "12px", borderRadius: 10, border: "none",
+                      background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                      color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                    Create New Room
+                  </button>
+                  <button
+                    onClick={() => navigate('/home')}
+                    style={{
+                      width: "100%", padding: "12px", borderRadius: 10, border: "none",
+                      background: "#1a1f2e", color: "#cbd5e1", fontSize: 14, fontWeight: 600,
+                      cursor: "pointer", transition: "background 0.2s"
+                    }}
+                    onMouseEnter={(e) => e.target.style.background = "#242a3e"}
+                    onMouseLeave={(e) => e.target.style.background = "#1a1f2e"}
+                  >
+                    Back to Home
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <TabBar active={tab} setActive={setTab} badge={activityBadge} />
           <div style={{ display: tab === "notes" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "hidden" }}>
             {tabContent.notes}
@@ -1961,6 +2035,7 @@ export default function App() {
         />
       )}
       {showInvite && <InviteModal onClose={() => setShowInvite(false)} roomName={roomName} roomCode={roomId || "ffaaae"} />}
+      {showCreateRoom && <CreateRoomModal onClose={() => setShowCreateRoom(false)} onNavigate={navigate} />}
       </div>
     </ErrorBoundary>
   );
