@@ -185,6 +185,22 @@ class StudyPlanModel {
     });
   }
 
+  // Unenroll a user from a plan
+  async unenrollPlan(userId: number, planId: string) {
+    try {
+      return await prisma.userStudyPlanProgress.delete({
+        where: {
+          userId_planId: {
+            userId,
+            planId,
+          },
+        },
+      });
+    } catch (err: any) {
+      return null;
+    }
+  }
+
   // Get plan's total days
   async getPlanDayCount(planId: string): Promise<number> {
     const plan = await prisma.studyPlan.findUnique({

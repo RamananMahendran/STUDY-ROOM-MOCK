@@ -205,6 +205,39 @@ export const completeWeeklyDay = async (req: Request, res: Response): Promise<an
   }
 };
 
+// POST /api/study-plans/:slug/unenroll - Unenroll a study plan
+export const unenrollPlan = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const slug = getParamString(req.params.slug);
+    const userId = (req as any).user?.id || 1;
+
+    if (!slug) {
+      return res.status(400).json({
+        success: false,
+        error: 'Plan slug is required',
+      });
+    }
+
+    const plan = await studyPlanModel.getPlanBySlug(slug);
+    if (!plan) {
+      return res.status(404).json({
+        success: false,
+        error: 'Study plan not found',
+      });
+    }
+
+    await studyPlanModel.unenrollPlan(userId, plan.id);
+
+    return res.json({
+      success: true,
+      message: 'Unenrolled from study plan successfully!',
+    });
+  } catch (error: any) {
+    console.error('Error unenrolling from study plan:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
 // Admin: Seed predefined plans
 export const seedPlans = async (req: Request, res: Response): Promise<any> => {
   try {

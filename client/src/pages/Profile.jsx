@@ -318,33 +318,12 @@ function ActivityHeatmap({ sessions }) {
 }
 
 // ── Coding Tab ────────────────────────────────────────────────────────────────
-function CodingTab({ onSolvedCount }) {
+function CodingTab({ submissions = [], loading = false, error = null }) {
   const navigate = useNavigate();
-  const [submissions, setSubmissions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [statusFilter, setStatusFilter] = useState("All");
   const [diffFilter, setDiffFilter] = useState("All");
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch(`${API}/api/submissions/user/history`, { headers: authHeader() });
-        if (!res.ok) throw new Error("Failed to load submission history.");
-        const data = await res.json();
-        const subs = data.data || data;
-        setSubmissions(subs);
-        const solved = subs.filter(s => s.status === "ACCEPTED" || s.status === "SUCCESS").length;
-        if (onSolvedCount) onSolvedCount(solved);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
-
-  const isAccepted = s => s.status === "ACCEPTED" || s.status === "SUCCESS";
+  const isAccepted = s => s.status === "ACCEPTED" || s.status === "SUCCESS" || s.status === "accepted";
   const solved = submissions.filter(isAccepted).length;
   const acceptRate = submissions.length > 0 ? Math.round((solved / submissions.length) * 100) + "%" : "—";
 
@@ -543,7 +522,7 @@ function StudyTab({ sessions }) {
 }
 
 // ── Settings Tab ──────────────────────────────────────────────────────────────
-function SettingsTab({ username, email, onLogout, navigate }) {
+function SettingsTab({ username, email, role, onLogout, navigate }) {
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [passwordSet, setPasswordSet] = useState(false);
   const [newPassword, setNewPassword] = useState("");
@@ -600,14 +579,7 @@ function SettingsTab({ username, email, onLogout, navigate }) {
     }
   };
 
-  // Fetch subscription status
-  const [billing, setBilling] = useState(null);
-  useEffect(() => {
-    fetch(`${API}/api/billing/status`, { headers: authHeader() })
-      .then(r => r.json())
-      .then(d => setBilling(d))
-      .catch(() => { });
-  }, []);
+
 
   const cardStyle = { backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "20px 24px" };
   const sectionLabel = { fontSize: 11, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "1px", marginBottom: 20, textTransform: "uppercase" };
@@ -711,11 +683,11 @@ function SettingsTab({ username, email, onLogout, navigate }) {
         <div style={sectionLabel}>Billing</div>
         <div className="billing-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            {billing ? (
+            {role === "pro" ? (
               <>
-                <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>{billing.planName || "Free tier"}</div>
-                {billing.status && <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 4 }}>Status: {billing.status}</div>}
-                {billing.priceLabel && <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>{billing.priceLabel}</div>}
+                <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>Coding Pro plan</div>
+                <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 4 }}>Status: Active</div>
+                <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>₹299 / month</div>
               </>
             ) : (
               <>
@@ -724,9 +696,11 @@ function SettingsTab({ username, email, onLogout, navigate }) {
               </>
             )}
           </div>
-          <button onClick={() => navigate("/pricing")} style={{ padding: "10px 20px", borderRadius: 10, background: "linear-gradient(135deg, rgb(99,102,241), rgb(139,92,246))", color: "white", fontSize: 13, fontWeight: 700, border: "none", cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 0 15px rgba(139,92,246,0.3)" }}>
-            See Pro pricing
-          </button>
+          {role !== "pro" && (
+            <button onClick={() => navigate("/pricing")} style={{ padding: "10px 20px", borderRadius: 10, background: "linear-gradient(135deg, rgb(99,102,241), rgb(139,92,246))", color: "white", fontSize: 13, fontWeight: 700, border: "none", cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 0 15px rgba(139,92,246,0.3)" }}>
+              See Pro pricing
+            </button>
+          )}
         </div>
       </div>
 
@@ -757,10 +731,13 @@ export default function Profile() {
   const [email, setEmail] = useState("");
   const [streak, setStreak] = useState(0);
   const [solvedCount, setSolvedCount] = useState(0);
+  const [role, setRole] = useState("free");
 
-  // Study sessions (used by Overview, Study, ActivityHeatmap, StudyHoursChart)
+  // Study sessions & Submissions
   const [sessions, setSessions] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
+  const [submissions, setSubmissions] = useState([]);
+  const [loadingSubmissions, setLoadingSubmissions] = useState(true);
 
   // ── Load user + profile data ──────────────────────────────────────────────
   useEffect(() => {
@@ -775,6 +752,7 @@ export default function Profile() {
       setUsername(userObj.username || userObj.name || "");
       setEmail(userObj.email || "");
       if (userObj.streak != null) setStreak(userObj.streak);
+      if (userObj.role) setRole(userObj.role);
     } catch (_) { }
 
     // Fetch fresh profile
@@ -785,10 +763,12 @@ export default function Profile() {
         setUsername(data.username || data.name || "");
         setEmail(data.email || "");
         if (data.streak != null) setStreak(data.streak);
-        // Persist updated streak
+        if (data.role) setRole(data.role);
+        // Persist updated streak and role
         try {
           const u = JSON.parse(localStorage.getItem("user") || "{}");
           u.streak = data.streak;
+          u.role = data.role;
           localStorage.setItem("user", JSON.stringify(u));
         } catch (_) { }
       })
@@ -808,6 +788,26 @@ export default function Profile() {
         console.error("Failed to load sessions:", err);
       } finally {
         setLoadingSessions(false);
+      }
+    })();
+  }, []);
+
+  // ── Load submissions history ──────────────────────────────────────────────
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${API}/api/submissions/user/history`, { headers: authHeader() });
+        if (res.ok) {
+          const data = await res.json();
+          const subs = data.data || data || [];
+          setSubmissions(subs);
+          const solved = subs.filter(s => s.status === "ACCEPTED" || s.status === "SUCCESS" || s.status === "accepted").length;
+          setSolvedCount(solved);
+        }
+      } catch (err) {
+        console.error("Failed to load submissions:", err);
+      } finally {
+        setLoadingSubmissions(false);
       }
     })();
   }, []);
@@ -927,10 +927,10 @@ export default function Profile() {
             )}
 
             {/* CODING TAB */}
-            {activeTab === "Coding" && <CodingTab onSolvedCount={setSolvedCount} />}
+            {activeTab === "Coding" && <CodingTab submissions={submissions} loading={loadingSubmissions} />}
 
             {/* SETTINGS TAB */}
-            {activeTab === "Settings" && <SettingsTab username={username} email={email} onLogout={handleLogout} navigate={navigate} />}
+            {activeTab === "Settings" && <SettingsTab username={username} email={email} role={role} onLogout={handleLogout} navigate={navigate} />}
 
           </div>
         </div>

@@ -61,6 +61,7 @@ model User {
   ownedRooms      StudyRoom[]  @relation("RoomOwner")
   roomMembers     RoomMember[]
   chatMessages    ChatMessage[]
+  studySessions   StudySession[]
 
   // BE3: Problems & Submissions Relations
   submissions     Submission[]
@@ -568,4 +569,17 @@ model AuditLog {
   createdAt  DateTime @default(now()) @db.Timestamptz @map("created_at")
 
   @@map("audit_logs")
+}
+
+model StudySession {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          Int      @map("user_id")
+  roomId          String?  @map("room_id")
+  roomName        String   @map("room_name") @default("Study Room")
+  durationMinutes Int      @map("duration_minutes")
+  createdAt       DateTime @default(now()) @db.Timestamptz @map("created_at")
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("study_sessions")
 }

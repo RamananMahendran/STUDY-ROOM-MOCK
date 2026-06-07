@@ -470,3 +470,19 @@ CREATE TRIGGER trg_pair_sessions_updated
 CREATE TRIGGER trg_mock_interviews_updated
   BEFORE UPDATE ON mock_interviews
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ============================================================
+-- BE2 Addition — Study Sessions (For Heatmap & Focus logs)
+-- ============================================================
+
+CREATE TABLE study_sessions (
+  id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         INTEGER       NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  room_id         TEXT,
+  room_name       TEXT          NOT NULL DEFAULT 'Study Room',
+  duration_minutes INTEGER       NOT NULL,
+  created_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_study_sessions_user ON study_sessions(user_id);
+

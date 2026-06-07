@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 // ── CUSTOM INLINE SVG ICONS ──────────────────────────────────────────────────
@@ -52,84 +52,252 @@ const IcoTrash = () => (
   </svg>
 );
 
-// ── SYNCED DAY BY DAY SPRINT DATA STRUCTURE ──────────────────────────────────
-const SPRINT_DAYS = [
-  {
-    dayNumber: 1,
-    title: "Array fundamentals",
-    progress: "0 / 2",
-    problems: [
-      { id: "two-sum", name: "Two Sum", difficulty: "Easy" },
-      { id: "find-max", name: "Find Maximum", difficulty: "Easy" }
-    ]
-  },
-  {
-    dayNumber: 2,
-    title: "Array fundamentals II",
-    progress: "0 / 2",
-    problems: [
-      { id: "array-sum", name: "Array Sum", difficulty: "Easy" },
-      { id: "missing-num", name: "Missing Number", difficulty: "Easy" }
-    ]
-  },
-  {
-    dayNumber: 3,
-    title: "String basics",
-    progress: "0 / 2",
-    problems: [
-      { id: "rev-string", name: "Reverse a String", difficulty: "Easy" },
-      { id: "FizzBuzz", name: "FizzBuzz", difficulty: "Easy" }
-    ]
-  },
-  {
-    dayNumber: 4,
-    title: "Two pointers technique",
-    progress: "0 / 2",
-    problems: [
-      { id: "two-pointer", name: "Two Sum II", difficulty: "Medium" },
-      { id: "palindrome", name: "Valid Palindrome", difficulty: "Medium" }
-    ]
-  },
-  {
-    dayNumber: 5,
-    title: "Sliding window technique",
-    progress: "0 / 2",
-    problems: [
-      { id: "max-subarray", name: "Maximum Subarray", difficulty: "Medium" },
-      { id: "longest-substring", name: "Longest Substring Without Repeating Characters", difficulty: "Medium" }
-    ]
-  }
-];
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+
+function getToken() {
+  return localStorage.getItem('token') || sessionStorage.getItem('token');
+}
+
+function authHeaders() {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+const getDayTitle = (dayNumber) => {
+  const titles = {
+    1: "Array fundamentals",
+    2: "Array fundamentals II",
+    3: "String basics",
+    4: "Two pointers technique",
+    5: "Sliding window technique",
+    6: "Binary search basic",
+    7: "Binary search intermediate",
+    8: "Recursion primer",
+    9: "Backtracking algorithms",
+    10: "Sorting patterns",
+    11: "Sorting algorithms",
+    12: "Linked list intro",
+    13: "Linked list loops",
+    14: "Stack operations",
+    15: "Queue operations",
+    16: "Tree traversal",
+    17: "Binary search tree",
+    18: "Graph representation",
+    19: "Graph search (BFS/DFS)",
+    20: "Dynamic programming intro",
+    21: "DP knapsack patterns",
+    22: "Greedy algorithms",
+    23: "Bit manipulation",
+    24: "Hash map optimizations",
+    25: "Trie structure",
+    26: "Heap operations",
+    27: "Sliding window medium",
+    28: "Two pointers medium",
+    29: "Mock interview sprint",
+    30: "Final verification day"
+  };
+  return titles[dayNumber] || `Day ${dayNumber} practice challenges`;
+};
 
 export default function PlacementSprint30() {
   const navigate = useNavigate();
-  const [enrolledDate, setEnrolledDate] = useState(() => {
-    return localStorage.getItem("placementSprintEnrollDate") || null;
-  });
+  const [plan, setPlan] = useState(null);
+  const [submissions, setSubmissions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [userRole, setUserRole] = useState("free");
 
-  const isEnrolled = !!enrolledDate;
+  const slug = "placement-sprint-30";
 
-  let currentDayNumber = 1;
-  if (enrolledDate) {
-    const start = new Date(enrolledDate);
-    start.setHours(0, 0, 0, 0);
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    const diff = now.getTime() - start.getTime();
-    currentDayNumber = Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
-    if (currentDayNumber > 30) currentDayNumber = 30;
+  const fetchData = async () => {
+    try {
+      const headers = authHeaders();
+      const planRes = await fetch(`${API}/api/study-plans/${slug}`, { headers });
+      const planData = await planRes.json();
+      if (planData.success) {
+        setPlan(planData.data);
+      } else {
+        throw new Error(planData.error || "Failed to load study plan");
+      }
+
+      if (getToken()) {
+        const subRes = await fetch(`${API}/api/submissions/user/history`, { headers });
+        const subData = await subRes.json();
+        if (subData.success) {
+          setSubmissions(subData.data);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const userObj = JSON.parse(storedUser);
+        if (userObj.role) {
+          setUserRole(userObj.role);
+        }
+      } catch (e) {}
+    }
+    fetchData();
+  }, []);
+
+  const solvedProblemIds = new Set(
+    submissions
+      .filter(s => s.status === 'accepted' || s.status === 'SUCCESS' || s.status === 'ACCEPTED')
+      .map(s => s.problemId)
+  );
+
+  const isEnrolled = plan && !!plan.userProgress;
+  const currentDayNumber = plan?.userProgress?.currentDay || 1;
+
+  const days = [];
+  let totalProblems = 0;
+  let solvedCount = 0;
+
+  if (plan) {
+    totalProblems = plan.planProblems.length;
+    solvedCount = plan.planProblems.filter(pp => solvedProblemIds.has(pp.problemId)).length;
+
+    const dayProblemsMap = {};
+    plan.planProblems.forEach(pp => {
+      if (!dayProblemsMap[pp.dayNumber]) {
+        dayProblemsMap[pp.dayNumber] = [];
+      }
+      dayProblemsMap[pp.dayNumber].push(pp);
+    });
+
+    for (let d = 1; d <= plan.durationDays; d++) {
+      const dayProblems = dayProblemsMap[d] || [];
+      const daySolved = dayProblems.filter(pp => solvedProblemIds.has(pp.problemId)).length;
+      const dayTotal = dayProblems.length;
+      const isDaySolved = dayTotal > 0 && daySolved === dayTotal;
+      const isDayMarkedCompleted = plan.userProgress?.completedDays?.includes(d) || false;
+
+      days.push({
+        dayNumber: d,
+        title: getDayTitle(d),
+        progress: `${daySolved} / ${dayTotal}`,
+        problems: dayProblems.map(pp => ({
+          dbId: pp.problem.id,
+          id: pp.problem.slug,
+          name: pp.problem.title,
+          difficulty: pp.problem.difficulty.charAt(0).toUpperCase() + pp.problem.difficulty.slice(1).toLowerCase(),
+        })),
+        isRestDay: dayTotal === 0,
+        isDaySolved,
+        isDayMarkedCompleted
+      });
+    }
   }
 
-  const handleEnroll = () => {
-    const now = new Date().toISOString();
-    localStorage.setItem("placementSprintEnrollDate", now);
-    setEnrolledDate(now);
+  // Automatically mark day as completed in the DB if solved but not marked
+  useEffect(() => {
+    if (isEnrolled && plan) {
+      days.forEach(async (day) => {
+        if (!day.isRestDay && day.isDaySolved && !day.isDayMarkedCompleted) {
+          try {
+            await fetch(`${API}/api/study-plans/${slug}/complete-day`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...authHeaders()
+              },
+              body: JSON.stringify({ dayNumber: day.dayNumber })
+            });
+            fetchData();
+          } catch (err) {
+            console.error("Failed to auto-complete day:", err);
+          }
+        }
+      });
+    }
+  }, [isEnrolled, plan, submissions]);
+
+  const handleEnroll = async () => {
+    if (!getToken()) {
+      alert("Please log in to start this plan.");
+      navigate("/login");
+      return;
+    }
+    try {
+      const res = await fetch(`${API}/api/study-plans/${slug}/start`, {
+        method: "POST",
+        headers: authHeaders()
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchData();
+      } else {
+        alert("Failed to start plan: " + data.error);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleUnenroll = () => {
-    localStorage.removeItem("placementSprintEnrollDate");
-    setEnrolledDate(null);
+  const handleUnenroll = async () => {
+    if (!window.confirm("Are you sure you want to unenroll? This will reset your progress for this plan.")) {
+      return;
+    }
+    try {
+      const res = await fetch(`${API}/api/study-plans/${slug}/unenroll`, {
+        method: "POST",
+        headers: authHeaders()
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchData();
+      } else {
+        alert("Failed to unenroll: " + data.error);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
+
+  const handleReset = async () => {
+    if (!window.confirm("Are you sure you want to reset your schedule?")) {
+      return;
+    }
+    try {
+      await fetch(`${API}/api/study-plans/${slug}/unenroll`, {
+        method: "POST",
+        headers: authHeaders()
+      });
+      await fetch(`${API}/api/study-plans/${slug}/start`, {
+        method: "POST",
+        headers: authHeaders()
+      });
+      fetchData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const progressPercent = totalProblems > 0 ? Math.round((solvedCount / totalProblems) * 100) : 0;
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-12 text-[var(--text-muted)]">
+        <span>Loading study plan details...</span>
+      </div>
+    );
+  }
+
+  if (error || !plan) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-12 text-rose-500">
+        <span>Error: {error || "Plan not found"}</span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto w-full px-6 py-8">
@@ -150,25 +318,25 @@ export default function PlacementSprint30() {
               <IcoRocket />
             </div>
             <div>
-              <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-[var(--text)] mb-1">30-Day Placement Sprint</h1>
+              <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-[var(--text)] mb-1">{plan.title}</h1>
               <p className="text-[12px] font-medium text-[var(--text-muted)] mb-3">
                 Free · Beginner-friendly
               </p>
               <p className="text-[13px] text-[var(--text-subtle)] leading-relaxed max-w-xl mb-5">
-                A daily curriculum built to take you from zero to campus-placement ready in a month. Breadth over depth — you'll touch every pattern interviewers actually ask.
+                {plan.description}
               </p>
               <div className="flex flex-wrap items-center gap-5 text-[12px] font-semibold text-[var(--text-subtle)]">
                 <div className="flex items-center gap-1.5">
                   <IcoCalendar />
-                  <span>30 days</span>
+                  <span>{plan.durationDays} days</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <IcoBookOpen />
-                  <span>59 problems</span>
+                  <span>{totalProblems} problems</span>
                 </div>
                 {isEnrolled && (
                   <div className="flex items-center gap-1.5 ml-2">
-                    <span className="font-bold text-[#6366f1]">Day {currentDayNumber} of 30</span>
+                    <span className="font-bold text-[#6366f1]">Day {currentDayNumber} of {plan.durationDays}</span>
                   </div>
                 )}
               </div>
@@ -178,8 +346,8 @@ export default function PlacementSprint30() {
           {/* ACTION EXECUTION HERO RADIAL BUTTON LAYER */}
           {isEnrolled ? (
             <div className="w-24 h-24 rounded-full border-[6px] border-[var(--border)] bg-[var(--surface-2)] flex flex-col items-center justify-center flex-shrink-0 relative mr-4">
-              <span className="text-xl font-black text-[var(--text)]">0<span className="text-[14px]">%</span></span>
-              <span className="text-[10px] font-bold text-[var(--text-muted)] mt-[-2px]">0/59</span>
+              <span className="text-xl font-black text-[var(--text)]">{progressPercent}<span className="text-[14px]">%</span></span>
+              <span className="text-[10px] font-bold text-[var(--text-muted)] mt-[-2px]">{solvedCount}/{totalProblems}</span>
             </div>
           ) : (
             <button
@@ -195,7 +363,7 @@ export default function PlacementSprint30() {
         {/* ACTION ROW */}
         {isEnrolled && (
           <div className="flex items-center gap-3">
-            <button onClick={handleEnroll} className="px-3 py-1.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-muted)] text-[12px] font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer flex-shrink-0">
+            <button onClick={handleReset} className="px-3 py-1.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-muted)] text-[12px] font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer flex-shrink-0">
               <IcoRefresh />
               <span>Reset schedule</span>
             </button>
@@ -211,7 +379,7 @@ export default function PlacementSprint30() {
 
         {/* CURRICULUM SCHEDULING TRAILER PIPELINE STACK */}
         <div className="flex flex-col gap-4 mt-2">
-          {SPRINT_DAYS.map((day) => (
+          {days.map((day) => (
             <div key={day.dayNumber} className={`bg-[var(--surface)] border rounded-xl overflow-hidden shadow-[var(--card-shadow)] ${isEnrolled && day.dayNumber === currentDayNumber ? 'border-indigo-500/80 shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'border-[var(--border)]'}`}>
 
               {/* SUB-HEADER DAY META BLOCK SECTION CARD HEAD ROW */}
@@ -245,12 +413,20 @@ export default function PlacementSprint30() {
                 {day.problems.map((problem) => (
                   <div
                     key={problem.id}
-                    onClick={() => navigate(`/practice/problems/${problem.id || problem.name.toLowerCase().replace(/\s+/g, '-')}`)}
+                    onClick={() => navigate(`/practice/problems/${problem.id}`)}
                     className="flex items-center justify-between px-5 py-3.5 border-b border-[var(--border)] last:border-none hover:bg-[var(--surface-2)] transition-colors group cursor-pointer"
                   >
                     <div className="flex items-center gap-4">
-                      {/* UNCHECKED STATUS HOOP INDICATOR BULLET */}
-                      <div className="w-4 h-4 rounded-full border-2 border-[var(--border)] group-hover:border-indigo-500/50 flex-shrink-0 transition-colors" />
+                      {/* SOLVED OR UNCHECKED STATUS INDICATOR BULLET */}
+                      {solvedProblemIds.has(problem.dbId) ? (
+                        <div className="w-4 h-4 rounded-full bg-emerald-500 border border-emerald-500 flex items-center justify-center flex-shrink-0">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        </div>
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border-2 border-[var(--border)] group-hover:border-indigo-500/50 flex-shrink-0 transition-colors" />
+                      )}
                       <span className="text-[12.5px] font-semibold text-[var(--text)] group-hover:text-indigo-500 transition-colors">
                         {problem.name}
                       </span>

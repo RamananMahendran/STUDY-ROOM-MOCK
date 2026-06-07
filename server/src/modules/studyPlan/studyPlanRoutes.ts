@@ -4,6 +4,7 @@ import {
   getPlanBySlug,
   startPlan,
   completeDay,
+  unenrollPlan,
   getCurrentWeeklyChallenge,
   startWeeklyChallenge,
   completeWeeklyDay,
@@ -20,8 +21,10 @@ router.post('/weekly/complete-day', completeWeeklyDay);
 router.get('/', getAllPlans);
 router.get('/:slug', getPlanBySlug);
 router.post('/:slug/start', startPlan);
+router.post('/:slug/unenroll', unenrollPlan);
 router.post('/:slug/complete-day', completeDay);
 
 router.post('/seed', seedPlans);
+
 
 export default router;

@@ -35,6 +35,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         username: user.username,
         email: user.email,
         streak: user.streak,
+        role: user.role,
         token,
       });
     } else {
@@ -63,6 +64,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
         username: user.username,
         email: user.email,
         streak: newStreak,
+        role: user.role,
         token,
       });
     } else {
@@ -93,6 +95,7 @@ export const getUserProfile = async (req: AuthenticatedRequest, res: Response, n
         username: user.username,
         email: user.email,
         streak: newStreak,
+        role: user.role,
         totalStudyHours: user.totalStudyHours,
         focusSessionsCount: user.focusSessionsCount,
         problemsSolved: user.problemsSolved,
@@ -371,6 +374,7 @@ export const googleAuth = async (req: Request, res: Response, next: NextFunction
       email: user.email,
       avatarUrl: user.avatar_url ?? null,
       streak: newStreak,
+      role: user.role,
       token,
     });
   } catch (error) {
@@ -399,6 +403,28 @@ export const logStudySession = async (req: AuthenticatedRequest, res: Response, 
     res.status(200).json({
       success: true,
       message: 'Study session logged successfully',
+      user: updatedUser
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Upgrade user to Pro tier
+// @route   POST /api/auth/upgrade-pro
+// @access  Private
+export const upgradeUserToPro = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (!req.user || !req.user.id) {
+      res.status(401);
+      throw new Error('Not authorized, session identifier reference is missing');
+    }
+
+    const updatedUser = await User.upgradeToPro(req.user.id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Successfully upgraded to Pro tier!',
       user: updatedUser
     });
   } catch (error) {

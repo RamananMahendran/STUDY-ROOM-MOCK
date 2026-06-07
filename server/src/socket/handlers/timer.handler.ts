@@ -1,16 +1,30 @@
 import { Server, Socket } from 'socket.io';
 import { setRoomState, getRoomState, getRoomUsers } from '../../services/redis.service.js';
 import User from '../../modules/auth/User.js';
+import prisma from '../../config/database.js';
 
 const activeTimers = new Map<string, NodeJS.Timeout>();
 
-const recordSessionToDatabase = async (userIds: string[], duration: number): Promise<void> => {
-  console.log(`Recording session for users: ${userIds.join(', ')}, duration: ${duration}ms`);
+const recordSessionToDatabase = async (userIds: string[], duration: number, roomId: string): Promise<void> => {
+  console.log(`Recording session for users: ${userIds.join(', ')}, duration: ${duration}ms, room: ${roomId}`);
+  
+  let roomName = 'Study Room';
+  try {
+    const dbRoom = await prisma.studyRoom.findUnique({
+      where: { id: roomId }
+    });
+    if (dbRoom) {
+      roomName = dbRoom.name;
+    }
+  } catch (err) {
+    console.error('Failed to fetch room name from DB:', err);
+  }
+
   for (const uid of userIds) {
     const numId = Number(uid);
     if (!isNaN(numId)) {
       try {
-        await User.recordStudySession(numId, duration);
+        await User.recordStudySession(numId, duration, roomName, roomId);
       } catch (err) {
         console.error(`Failed to record study session for user ${numId}:`, err);
       }
@@ -53,7 +67,7 @@ export const registerTimerHandlers = (io: Server, socket: Socket) => {
 
           if (data.type === 'FOCUS') {
             const users = await getRoomUsers(data.roomId);
-            await recordSessionToDatabase(users, data.duration);
+            await recordSessionToDatabase(users, data.duration, data.roomId);
           }
 
           activeTimers.delete(data.roomId);

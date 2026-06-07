@@ -90,6 +90,55 @@ const runCodeWithTestCases = async (
   return { allPassed, results };
 };
 
+const updateUserStats = async (userId: number): Promise<void> => {
+  try {
+    const submissions = await prisma.submission.findMany({
+      where: { userId },
+    });
+
+    const totalSubmissions = submissions.length;
+    if (totalSubmissions === 0) return;
+
+    // Unique attempted problem IDs
+    const attemptedProblemIds = new Set(submissions.map(s => s.problemId));
+    const problemsAttempted = attemptedProblemIds.size;
+
+    // Unique solved problem IDs (status === 'accepted')
+    const solvedSubmissions = submissions.filter(s => s.status === 'accepted');
+    const solvedProblemIds = new Set(solvedSubmissions.map(s => s.problemId));
+    const problemsSolved = solvedProblemIds.size;
+
+    const acceptedSubmissionsCount = solvedSubmissions.length;
+    const acceptanceRate = parseFloat(((acceptedSubmissionsCount / totalSubmissions) * 100).toFixed(2));
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    const solvedThisMonthSubmissions = solvedSubmissions.filter(s => {
+      const date = new Date(s.createdAt);
+      return date.getFullYear() === currentYear && date.getMonth() === currentMonth;
+    });
+    const solvedThisMonthProblemIds = new Set(solvedThisMonthSubmissions.map(s => s.problemId));
+    const solvedThisMonth = solvedThisMonthProblemIds.size;
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        problemsSolved,
+        problemsAttempted,
+        acceptanceRate,
+        solvedThisMonth,
+        solvedAllTime: problemsSolved,
+      }
+    });
+
+    console.log(`Updated stats for user ${userId}: solved=${problemsSolved}, attempted=${problemsAttempted}, rate=${acceptanceRate}%`);
+  } catch (error) {
+    console.error(`Failed to update user stats for ${userId}:`, error);
+  }
+};
+
 // Background processing function
 const processSubmissionInBackground = async (
   submissionId: string,
@@ -139,6 +188,10 @@ const processSubmissionInBackground = async (
       errorMessage: error_message || undefined,
       testResults: result.results,
     });
+
+    if (userId) {
+      await updateUserStats(userId);
+    }
 
     // EMIT SOCKET.IO EVENT IF FROM PAIR SESSION
     if (submittedFrom === 'pair' && pairSessionId) {

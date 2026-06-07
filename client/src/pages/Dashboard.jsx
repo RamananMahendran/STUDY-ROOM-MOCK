@@ -1,12 +1,55 @@
 import { useState, useEffect } from "react";
 import { data, useNavigate } from "react-router-dom";
 
-const SolveVelocityChart = () => {
+const SolveVelocityChart = ({ submissions = [] }) => {
+  const today = new Date();
+  const dailyCounts = Array.from({ length: 30 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - (29 - i));
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    return {
+      dateStr,
+      count: 0
+    };
+  });
+
+  submissions.forEach(sub => {
+    const subDate = new Date(sub.createdAt);
+    const dateStr = `${subDate.getFullYear()}-${String(subDate.getMonth() + 1).padStart(2, '0')}-${String(subDate.getDate()).padStart(2, '0')}`;
+    const dayObj = dailyCounts.find(d => d.dateStr === dateStr);
+    if (dayObj && (sub.status === 'accepted' || sub.status === 'SUCCESS' || sub.status === 'ACCEPTED')) {
+      dayObj.count += 1;
+    }
+  });
+
+  const chartData = dailyCounts.map((day, idx) => {
+    const start = Math.max(0, idx - 6);
+    const subset = dailyCounts.slice(start, idx + 1);
+    const sum = subset.reduce((acc, curr) => acc + curr.count, 0);
+    const avg = sum / subset.length;
+    return {
+      ...day,
+      avg
+    };
+  });
+
+  const maxCount = Math.max(...chartData.map(d => d.count), ...chartData.map(d => d.avg), 1);
+  const xStep = 100 / 29;
+
+  const linePoints = chartData.map((d, i) => `${i * xStep},${100 - (d.count / maxCount) * 90}`).join(' ');
+  const areaPoints = `0,100 ${linePoints} 100,100`;
+  const avgPoints = chartData.map((d, i) => `${i * xStep},${100 - (d.avg / maxCount) * 90}`).join(' ');
+
+  // Peak dot coordinates (last element of daily count)
+  const lastIdx = chartData.length - 1;
+  const peakX = lastIdx * xStep;
+  const peakY = 100 - (chartData[lastIdx].count / maxCount) * 90;
+
   return (
     <div style={{ position: "relative", height: 180, width: "100%", marginTop: 30, display: "flex", flexDirection: "column" }}>
       {/* Y-axis labels */}
       <div style={{ position: "absolute", left: 0, top: 0, bottom: 20, display: "flex", flexDirection: "column", justifyContent: "space-between", fontSize: 10, color: "var(--text-muted)", zIndex: 10 }}>
-        <span style={{ transform: "translateY(-50%)" }}>1</span>
+        <span style={{ transform: "translateY(-50%)" }}>{maxCount.toFixed(0)}</span>
         <span style={{ transform: "translateY(50%)" }}>0</span>
       </div>
 
@@ -25,17 +68,17 @@ const SolveVelocityChart = () => {
           </defs>
 
           {/* Daily Line Area */}
-          <polygon points="0,100 95,100 100,0 100,100" fill="url(#solve-grad)" />
+          <polygon points={areaPoints} fill="url(#solve-grad)" />
 
           {/* Daily Line (solid purple) */}
-          <polyline points="0,100 95,100 100,0" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+          <polyline points={linePoints} fill="none" stroke="#6366f1" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
 
           {/* 7-day Avg Line (dashed pink) */}
-          <polyline points="0,100 95,100 100,80" fill="none" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="3,3" strokeLinejoin="round" strokeLinecap="round" />
+          <polyline points={avgPoints} fill="none" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="3,3" strokeLinejoin="round" strokeLinecap="round" />
 
           {/* Peak Dot */}
-          <circle cx="100" cy="0" r="3" fill="#6366f1" />
-          <circle cx="100" cy="0" r="8" fill="#6366f1" opacity="0.25" />
+          <circle cx={peakX} cy={peakY} r="3" fill="#6366f1" />
+          <circle cx={peakX} cy={peakY} r="8" fill="#6366f1" opacity="0.25" />
         </svg>
       </div>
 
@@ -276,23 +319,21 @@ export default function Dashboard() {
   const [profileData, setProfileData] = useState(null);
   const navigate = useNavigate();
 
-  const [enrolledDate, setEnrolledDate] = useState(() => {
-    return localStorage.getItem("placementSprintEnrollDate") || null;
-  });
+  const [enrolledPlan, setEnrolledPlan] = useState(null);
+  const [submissions, setSubmissions] = useState([]);
 
-  const isEnrolled = !!enrolledDate;
-  let currentDayNumber = 1;
-  if (enrolledDate) {
-    const start = new Date(enrolledDate);
-    start.setHours(0, 0, 0, 0);
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    const diff = now.getTime() - start.getTime();
-    currentDayNumber = Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
-    if (currentDayNumber > 30) currentDayNumber = 30;
-  }
+  const isEnrolled = !!enrolledPlan;
+  const currentDayNumber = enrolledPlan?.userProgress?.currentDay || 1;
 
-  const progressPercent = Math.min((currentDayNumber / 30) * 100, 100);
+  const solvedProblemIds = new Set(
+    submissions
+      .filter(sub => sub.status === "accepted" || sub.status === "SUCCESS" || sub.status === "ACCEPTED")
+      .map(sub => sub.problemId)
+  );
+  const planProblems = enrolledPlan?.planProblems || [];
+  const solvedInPlan = planProblems.filter(p => solvedProblemIds.has(p.problemId)).length;
+  const totalInPlan = planProblems.length || 1;
+  const progressPercent = Math.min((solvedInPlan / totalInPlan) * 100, 100);
 
   const subjectMix = profileData?.subjectMix || {};
   const totalRecorded = Object.values(subjectMix).reduce((a, b) => a + Number(b), 0) || 0.1;
@@ -361,6 +402,33 @@ export default function Dashboard() {
           }
         })
         .catch(err => console.error("Error fetching fresh profile:", err));
+
+      // Fetch user's study plans
+      fetch(`${API}/api/study-plans`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && Array.isArray(data.data)) {
+            const activePlan = data.data.find(plan => plan.userProgress);
+            if (activePlan) {
+              setEnrolledPlan(activePlan);
+            }
+          }
+        })
+        .catch(err => console.error("Error fetching study plans:", err));
+
+      // Fetch user's submissions history
+      fetch(`${API}/api/submissions/user/history`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && Array.isArray(data.data)) {
+            setSubmissions(data.data);
+          }
+        })
+        .catch(err => console.error("Error fetching submissions:", err));
 
       console.log("User data loaded successfully:", { userObj });
     } catch (error) {
@@ -553,7 +621,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-              <SolveVelocityChart />
+              <SolveVelocityChart submissions={submissions} />
             </div>
 
             {/* Active Study Plan */}
@@ -565,14 +633,14 @@ export default function Dashboard() {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>
-                      30-Day Placement Sprint <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>· 30-day plan</span>
+                      {enrolledPlan.title} <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>· {enrolledPlan.durationDays}-day plan</span>
                     </div>
                     <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
-                      Day {currentDayNumber} · 0 / 59 problems
+                      Day {currentDayNumber} · {solvedInPlan} / {planProblems.length} problems
                     </div>
                   </div>
                   <button
-                    onClick={() => navigate("/practice/study-plans/placement-sprint-30")}
+                    onClick={() => navigate(`/practice/study-plans/${enrolledPlan.slug}`)}
                     style={{
                       padding: "8px 16px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,255,255,0.15)",
                       color: "var(--text)", fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "0.2s"
@@ -605,7 +673,7 @@ export default function Dashboard() {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11, color: "var(--text-muted)", fontWeight: 500 }}>
                   <span>Day 1</span>
                   <span style={{ color: "var(--text)", fontWeight: 600 }}>{Math.round(progressPercent)}% through</span>
-                  <span>Day 30</span>
+                  <span>Day {enrolledPlan.durationDays}</span>
                 </div>
               </div>
             )}

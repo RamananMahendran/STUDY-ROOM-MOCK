@@ -1,7 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../../components/Sidebar.jsx";
-import TopBar from "../../components/TopBar.jsx";
 
 const IcoTargetFocus = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -20,6 +18,18 @@ const IcoArrowLeft = () => (
 const IcoArrowRight = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+  </svg>
+);
+
+const IcoRefresh = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 2v6h-6"/><path d="M21 13a9 9 0 1 1-3.3-7.3L21 8"/>
+  </svg>
+);
+
+const IcoTrash = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
   </svg>
 );
 
@@ -43,28 +53,36 @@ const IcoBookOpen = () => (
   </svg>
 );
 
-const IcoRefresh = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 2v6h-6"/><path d="M21 13a9 9 0 1 1-3.3-7.3L21 8"/>
-  </svg>
-);
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
-const ARRAYS_DAYS = [
-  { dayNumber: 1, title: "Foundations — iteration", progress: "0 / 3", problems: [{ name: "Two Sum", difficulty: "Easy" }, { name: "Find Maximum", difficulty: "Easy" }, { name: "Array Sum", difficulty: "Easy" }] },
-  { dayNumber: 2, title: "Foundations — strings", progress: "0 / 3", problems: [{ name: "Reverse a String", difficulty: "Easy" }, { name: "FizzBuzz", difficulty: "Easy" }, { name: "Palindrome Check", difficulty: "Easy" }] },
-  { dayNumber: 3, title: "Two pointers", progress: "0 / 3", problems: [{ name: "Move Zeroes", difficulty: "Medium" }, { name: "Container With Most Water", difficulty: "Hard" }, { name: "Trapping Rain Water", difficulty: "Hard" }] },
-  { dayNumber: 4, title: "Sliding window", progress: "0 / 3", problems: [{ name: "Longest Substring Without Repeating Characters", difficulty: "Medium" }, { name: "Sliding Window Maximum", difficulty: "Hard" }, { name: "Maximum Subarray", difficulty: "Medium" }] },
-  { dayNumber: 5, title: "Hash-table on arrays", progress: "0 / 3", problems: [{ name: "Check Anagram", difficulty: "Easy" }, { name: "Contains Duplicate", difficulty: "Medium" }, { name: "Roman to Integer", difficulty: "Medium" }] },
-  { dayNumber: 6, title: "Prefix sums", progress: "0 / 3", problems: [{ name: "Subarray Sum Equals K", difficulty: "Medium" }, { name: "Binary Search", difficulty: "Medium" }, { name: "Single Number", difficulty: "Medium" }] },
-  { dayNumber: 7, title: "Sorting on arrays", progress: "0 / 3", problems: [{ name: "Squares of a Sorted Array", difficulty: "Easy" }, { name: "Kth Largest Element in an Array", difficulty: "Medium" }, { name: "Sort Colors", difficulty: "Medium" }] },
-  { dayNumber: 8, title: "Array manipulation — medium", progress: "0 / 3", problems: [{ name: "Rotate Array", difficulty: "Medium" }, { name: "House Robber", difficulty: "Medium" }, { name: "Jump Game", difficulty: "Medium" }] },
-  { dayNumber: 9, title: "String manipulation — medium", progress: "0 / 3", problems: [{ name: "Valid Parentheses", difficulty: "Medium" }, { name: "Longest Common Prefix", difficulty: "Medium" }, { name: "Word Break", difficulty: "Medium" }] },
-  { dayNumber: 10, title: "Array tricks — medium II", progress: "0 / 3", problems: [{ name: "Best Time to Buy and Sell Stock II", difficulty: "Medium" }, { name: "Longest Increasing Subsequence", difficulty: "Medium" }, { name: "Search in Rotated Sorted Array", difficulty: "Medium" }] },
-  { dayNumber: 11, title: "Binary search on arrays", progress: "0 / 2", problems: [{ name: "Median of Two Sorted Arrays", difficulty: "Hard" }, { name: "Count Complete Tree Nodes", difficulty: "Medium" }] },
-  { dayNumber: 12, title: "Hard arrays", progress: "0 / 3", problems: [{ name: "Product of Array Except Self", difficulty: "Hard" }, { name: "Largest Rectangle in Histogram", difficulty: "Hard" }, { name: "Longest Valid Parentheses", difficulty: "Hard" }] },
-  { dayNumber: 13, title: "Hard strings", progress: "0 / 1", problems: [{ name: "Edit Distance", difficulty: "Hard" }] },
-  { dayNumber: 14, title: "Mastery review", progress: "0 / 1", problems: [{ name: "Longest Palindromic Substring", difficulty: "Medium" }] },
-];
+function getToken() {
+  return localStorage.getItem('token') || sessionStorage.getItem('token');
+}
+
+function authHeaders() {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+const getDayTitle = (dayNumber) => {
+  const titles = {
+    1: "Foundations — iteration",
+    2: "Foundations — strings",
+    3: "Two pointers",
+    4: "Sliding window",
+    5: "Hash-table on arrays",
+    6: "Prefix sums",
+    7: "Sorting on arrays",
+    8: "Array manipulation — medium",
+    9: "String manipulation — medium",
+    10: "Array tricks — medium II",
+    11: "Binary search on arrays",
+    12: "Hard arrays",
+    13: "Hard strings",
+    14: "Mastery review"
+  };
+  return titles[dayNumber] || `Day ${dayNumber} practice challenges`;
+};
 
 const getDiffColor = (diff) => {
   if (diff === "Easy") return "text-emerald-500 border-emerald-500/20 bg-emerald-500/10";
@@ -75,7 +93,208 @@ const getDiffColor = (diff) => {
 
 export default function ArraysMastery14() {
   const navigate = useNavigate();
-  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [plan, setPlan] = useState(null);
+  const [submissions, setSubmissions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [userRole, setUserRole] = useState("free");
+
+  const slug = "arrays-mastery-14";
+
+  const fetchData = async () => {
+    try {
+      const headers = authHeaders();
+      const planRes = await fetch(`${API}/api/study-plans/${slug}`, { headers });
+      const planData = await planRes.json();
+      if (planData.success) {
+        setPlan(planData.data);
+      } else {
+        throw new Error(planData.error || "Failed to load study plan");
+      }
+
+      if (getToken()) {
+        const subRes = await fetch(`${API}/api/submissions/user/history`, { headers });
+        const subData = await subRes.json();
+        if (subData.success) {
+          setSubmissions(subData.data);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const userObj = JSON.parse(storedUser);
+        if (userObj.role) {
+          setUserRole(userObj.role);
+        }
+      } catch (e) {}
+    }
+    fetchData();
+  }, []);
+
+  const solvedProblemIds = new Set(
+    submissions
+      .filter(s => s.status === 'accepted' || s.status === 'SUCCESS' || s.status === 'ACCEPTED')
+      .map(s => s.problemId)
+  );
+
+  const isEnrolled = plan && !!plan.userProgress;
+  const isProUser = userRole === "pro";
+  const currentDayNumber = plan?.userProgress?.currentDay || 1;
+
+  const days = [];
+  let totalProblems = 0;
+  let solvedCount = 0;
+
+  if (plan) {
+    totalProblems = plan.planProblems.length;
+    solvedCount = plan.planProblems.filter(pp => solvedProblemIds.has(pp.problemId)).length;
+
+    const dayProblemsMap = {};
+    plan.planProblems.forEach(pp => {
+      if (!dayProblemsMap[pp.dayNumber]) {
+        dayProblemsMap[pp.dayNumber] = [];
+      }
+      dayProblemsMap[pp.dayNumber].push(pp);
+    });
+
+    for (let d = 1; d <= plan.durationDays; d++) {
+      const dayProblems = dayProblemsMap[d] || [];
+      const daySolved = dayProblems.filter(pp => solvedProblemIds.has(pp.problemId)).length;
+      const dayTotal = dayProblems.length;
+      const isDaySolved = dayTotal > 0 && daySolved === dayTotal;
+      const isDayMarkedCompleted = plan.userProgress?.completedDays?.includes(d) || false;
+
+      days.push({
+        dayNumber: d,
+        title: getDayTitle(d),
+        progress: `${daySolved} / ${dayTotal}`,
+        problems: dayProblems.map(pp => ({
+          dbId: pp.problem.id,
+          id: pp.problem.slug,
+          name: pp.problem.title,
+          difficulty: pp.problem.difficulty.charAt(0).toUpperCase() + pp.problem.difficulty.slice(1).toLowerCase(),
+        })),
+        isRestDay: dayTotal === 0,
+        isDaySolved,
+        isDayMarkedCompleted
+      });
+    }
+  }
+
+  // Automatically mark day as completed in the DB if solved but not marked
+  useEffect(() => {
+    if (isEnrolled && plan) {
+      days.forEach(async (day) => {
+        if (!day.isRestDay && day.isDaySolved && !day.isDayMarkedCompleted) {
+          try {
+            await fetch(`${API}/api/study-plans/${slug}/complete-day`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...authHeaders()
+              },
+              body: JSON.stringify({ dayNumber: day.dayNumber })
+            });
+            fetchData();
+          } catch (err) {
+            console.error("Failed to auto-complete day:", err);
+          }
+        }
+      });
+    }
+  }, [isEnrolled, plan, submissions]);
+
+  const handleEnroll = async () => {
+    if (!getToken()) {
+      alert("Please log in to start this plan.");
+      navigate("/login");
+      return;
+    }
+    if (!isProUser) {
+      navigate("/pricing");
+      return;
+    }
+    try {
+      const res = await fetch(`${API}/api/study-plans/${slug}/start`, {
+        method: "POST",
+        headers: authHeaders()
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchData();
+      } else {
+        alert("Failed to start plan: " + data.error);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleUnenroll = async () => {
+    if (!window.confirm("Are you sure you want to unenroll? This will reset your progress for this plan.")) {
+      return;
+    }
+    try {
+      const res = await fetch(`${API}/api/study-plans/${slug}/unenroll`, {
+        method: "POST",
+        headers: authHeaders()
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchData();
+      } else {
+        alert("Failed to unenroll: " + data.error);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleReset = async () => {
+    if (!window.confirm("Are you sure you want to reset your schedule?")) {
+      return;
+    }
+    try {
+      await fetch(`${API}/api/study-plans/${slug}/unenroll`, {
+        method: "POST",
+        headers: authHeaders()
+      });
+      await fetch(`${API}/api/study-plans/${slug}/start`, {
+        method: "POST",
+        headers: authHeaders()
+      });
+      fetchData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const progressPercent = totalProblems > 0 ? Math.round((solvedCount / totalProblems) * 100) : 0;
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-12 text-[var(--text-muted)]">
+        <span>Loading study plan details...</span>
+      </div>
+    );
+  }
+
+  if (error || !plan) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-12 text-rose-500">
+        <span>Error: {error || "Plan not found"}</span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto w-full px-6 py-8">
@@ -93,22 +312,22 @@ export default function ArraysMastery14() {
               <IcoTargetFocus />
             </div>
             <div>
-              <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-[var(--text)] mb-1">Arrays & Strings Mastery</h1>
+              <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-[var(--text)] mb-1">{plan.title}</h1>
               <p className="text-[12px] font-medium text-[var(--text-muted)] mb-3 flex items-center gap-2">
-                Pro · 14 days · Array + String only
+                Pro · {plan.durationDays} days · {totalProblems} problems
                 <span className="bg-indigo-500/20 text-indigo-500 text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider uppercase border border-indigo-500/30">PRO</span>
               </p>
               <p className="text-[13px] text-[var(--text-subtle)] leading-relaxed max-w-xl mb-5">
-                14-day deep dive into the single topic that shows up in ~60% of interviews. By day 14 you'll pattern-match arrays and strings on sight.
+                {plan.description}
               </p>
               <div className="flex flex-wrap items-center gap-5 text-[12px] font-semibold text-[var(--text-subtle)]">
                 <div className="flex items-center gap-1.5">
                   <IcoCalendar />
-                  <span>14 days</span>
+                  <span>{plan.durationDays} days</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <IcoBookOpen />
-                  <span>37 problems</span>
+                  <span>{totalProblems} problems</span>
                 </div>
               </div>
             </div>
@@ -116,35 +335,45 @@ export default function ArraysMastery14() {
 
           {isEnrolled ? (
             <div className="w-24 h-24 rounded-full border-[6px] border-[var(--border)] bg-[var(--surface-2)] flex flex-col items-center justify-center flex-shrink-0 relative mr-4">
-              <span className="text-xl font-black text-[var(--text)]">0<span className="text-[14px]">%</span></span>
-              <span className="text-[10px] font-bold text-[var(--text-muted)] mt-[-2px]">0/37</span>
+              <span className="text-xl font-black text-[var(--text)]">{progressPercent}<span className="text-[14px]">%</span></span>
+              <span className="text-[10px] font-bold text-[var(--text-muted)] mt-[-2px]">{solvedCount}/{totalProblems}</span>
             </div>
           ) : (
-            <button 
-              onClick={() => navigate('/pricing')}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] text-white text-[13px] font-bold shadow-lg shadow-indigo-600/10 transition-colors flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
-            >
-              <span>Unlock with Pro</span>
-            </button>
+            isProUser ? (
+              <button 
+                onClick={handleEnroll}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] text-white text-[13px] font-bold shadow-lg shadow-indigo-600/10 transition-colors flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
+              >
+                <span>Start plan</span>
+              </button>
+            ) : (
+              <button 
+                onClick={() => navigate('/pricing')}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] text-white text-[13px] font-bold shadow-lg shadow-indigo-600/10 transition-colors flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
+              >
+                <span>Unlock with Pro</span>
+              </button>
+            )
           )}
         </div>
 
         {isEnrolled && (
           <div className="flex items-center gap-3">
-            <button className="px-3 py-1.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-muted)] text-[12px] font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer flex-shrink-0">
+            <button onClick={handleReset} className="px-3 py-1.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-muted)] text-[12px] font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer flex-shrink-0">
               <IcoRefresh />
               <span>Reset schedule</span>
             </button>
             <button 
-              onClick={() => setIsEnrolled(false)}
+              onClick={handleUnenroll}
               className="px-3 py-1.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-2)] border border-rose-500/30 hover:border-rose-500/50 text-rose-500 text-[12px] font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
             >
+              <IcoTrash />
               <span>Unenroll</span>
             </button>
           </div>
         )}
 
-        {!isEnrolled && (
+        {!isProUser && !isEnrolled && (
           <div className="bg-indigo-500/5 border border-indigo-500/20 rounded-xl p-5 md:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 mt-2">
             <div className="flex items-start gap-4">
               <div className="mt-1 text-indigo-500"><IcoStars /></div>
@@ -162,19 +391,19 @@ export default function ArraysMastery14() {
         )}
 
         <div className="flex flex-col gap-4 mt-2">
-          {ARRAYS_DAYS.map((day) => {
+          {days.map((day) => {
             return (
-              <div key={day.dayNumber} className={`bg-[var(--surface)] border rounded-xl overflow-hidden shadow-[var(--card-shadow)] ${isEnrolled && day.dayNumber === 1 ? 'border-indigo-500/80 shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'border-[var(--border)]'}`}>
+              <div key={day.dayNumber} className={`bg-[var(--surface)] border rounded-xl overflow-hidden shadow-[var(--card-shadow)] ${isEnrolled && day.dayNumber === currentDayNumber ? 'border-indigo-500/80 shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'border-[var(--border)]'}`}>
                 
-                <div className={`px-5 py-4 border-b flex items-center justify-between ${isEnrolled && day.dayNumber === 1 ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-[var(--surface-2)]/30 border-[var(--border)]'}`}>
+                <div className={`px-5 py-4 border-b flex items-center justify-between ${isEnrolled && day.dayNumber === currentDayNumber ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-[var(--surface-2)]/30 border-[var(--border)]'}`}>
                   <div className="flex items-center gap-4">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[12px] font-black font-mono ${isEnrolled && day.dayNumber === 1 ? 'bg-indigo-500/20 text-indigo-500 border border-indigo-500/30' : 'bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-muted)]'}`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[12px] font-black font-mono ${isEnrolled && day.dayNumber === currentDayNumber ? 'bg-indigo-500/20 text-indigo-500 border border-indigo-500/30' : 'bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-muted)]'}`}>
                       {day.dayNumber}
                     </div>
                     <div>
                       <div className="text-[10px] font-black tracking-wider uppercase font-mono mb-0.5 flex items-center gap-1.5">
-                        <span className={isEnrolled && day.dayNumber === 1 ? 'text-indigo-500' : 'text-[var(--text-muted)]'}>DAY {day.dayNumber}</span>
-                        {isEnrolled && day.dayNumber === 1 && (
+                        <span className={isEnrolled && day.dayNumber === currentDayNumber ? 'text-indigo-500' : 'text-[var(--text-muted)]'}>DAY {day.dayNumber}</span>
+                        {isEnrolled && day.dayNumber === currentDayNumber && (
                           <>
                             <span className="text-[var(--text-subtle)]">·</span>
                             <span className="text-indigo-500">TODAY</span>
@@ -195,11 +424,19 @@ export default function ArraysMastery14() {
                   {day.problems.map((problem, i) => (
                     <div 
                       key={i} 
-                      onClick={() => navigate(`/practice/problems/${problem.name.toLowerCase().replace(/\s+/g, '-')}`)}
+                      onClick={() => navigate(`/practice/problems/${problem.id}`)}
                       className="flex items-center justify-between px-5 py-3.5 border-b border-[var(--border)] last:border-none hover:bg-[var(--surface-2)] transition-colors group cursor-pointer"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-4 h-4 rounded-full border-2 border-[var(--border)] group-hover:border-indigo-500/50 flex-shrink-0 transition-colors" />
+                        {solvedProblemIds.has(problem.dbId) ? (
+                          <div className="w-4 h-4 rounded-full bg-emerald-500 border border-emerald-500 flex items-center justify-center flex-shrink-0">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          </div>
+                        ) : (
+                          <div className="w-4 h-4 rounded-full border-2 border-[var(--border)] group-hover:border-indigo-500/50 flex-shrink-0 transition-colors" />
+                        )}
                         <span className="text-[12.5px] font-semibold text-[var(--text)] group-hover:text-indigo-500 transition-colors">
                           {problem.name}
                         </span>

@@ -10,6 +10,7 @@ import roomRoutes from './modules/rooms/roomRoutes.js';
 import contestRoutes from './modules/contests/contestRoutes.js';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 import studyPlanRoutes from './modules/studyPlan/studyPlanRoutes.js';
+import sessionRoutes from './modules/sessions/sessionRoutes.js';
 
 const app: Application = express();
 
@@ -38,6 +39,8 @@ app.use('/api/interviews', interviewRoutes);  // Mock Interviews (Day 5) - PRO O
 app.use('/api/rooms', roomRoutes);           // Real-time Study Rooms (BE2)
 app.use('/api/contests', contestRoutes);      // Competitive Contests (BE3 Day 3 addition)
 app.use('/api/study-plans', studyPlanRoutes);
+app.use('/api/sessions', sessionRoutes);
+
 // 404 Handler
 app.use(notFound);
 

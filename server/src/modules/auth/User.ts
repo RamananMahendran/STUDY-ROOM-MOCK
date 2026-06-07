@@ -256,11 +256,22 @@ const User = {
     };
   },
 
-  async recordStudySession(userId: number, durationMs: number) {
+  async recordStudySession(userId: number, durationMs: number, roomName: string = 'Study Room', roomId?: string) {
     const durationHours = durationMs / (1000 * 60 * 60);
+    const durationMinutes = Math.round(durationMs / (1000 * 60));
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error('User not found');
+
+    // Create detailed study session record in DB
+    await prisma.studySession.create({
+      data: {
+        userId,
+        roomId: roomId || null,
+        roomName,
+        durationMinutes,
+      },
+    });
 
     const now = new Date();
     const todayLabel = `${now.getMonth() + 1}/${now.getDate()}`;
@@ -324,6 +335,22 @@ const User = {
         heatmapData,
         lastActiveAt: now
       }
+    });
+
+    return {
+      ...updatedUser,
+      username: updatedUser.name,
+      streak: updatedUser.streakCount,
+      last_active_at: updatedUser.lastActiveAt,
+      created_at: updatedUser.createdAt,
+      avatar_url: updatedUser.avatarUrl,
+    };
+  },
+
+  async upgradeToPro(userId: number) {
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { role: 'pro' }
     });
 
     return {

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Pricing.css";
 import Header from "./components/header.jsx";
 import Footer from "./components/Footer.jsx";
@@ -156,6 +157,53 @@ function ListCheck({ active }) {
 
 export default function Pricing() {
   const [openFaq, setOpenFaq] = useState(null);
+  const navigate = useNavigate();
+
+  const handleUpgrade = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please log in to upgrade to Pro!");
+      navigate("/login");
+      return;
+    }
+    try {
+      const res = await fetch("http://localhost:5001/api/auth/upgrade-pro", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          const userObj = JSON.parse(storedUser);
+          userObj.role = "pro";
+          localStorage.setItem("user", JSON.stringify(userObj));
+        }
+        alert("Success! You are now a Pro member! Enjoy structured study plans and advanced analytics.");
+        navigate("/practice/study-plans");
+      } else {
+        alert("Upgrade failed: " + (data.message || data.error));
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error upgrading to Pro");
+    }
+  };
+
+  const handleBtnClick = (idx) => {
+    if (idx === 0) {
+      navigate("/rooms");
+    } else if (idx === 1) {
+      navigate("/practice/problems");
+    } else if (idx === 2) {
+      handleUpgrade();
+    } else if (idx === 3) {
+      alert("Thank you for your interest! Team features are coming soon.");
+    }
+  };
 
   const toggleFaq = (index) => {
     setOpenFaq(openFaq === index ? null : index);
@@ -206,7 +254,10 @@ export default function Pricing() {
                 ))}
               </ul>
 
-              <button className={`${card.btnStyle} sm pcard-btn`}>
+              <button 
+                onClick={() => handleBtnClick(idx)}
+                className={`${card.btnStyle} sm pcard-btn`}
+              >
                 {card.btnText}
               </button>
             </div>

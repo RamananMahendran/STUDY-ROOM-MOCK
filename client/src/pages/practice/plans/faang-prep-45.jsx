@@ -1,7 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../../components/Sidebar.jsx";
-import TopBar from "../../components/TopBar.jsx";
 
 const IcoBolt = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -27,6 +25,12 @@ const IcoRefresh = () => (
   </svg>
 );
 
+const IcoTrash = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+  </svg>
+);
+
 const IcoStars = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 4 c0 3.5 -2.5 6 -6 6 c3.5 0 6 2.5 6 6 c0 -3.5 2.5 -6 6 -6 c-3.5 0 -6 -2.5 -6 -6 z" />
@@ -47,57 +51,279 @@ const IcoBookOpen = () => (
   </svg>
 );
 
-const FAANG_DAYS = [
-  { dayNumber: 1, title: "Array patterns I", progress: "0 / 2", problems: [{ name: "Maximum Subarray", difficulty: "Medium" }, { name: "Binary Search", difficulty: "Medium" }] },
-  { dayNumber: 2, title: "Array patterns II", progress: "0 / 2", problems: [{ name: "Single Number", difficulty: "Medium" }, { name: "Contains Duplicate", difficulty: "Medium" }] },
-  { dayNumber: 3, title: "String patterns I", progress: "0 / 2", problems: [{ name: "Valid Parentheses", difficulty: "Medium" }, { name: "Longest Common Prefix", difficulty: "Medium" }] },
-  { dayNumber: 4, title: "String patterns II", progress: "0 / 2", problems: [{ name: "Roman to Integer", difficulty: "Medium" }, { name: "Longest Substring Without Repeating Characters", difficulty: "Medium" }] },
-  { dayNumber: 5, title: "Two pointers deep", progress: "0 / 2", problems: [{ name: "Move Zeroes", difficulty: "Medium" }, { name: "Rotate Array", difficulty: "Medium" }] },
-  { dayNumber: 6, title: "Sliding window mastery", progress: "0 / 2", problems: [{ name: "Longest Repeating Character Replacement", difficulty: "Medium" }, { name: "Longest Substring with At Most K Distinct Characters", difficulty: "Medium" }] },
-  { dayNumber: 7, title: "Prefix sum + hash-table", progress: "0 / 2", problems: [{ name: "Word Break", difficulty: "Medium" }, { name: "Letter Combinations of a Phone Number", difficulty: "Medium" }] },
-  { dayNumber: 8, title: "Binary search variants I", progress: "0 / 2", problems: [{ name: "Longest Increasing Subsequence", difficulty: "Medium" }, { name: "Search in Rotated Sorted Array", difficulty: "Medium" }] },
-  { dayNumber: 9, title: "Binary search variants II", progress: "0 / 2", problems: [{ name: "Median of Two Sorted Arrays", difficulty: "Hard" }, { name: "Count Complete Tree Nodes", difficulty: "Medium" }] },
-  { dayNumber: 10, title: "Heap problems", progress: "0 / 2", problems: [{ name: "Kth Largest Element in an Array", difficulty: "Medium" }, { name: "Top K Frequent Elements", difficulty: "Medium" }] },
-  { dayNumber: 11, title: "Stack patterns", progress: "0 / 2", problems: [{ name: "Decode String", difficulty: "Medium" }, { name: "Reorder List", difficulty: "Medium" }] },
-  { dayNumber: 12, title: "Monotonic stack", progress: "0 / 2", problems: [{ name: "Largest Rectangle in Histogram", difficulty: "Hard" }, { name: "Daily Temperatures", difficulty: "Medium" }] },
-  { dayNumber: 13, title: "Sorting patterns", progress: "0 / 2", problems: [{ name: "Sort Colors", difficulty: "Medium" }, { name: "Sort Characters by Frequency", difficulty: "Medium" }] },
-  { dayNumber: 14, title: "Divide & conquer", progress: "0 / 1", problems: [{ name: "Merge k Sorted Lists", difficulty: "Hard" }] },
-  { dayNumber: 15, title: "Binary tree deep I", progress: "0 / 2", problems: [{ name: "Lowest Common Ancestor of a Binary Tree", difficulty: "Medium" }, { name: "Validate Binary Search Tree", difficulty: "Medium" }] },
-  { dayNumber: 16, title: "Binary tree deep II", progress: "0 / 2", problems: [{ name: "Symmetric Tree", difficulty: "Easy" }, { name: "Minimum Depth of Binary Tree", difficulty: "Easy" }] },
-  { dayNumber: 17, title: "DFS on trees", progress: "0 / 2", problems: [{ name: "Kth Smallest Element in a BST", difficulty: "Medium" }, { name: "Number of Connected Components in an Undirected Graph", difficulty: "Medium" }] },
-  { dayNumber: 18, title: "BFS on graphs", progress: "0 / 2", problems: [{ name: "Course Schedule", difficulty: "Medium" }, { name: "Is Graph Bipartite?", difficulty: "Medium" }] },
-  { dayNumber: 19, title: "Graph traversal", progress: "0 / 2", problems: [{ name: "Redundant Connection", difficulty: "Medium" }, { name: "Keys and Rooms", difficulty: "Medium" }] },
-  { dayNumber: 20, title: "Union-find", progress: "0 / 2", problems: [{ name: "Number of Islands", difficulty: "Medium" }, { name: "Longest Consecutive Sequence", difficulty: "Medium" }] },
-  { dayNumber: 21, title: "Topological sort", isRestDay: true },
-  { dayNumber: 22, title: "DP foundations", progress: "0 / 2", problems: [{ name: "Climbing Stairs", difficulty: "Medium" }, { name: "Coin Change", difficulty: "Medium" }] },
-  { dayNumber: 23, title: "DP on strings", progress: "0 / 2", problems: [{ name: "House Robber", difficulty: "Medium" }, { name: "Best Time to Buy and Sell Stock II", difficulty: "Medium" }] },
-  { dayNumber: 24, title: "DP on grids", progress: "0 / 2", problems: [{ name: "Max Area of Island", difficulty: "Medium" }, { name: "Unique Paths", difficulty: "Medium" }] },
-  { dayNumber: 25, title: "DP — knapsack flavors", progress: "0 / 2", problems: [{ name: "Longest Palindromic Substring", difficulty: "Medium" }, { name: "Maximum Product Subarray", difficulty: "Medium" }] },
-  { dayNumber: 26, title: "DP — harder", progress: "0 / 2", problems: [{ name: "Trapping Rain Water", difficulty: "Hard" }, { name: "Generate Parentheses", difficulty: "Medium" }] },
-  { dayNumber: 27, title: "DP review", progress: "0 / 2", problems: [{ name: "Partition Equal Subset Sum", difficulty: "Medium" }, { name: "House Robber II", difficulty: "Medium" }] },
-  { dayNumber: 28, title: "DP boss day", progress: "0 / 2", problems: [{ name: "Longest Valid Parentheses", difficulty: "Hard" }, { name: "Product of Array Except Self", difficulty: "Hard" }] },
-  { dayNumber: 29, title: "Backtracking I", progress: "0 / 2", problems: [{ name: "Subsets", difficulty: "Medium" }, { name: "Permutations", difficulty: "Medium" }] },
-  { dayNumber: 30, title: "Backtracking II", progress: "0 / 2", problems: [{ name: "Combinations", difficulty: "Medium" }, { name: "Combination Sum", difficulty: "Medium" }] },
-  { dayNumber: 31, title: "Backtracking III", progress: "0 / 2", problems: [{ name: "Word Search", difficulty: "Medium" }, { name: "Letter Case Permutation", difficulty: "Medium" }] },
-  { dayNumber: 32, title: "Recursion patterns", progress: "0 / 2", problems: [{ name: "Reverse Linked List", difficulty: "Easy" }, { name: "Merge Two Sorted Lists", difficulty: "Easy" }] },
-  { dayNumber: 33, title: "Bit tricks", progress: "0 / 2", problems: [{ name: "Power of Two", difficulty: "Easy" }, { name: "Missing Number", difficulty: "Easy" }] },
-  { dayNumber: 34, title: "Math + combinatorics", progress: "0 / 2", problems: [{ name: "FizzBuzz", difficulty: "Easy" }, { name: "Array Sum", difficulty: "Easy" }] },
-  { dayNumber: 35, title: "Mixed mock day I", progress: "0 / 2", problems: [{ name: "Container With Most Water", difficulty: "Hard" }, { name: "Binary Tree Maximum Path Sum", difficulty: "Hard" }] },
-  { dayNumber: 36, title: "Hard array problems", progress: "0 / 1", problems: [{ name: "Sliding Window Maximum", difficulty: "Hard" }] },
-  { dayNumber: 37, title: "Hard DP", progress: "0 / 1", problems: [{ name: "Edit Distance", difficulty: "Hard" }] },
-  { dayNumber: 38, title: "Hard graph", isRestDay: true },
-  { dayNumber: 39, title: "Hard strings", progress: "0 / 1", problems: [{ name: "Minimum Window Substring", difficulty: "Hard" }] },
-  { dayNumber: 40, title: "Hard stack / deque", isRestDay: true },
-  { dayNumber: 41, title: "Mock interview day", isRestDay: true },
-  { dayNumber: 42, title: "Company set — Google", progress: "0 / 1", problems: [{ name: "Rotting Oranges", difficulty: "Medium" }] },
-  { dayNumber: 43, title: "Company set — Amazon", progress: "0 / 2", problems: [{ name: "Add Two Numbers", difficulty: "Medium" }, { name: "Diameter of Binary Tree", difficulty: "Easy" }] },
-  { dayNumber: 44, title: "Company set — Flipkart", progress: "0 / 2", problems: [{ name: "Linked List Cycle", difficulty: "Easy" }, { name: "Spiral Matrix", difficulty: "Medium" }] },
-  { dayNumber: 45, title: "Review — weak topics", progress: "0 / 1", problems: [{ name: "Target Sum", difficulty: "Medium" }] },
-];
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+
+function getToken() {
+  return localStorage.getItem('token') || sessionStorage.getItem('token');
+}
+
+function authHeaders() {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+const getDayTitle = (dayNumber) => {
+  const titles = {
+    1: "Array patterns I",
+    2: "Array patterns II",
+    3: "String patterns I",
+    4: "String patterns II",
+    5: "Two pointers deep",
+    6: "Sliding window mastery",
+    7: "Prefix sum + hash-table",
+    8: "Binary search variants I",
+    9: "Binary search variants II",
+    10: "Heap problems",
+    11: "Stack patterns",
+    12: "Monotonic stack",
+    13: "Sorting patterns",
+    14: "Divide & conquer",
+    15: "Binary tree deep I",
+    16: "Binary tree deep II",
+    17: "DFS on trees",
+    18: "BFS on graphs",
+    19: "Graph traversal",
+    20: "Union-find",
+    21: "Topological sort",
+    22: "DP foundations",
+    23: "DP on strings",
+    24: "DP on grids",
+    25: "DP — knapsack flavors",
+    26: "DP — harder",
+    27: "DP review",
+    28: "DP boss day",
+    29: "Backtracking I",
+    30: "Backtracking II",
+    31: "Backtracking III",
+    32: "Recursion patterns",
+    33: "Bit tricks",
+    34: "Math + combinatorics",
+    35: "Mixed mock day I",
+    36: "Hard array problems",
+    37: "Hard DP",
+    38: "Hard graph",
+    39: "Hard strings",
+    40: "Hard stack / deque",
+    41: "Mock interview day",
+    42: "Company set — Google",
+    43: "Company set — Amazon",
+    44: "Company set — Flipkart",
+    45: "Review — weak topics"
+  };
+  return titles[dayNumber] || `Day ${dayNumber} practice challenges`;
+};
+
+const getDiffColor = (diff) => {
+  if (diff === "Easy") return "text-emerald-500 border-emerald-500/20 bg-emerald-500/10";
+  if (diff === "Medium") return "text-amber-500 border-amber-500/20 bg-amber-500/10";
+  if (diff === "Hard") return "text-rose-500 border-rose-500/20 bg-rose-500/10";
+  return "text-gray-400 border-gray-500/20 bg-gray-500/10";
+};
 
 export default function FaangPrep45() {
   const navigate = useNavigate();
-  const [isEnrolled] = useState(false);
+  const [plan, setPlan] = useState(null);
+  const [submissions, setSubmissions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [userRole, setUserRole] = useState("free");
+
+  const slug = "faang-prep-45";
+
+  const fetchData = async () => {
+    try {
+      const headers = authHeaders();
+      const planRes = await fetch(`${API}/api/study-plans/${slug}`, { headers });
+      const planData = await planRes.json();
+      if (planData.success) {
+        setPlan(planData.data);
+      } else {
+        throw new Error(planData.error || "Failed to load study plan");
+      }
+
+      if (getToken()) {
+        const subRes = await fetch(`${API}/api/submissions/user/history`, { headers });
+        const subData = await subRes.json();
+        if (subData.success) {
+          setSubmissions(subData.data);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const userObj = JSON.parse(storedUser);
+        if (userObj.role) {
+          setUserRole(userObj.role);
+        }
+      } catch (e) {}
+    }
+    fetchData();
+  }, []);
+
+  const solvedProblemIds = new Set(
+    submissions
+      .filter(s => s.status === 'accepted' || s.status === 'SUCCESS' || s.status === 'ACCEPTED')
+      .map(s => s.problemId)
+  );
+
+  const isEnrolled = plan && !!plan.userProgress;
+  const isProUser = userRole === "pro";
+  const currentDayNumber = plan?.userProgress?.currentDay || 1;
+
+  const days = [];
+  let totalProblems = 0;
+  let solvedCount = 0;
+
+  if (plan) {
+    totalProblems = plan.planProblems.length;
+    solvedCount = plan.planProblems.filter(pp => solvedProblemIds.has(pp.problemId)).length;
+
+    const dayProblemsMap = {};
+    plan.planProblems.forEach(pp => {
+      if (!dayProblemsMap[pp.dayNumber]) {
+        dayProblemsMap[pp.dayNumber] = [];
+      }
+      dayProblemsMap[pp.dayNumber].push(pp);
+    });
+
+    for (let d = 1; d <= plan.durationDays; d++) {
+      const dayProblems = dayProblemsMap[d] || [];
+      const daySolved = dayProblems.filter(pp => solvedProblemIds.has(pp.problemId)).length;
+      const dayTotal = dayProblems.length;
+      const isDaySolved = dayTotal > 0 && daySolved === dayTotal;
+      const isDayMarkedCompleted = plan.userProgress?.completedDays?.includes(d) || false;
+
+      days.push({
+        dayNumber: d,
+        title: getDayTitle(d),
+        progress: `${daySolved} / ${dayTotal}`,
+        problems: dayProblems.map(pp => ({
+          dbId: pp.problem.id,
+          id: pp.problem.slug,
+          name: pp.problem.title,
+          difficulty: pp.problem.difficulty.charAt(0).toUpperCase() + pp.problem.difficulty.slice(1).toLowerCase(),
+        })),
+        isRestDay: dayTotal === 0,
+        isDaySolved,
+        isDayMarkedCompleted
+      });
+    }
+  }
+
+  // Automatically mark day as completed in the DB if solved but not marked
+  useEffect(() => {
+    if (isEnrolled && plan) {
+      days.forEach(async (day) => {
+        if (!day.isRestDay && day.isDaySolved && !day.isDayMarkedCompleted) {
+          try {
+            await fetch(`${API}/api/study-plans/${slug}/complete-day`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...authHeaders()
+              },
+              body: JSON.stringify({ dayNumber: day.dayNumber })
+            });
+            fetchData();
+          } catch (err) {
+            console.error("Failed to auto-complete day:", err);
+          }
+        }
+      });
+    }
+  }, [isEnrolled, plan, submissions]);
+
+  const handleEnroll = async () => {
+    if (!getToken()) {
+      alert("Please log in to start this plan.");
+      navigate("/login");
+      return;
+    }
+    if (!isProUser) {
+      navigate("/pricing");
+      return;
+    }
+    try {
+      const res = await fetch(`${API}/api/study-plans/${slug}/start`, {
+        method: "POST",
+        headers: authHeaders()
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchData();
+      } else {
+        alert("Failed to start plan: " + data.error);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleUnenroll = async () => {
+    if (!window.confirm("Are you sure you want to unenroll? This will reset your progress for this plan.")) {
+      return;
+    }
+    try {
+      const res = await fetch(`${API}/api/study-plans/${slug}/unenroll`, {
+        method: "POST",
+        headers: authHeaders()
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchData();
+      } else {
+        alert("Failed to unenroll: " + data.error);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleReset = async () => {
+    if (!window.confirm("Are you sure you want to reset your schedule?")) {
+      return;
+    }
+    try {
+      await fetch(`${API}/api/study-plans/${slug}/unenroll`, {
+        method: "POST",
+        headers: authHeaders()
+      });
+      await fetch(`${API}/api/study-plans/${slug}/start`, {
+        method: "POST",
+        headers: authHeaders()
+      });
+      fetchData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const progressPercent = totalProblems > 0 ? Math.round((solvedCount / totalProblems) * 100) : 0;
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-12 text-[var(--text-muted)]">
+        <span>Loading study plan details...</span>
+      </div>
+    );
+  }
+
+  if (error || !plan) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-12 text-rose-500">
+        <span>Error: {error || "Plan not found"}</span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto w-full px-6 py-8">
@@ -118,38 +344,68 @@ export default function FaangPrep45() {
               <IcoBolt />
             </div>
             <div>
-              <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-[var(--text)] mb-1">FAANG Prep Intensive</h1>
+              <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-[var(--text)] mb-1">{plan.title}</h1>
               <p className="text-[12px] font-medium text-[var(--text-muted)] mb-3 flex items-center gap-2">
-                Pro · 45 days · 90 problems
+                Pro · {plan.durationDays} days · {totalProblems} problems
                 <span className="bg-indigo-500/20 text-indigo-500 text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider uppercase border border-indigo-500/30">PRO</span>
               </p>
               <p className="text-[13px] text-[var(--text-subtle)] leading-relaxed max-w-xl mb-5">
-                A daily curriculum built to take you from zero to campus-placement ready in a month. Breadth over depth — you'll touch every pattern interviewers actually ask.
+                {plan.description}
               </p>
               <div className="flex flex-wrap items-center gap-5 text-[12px] font-semibold text-[var(--text-subtle)]">
                 <div className="flex items-center gap-1.5">
                   <IcoCalendar />
-                  <span>45 days</span>
+                  <span>{plan.durationDays} days</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <IcoBookOpen />
-                  <span>76 problems</span>
+                  <span>{totalProblems} problems</span>
                 </div>
               </div>
             </div>
           </div>
+
+          {isEnrolled ? (
+            <div className="w-24 h-24 rounded-full border-[6px] border-[var(--border)] bg-[var(--surface-2)] flex flex-col items-center justify-center flex-shrink-0 relative mr-4">
+              <span className="text-xl font-black text-[var(--text)]">{progressPercent}<span className="text-[14px]">%</span></span>
+              <span className="text-[10px] font-bold text-[var(--text-muted)] mt-[-2px]">{solvedCount}/{totalProblems}</span>
+            </div>
+          ) : (
+            isProUser ? (
+              <button 
+                onClick={handleEnroll}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] text-white text-[13px] font-bold shadow-lg shadow-indigo-600/10 transition-colors flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
+              >
+                <span>Start plan</span>
+              </button>
+            ) : (
+              <button 
+                onClick={() => navigate('/pricing')}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] text-white text-[13px] font-bold shadow-lg shadow-indigo-600/10 transition-colors flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
+              >
+                <span>Unlock with Pro</span>
+              </button>
+            )
+          )}
         </div>
 
         {isEnrolled && (
           <div className="flex items-center gap-3">
-            <button className="px-3 py-1.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-muted)] text-[12px] font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer flex-shrink-0">
+            <button onClick={handleReset} className="px-3 py-1.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-muted)] text-[12px] font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer flex-shrink-0">
               <IcoRefresh />
               <span>Reset schedule</span>
+            </button>
+            <button 
+              onClick={handleUnenroll}
+              className="px-3 py-1.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-2)] border border-rose-500/30 hover:border-rose-500/50 text-rose-500 text-[12px] font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
+            >
+              <IcoTrash />
+              <span>Unenroll</span>
             </button>
           </div>
         )}
 
-        {!isEnrolled && (
+        {!isProUser && !isEnrolled && (
           <div className="bg-indigo-500/5 border border-indigo-500/20 rounded-xl p-5 md:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 mt-2">
             <div className="flex items-start gap-4">
               <div className="mt-1 text-indigo-500"><IcoStars /></div>
@@ -167,19 +423,19 @@ export default function FaangPrep45() {
         )}
 
         <div className="flex flex-col gap-4 mt-2">
-          {FAANG_DAYS.map((day) => {
+          {days.map((day) => {
             const isRest = day.isRestDay;
             return (
-              <div key={day.dayNumber} className={`bg-[var(--surface)] border rounded-xl overflow-hidden shadow-[var(--card-shadow)] ${isEnrolled && day.dayNumber === 1 ? 'border-indigo-500/80 shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'border-[var(--border)]'} ${isRest ? 'opacity-80' : ''}`}>
-                <div className={`px-5 py-4 border-b flex items-center justify-between ${isEnrolled && day.dayNumber === 1 ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-[var(--surface-2)]/30 border-[var(--border)]'}`}>
+              <div key={day.dayNumber} className={`bg-[var(--surface)] border rounded-xl overflow-hidden shadow-[var(--card-shadow)] ${isEnrolled && day.dayNumber === currentDayNumber ? 'border-indigo-500/80 shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'border-[var(--border)]'} ${isRest ? 'opacity-80' : ''}`}>
+                <div className={`px-5 py-4 border-b flex items-center justify-between ${isEnrolled && day.dayNumber === currentDayNumber ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-[var(--surface-2)]/30 border-[var(--border)]'}`}>
                   <div className="flex items-center gap-4">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[12px] font-black font-mono ${isEnrolled && day.dayNumber === 1 ? 'bg-indigo-500/20 text-indigo-500 border border-indigo-500/30' : 'bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-muted)]'}`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[12px] font-black font-mono ${isEnrolled && day.dayNumber === currentDayNumber ? 'bg-indigo-500/20 text-indigo-500 border border-indigo-500/30' : 'bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-muted)]'}`}>
                       {day.dayNumber}
                     </div>
                     <div>
                       <div className="text-[10px] font-black tracking-wider uppercase font-mono mb-0.5 flex items-center gap-1.5">
-                        <span className={isEnrolled && day.dayNumber === 1 ? 'text-indigo-500' : 'text-[var(--text-muted)]'}>DAY {day.dayNumber}</span>
-                        {isEnrolled && day.dayNumber === 1 && (
+                        <span className={isEnrolled && day.dayNumber === currentDayNumber ? 'text-indigo-500' : 'text-[var(--text-muted)]'}>DAY {day.dayNumber}</span>
+                        {isEnrolled && day.dayNumber === currentDayNumber && (
                           <>
                             <span className="text-[var(--text-subtle)]">·</span>
                             <span className="text-indigo-500">TODAY</span>
@@ -200,21 +456,25 @@ export default function FaangPrep45() {
                     {day.problems.map((problem, i) => (
                       <div 
                         key={i} 
-                        onClick={() => navigate('/practice/problems')}
+                        onClick={() => navigate(`/practice/problems/${problem.id}`)}
                         className="flex items-center justify-between px-5 py-3.5 border-b border-[var(--border)] last:border-none hover:bg-[var(--surface-2)] transition-colors group cursor-pointer"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="w-4 h-4 rounded-full border-2 border-[var(--border)] group-hover:border-indigo-500/50 flex-shrink-0 transition-colors" />
-                          <span className="text-[12.5px] font-semibold text-[var(--text)]">
+                          {solvedProblemIds.has(problem.dbId) ? (
+                            <div className="w-4 h-4 rounded-full bg-emerald-500 border border-emerald-500 flex items-center justify-center flex-shrink-0">
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            </div>
+                          ) : (
+                            <div className="w-4 h-4 rounded-full border-2 border-[var(--border)] group-hover:border-indigo-500/50 flex-shrink-0 transition-colors" />
+                          )}
+                          <span className="text-[12.5px] font-semibold text-[var(--text)] group-hover:text-indigo-500 transition-colors">
                             {problem.name}
                           </span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className={`text-[9px] font-black tracking-wider px-2 py-0.5 rounded uppercase font-sans border ${
-                            problem.difficulty === 'Easy' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-                            problem.difficulty === 'Medium' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
-                            'bg-rose-500/10 text-rose-500 border-rose-500/20'
-                          }`}>
+                          <span className={`text-[9px] font-black tracking-wider px-2 py-0.5 rounded uppercase font-sans border ${getDiffColor(problem.difficulty)}`}>
                             {problem.difficulty}
                           </span>
                           <span className="text-[var(--text-subtle)] group-hover:text-indigo-500 transition-colors pl-1">
