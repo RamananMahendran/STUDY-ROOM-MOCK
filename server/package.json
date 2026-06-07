@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "tsc -w",
+    "dev": "tsx watch src/server.ts",
     "start": "node dist/src/server.js",
     "docker:start": "ts-node-esm src/server.ts",
     "db:push": "prisma db push",

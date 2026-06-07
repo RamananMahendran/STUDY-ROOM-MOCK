@@ -67,14 +67,19 @@ model User {
   discussions     Discussion[]
   contestEntries  ContestParticipant[]
 
+  // Mock Interviews
   mockInterviews MockInterview[]
+  
+  // Study Plans Progress
+  studyPlanProgress UserStudyPlanProgress[]
+  weeklyChallengeProgress UserWeeklyChallengeProgress[]
 
   @@map("users")
 }
 
 model OAuthAccount {
   id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId           Int      @map("user_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  userId           Int      @map("user_id")
   provider         String   // 'google', 'github'
   providerClientId String   @map("provider_client_id")
   createdAt        DateTime @default(now()) @db.Timestamptz @map("created_at")
@@ -87,7 +92,7 @@ model OAuthAccount {
 
 model Subscription {
   id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId             Int       @map("user_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  userId             Int       @map("user_id")
   status             String    // 'active', 'canceled', 'unpaid'
   planType           String    @map("plan_type") // 'monthly', 'yearly'
   currentPeriodStart DateTime  @db.Timestamptz @map("current_period_start")
@@ -102,7 +107,7 @@ model Subscription {
 
 model Badge {
   id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title       String      // e.g., "7-Day Streak Warrior", "Algorithm Master"
+  title       String
   description String
   iconUrl     String      @map("icon_url")
   userBadges  UserBadge[]
@@ -112,7 +117,7 @@ model Badge {
 
 model UserBadge {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    Int      @map("user_id")  // 👈 FIXED: Changed String @db.Uuid to Int
+  userId    Int      @map("user_id")
   badgeId   String   @db.Uuid @map("badge_id")
   earnedAt  DateTime @default(now()) @db.Timestamptz @map("earned_at")
 
@@ -125,8 +130,8 @@ model UserBadge {
 
 model Friendship {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userAId   Int      @map("user_a_id") // 👈 FIXED: Changed String @db.Uuid to Int
-  userBId   Int      @map("user_b_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  userAId   Int      @map("user_a_id")
+  userBId   Int      @map("user_b_id")
   status    String   @default("pending") // 'pending', 'accepted', 'blocked'
   createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
 
@@ -142,10 +147,10 @@ model Friendship {
 // ============================================================
 
 model StudyRoom {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id         String   @id
   name       String
   slug       String   @unique
-  ownerId    Int      @map("owner_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  ownerId    Int      @map("owner_id")
   isPrivate  Boolean  @default(false) @map("is_private")
   roomType   String   @default("study") // 'study', 'pair_programming', 'mock_interview'
   createdAt  DateTime @default(now()) @db.Timestamptz @map("created_at")
@@ -162,7 +167,7 @@ model StudyRoom {
 
 model RoomMember {
   id       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  roomId   String    @db.Uuid @map("room_id")
+  roomId   String    @map("room_id")
   userId   Int       @map("user_id") // 👈 FIXED: Changed String @db.Uuid to Int
   isOnline Boolean   @default(false) @map("is_online")
   socketId String?   @map("socket_id")
@@ -177,7 +182,7 @@ model RoomMember {
 
 model ChatMessage {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  roomId    String   @db.Uuid @map("room_id")
+  roomId    String   @map("room_id")
   userId    Int      @map("user_id") // 👈 FIXED: Changed String @db.Uuid to Int
   message   String
   createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
@@ -190,7 +195,7 @@ model ChatMessage {
 
 model RoomTask {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  roomId      String   @db.Uuid @map("room_id")
+  roomId      String   @map("room_id")
   title       String
   isCompleted Boolean  @default(false) @map("is_completed")
   createdAt   DateTime @default(now()) @db.Timestamptz @map("created_at")
@@ -202,7 +207,7 @@ model RoomTask {
 
 model WhiteboardSession {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  roomId    String   @unique @db.Uuid @map("room_id")
+  roomId    String   @unique @map("room_id")
   elements  Json     @default("[]")
   updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
 
@@ -229,13 +234,16 @@ model Problem {
   createdAt      DateTime @default(now()) @db.Timestamptz @map("created_at")
   updatedAt      DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
 
-  // Mock Interview Relations (Day 5)
+  // Mock Interview Relations
   mockInterviewProblems MockInterviewProblem[]
   mockInterviewResults  MockInterviewResult[]
   
+  // Study Plan Relations
+  studyPlanProblems StudyPlanProblem[]
+  weeklyChallengeProblems WeeklyChallengeProblem[]
+  
   // Existing Relations
   submissions     Submission[]
-  planProblems    StudyPlanProblem[]
   discussions     Discussion[]
   contestProblems ContestProblem[]
   pairSessions    PairSession[]
@@ -253,11 +261,10 @@ model Submission {
   runtimeMs      Int?     @map("runtime_ms")
   memoryKb       Int?     @map("memory_kb")
   
-  // 👇 ADD THESE MISSING FIELDS
   errorMessage   String?  @map("error_message")
   testResults    Json?    @map("test_results")
   submittedFrom  String?  @map("submitted_from")
-  pairSessionId  String?  @map("pair_session_id") @db.Uuid
+  pairSessionId  String?  @map("pair_session_id")
   
   createdAt      DateTime @default(now()) @db.Timestamptz @map("created_at")
   updatedAt      DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
@@ -269,82 +276,110 @@ model Submission {
   @@map("submissions")
 }
 
+// ============================================================
+// STUDY PLANS (BE3 Day 5/6)
+// ============================================================
+
 model StudyPlan {
-  id           String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title        String
-  description  String
-  isPremium    Boolean            @default(false) @map("is_premium")
-  durationDays Int                @map("duration_days")
-  problems     StudyPlanProblem[]
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title          String
+  slug           String    @unique
+  description    String    @db.Text
+  difficulty     String    // 'beginner', 'intermediate', 'advanced', 'mixed'
+  durationDays   Int       @map("duration_days")
+  problemCount   Int       @map("problem_count")
+  isPro          Boolean   @default(false) @map("is_pro")
+  icon           String?   // emoji or icon name
+  color          String?   // theme color
+  createdAt      DateTime  @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt      DateTime  @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
+
+  // Relations
+  userProgress   UserStudyPlanProgress[]
+  planProblems   StudyPlanProblem[]
 
   @@map("study_plans")
 }
 
 model StudyPlanProblem {
-  planId    String @db.Uuid @map("plan_id")
-  problemId Int    @map("problem_id") // 👈 FIXED: Changed String @db.Uuid to Int
-  dayNumber Int    @map("day_number")
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  planId         String    @map("plan_id") @db.Uuid
+  problemId      Int       @map("problem_id")
+  dayNumber      Int       @map("day_number")
+  orderIndex     Int       @default(0) @map("order_index")
+  notes          String?   @db.Text
 
-  plan      StudyPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-  problem   Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  plan           StudyPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  problem        Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
 
-  @@id([planId, problemId])
+  @@unique([planId, dayNumber, problemId])
   @@map("study_plan_problems")
 }
 
-model Discussion {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  problemId Int      @map("problem_id") // 👈 FIXED: Changed String @db.Uuid to Int
-  userId    Int      @map("user_id")    // 👈 FIXED: Changed String @db.Uuid to Int
-  content   String   @db.Text
-  createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
+model UserStudyPlanProgress {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         Int       @map("user_id")
+  planId         String    @map("plan_id") @db.Uuid
+  currentDay     Int       @default(1) @map("current_day")
+  completedDays  Int[]     @default([]) @map("completed_days")
+  startedAt      DateTime  @default(now()) @db.Timestamptz @map("started_at")
+  completedAt    DateTime? @db.Timestamptz @map("completed_at")
+  lastActivityAt DateTime  @default(now()) @db.Timestamptz @map("last_activity_at")
 
-  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan           StudyPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
-  @@map("discussions")
-}
-
-model Contest {
-  id           String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title        String
-  description  String
-  startTime    DateTime             @db.Timestamptz @map("start_time")
-  endTime      DateTime             @db.Timestamptz @map("end_time")
-  createdAt    DateTime             @default(now()) @db.Timestamptz @map("created_at")
-  problems     ContestProblem[]
-  participants ContestParticipant[]
-
-  @@map("contests")
-}
-
-model ContestProblem {
-  contestId String @db.Uuid @map("contest_id")
-  problemId Int    @map("problem_id") // 👈 FIXED: Changed String @db.Uuid to Int
-  points    Int    @default(100)
-
-  contest   Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
-  problem   Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
-
-  @@id([contestId, problemId])
-  @@map("contest_problems")
-}
-
-model ContestParticipant {
-  contestId  String @db.Uuid @map("contest_id")
-  userId     Int    @map("user_id") // 👈 FIXED: Changed String @db.Uuid to Int
-  totalScore Int    @default(0) @map("total_score")
-
-  contest    Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
-  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@id([contestId, userId])
-  @@map("contest_participants")
+  @@unique([userId, planId])
+  @@map("user_study_plan_progress")
 }
 
 // ============================================================
-// MODULE 4: Peer Mock Interviews (BE2/BE3 Integration)
+// WEEKLY CHALLENGES (BE3 Day 6)
 // ============================================================
+
+model WeeklyChallenge {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  weekNumber     Int       @unique @map("week_number")
+  startDate      DateTime  @db.Timestamptz @map("start_date")
+  endDate        DateTime  @db.Timestamptz @map("end_date")
+  theme          String?   // e.g., "Dynamic Programming Week", "Graph Week"
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @db.Timestamptz @map("created_at")
+
+  problems       WeeklyChallengeProblem[]
+  userProgress   UserWeeklyChallengeProgress[]
+
+  @@map("weekly_challenges")
+}
+
+model WeeklyChallengeProblem {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  challengeId    String    @map("challenge_id") @db.Uuid
+  problemId      Int       @map("problem_id")
+  dayNumber      Int       @map("day_number")  // 1-7
+  orderIndex     Int       @default(0) @map("order_index")
+
+  challenge      WeeklyChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  problem        Problem        @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([challengeId, dayNumber])
+  @@map("weekly_challenge_problems")
+}
+
+model UserWeeklyChallengeProgress {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         Int       @map("user_id")
+  challengeId    String    @map("challenge_id") @db.Uuid
+  completedDays  Int[]     @default([]) @map("completed_days")
+  startedAt      DateTime  @default(now()) @db.Timestamptz @map("started_at")
+  completedAt    DateTime? @db.Timestamptz @map("completed_at")
+
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge      WeeklyChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, challengeId])
+  @@map("user_weekly_challenge_progress")
+}
 
 // ============================================================
 // MODULE 4: Mock Interview Mode (BE3 Day 5)
@@ -398,8 +433,13 @@ model MockInterviewResult {
 
   @@map("mock_interview_results")
 }
+
+// ============================================================
+// PAIR CODING SESSIONS (BE3 Day 4)
+// ============================================================
+
 model PairSession {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id          String   @id
   roomCode    String   @unique @map("room_code")
   problemId   Int?     @map("problem_id")
   hostId      Int      @map("host_id")
@@ -409,7 +449,7 @@ model PairSession {
   currentCode String?  @map("current_code") @db.Text
   createdAt   DateTime @default(now()) @db.Timestamptz @map("created_at")
   updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
-  submissions  Submission[]  // 👈 ADD THIS LINE
+  submissions  Submission[]
 
   // Relations
   problem     Problem?      @relation(fields: [problemId], references: [id], onDelete: Cascade)
@@ -422,27 +462,81 @@ model PairSession {
 
 model PairCursor {
   id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  sessionId    String   @db.Uuid @map("session_id")
+  sessionId    String   @map("session_id")
   userId       Int      @map("user_id")
   lineNumber   Int      @default(1) @map("line_number")
   columnNumber Int      @default(1) @map("column_number")
   color        String   @default("#7F77DD")
   updatedAt    DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
 
-  // Relations
   session      PairSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([sessionId, userId])
   @@map("pair_cursors")
 }
+
+// ============================================================
+// CONTESTS (BE3)
+// ============================================================
+
+model Contest {
+  id           String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title        String
+  description  String
+  startTime    DateTime             @db.Timestamptz @map("start_time")
+  endTime      DateTime             @db.Timestamptz @map("end_time")
+  createdAt    DateTime             @default(now()) @db.Timestamptz @map("created_at")
+  problems     ContestProblem[]
+  participants ContestParticipant[]
+
+  @@map("contests")
+}
+
+model ContestProblem {
+  contestId String @db.Uuid @map("contest_id")
+  problemId Int    @map("problem_id")
+  points    Int    @default(100)
+
+  contest   Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  problem   Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@id([contestId, problemId])
+  @@map("contest_problems")
+}
+
+model ContestParticipant {
+  contestId  String @db.Uuid @map("contest_id")
+  userId     Int    @map("user_id")
+  totalScore Int    @default(0) @map("total_score")
+
+  contest    Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([contestId, userId])
+  @@map("contest_participants")
+}
+
+model Discussion {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  problemId Int      @map("problem_id")
+  userId    Int      @map("user_id")
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
+
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("discussions")
+}
+
 // ============================================================
 // MODULE 5: Global Infrastructure, Leaderboard & Audits (BE4)
 // ============================================================
 
 model LeaderboardEntry {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId     Int      @map("user_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  userId     Int      @map("user_id")
   period     String
   score      Int      @default(0)
   rank       Int?
@@ -454,7 +548,7 @@ model LeaderboardEntry {
 
 model AnalyticsEvent {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    Int?     @map("user_id") // 👈 FIXED: Changed String @db.Uuid to Int?
+  userId    Int?     @map("user_id")
   eventName String   @map("event_name")
   properties Json?
   createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
@@ -466,7 +560,7 @@ model AnalyticsEvent {
 
 model AuditLog {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  actorId    Int      @map("actor_id") // 👈 FIXED: Changed String @db.Uuid to Int (Assuming users/admins run actions)
+  actorId    Int      @map("actor_id")
   action     String
   targetType String   @map("target_type")
   targetId   String   @map("target_id")

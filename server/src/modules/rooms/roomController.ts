@@ -62,12 +62,13 @@ export const createRoom = async (req: Request | any, res: Response): Promise<voi
     const capacity = maxCapacity || (mode === 'solo' ? 1 : mode === 'pair' ? 2 : 10);
     const joinCode = generateJoinCode();
     
-    // Generate a temporary ID if no user is logged in, otherwise create DB record
-    let roomId = `guest-room-${Date.now()}`;
+    // Use joinCode as the actual ID everywhere
+    let roomId = joinCode;
     
     if (userId) {
       const room = await prisma.studyRoom.create({
         data: {
+          id: roomId,
           name: `${mode.charAt(0).toUpperCase() + mode.slice(1)} Room`,
           slug: `${mode}-${joinCode.toLowerCase()}`,
           ownerId: userId,
@@ -75,7 +76,6 @@ export const createRoom = async (req: Request | any, res: Response): Promise<voi
           roomType: mode === 'mock_interview' ? 'mock_interview' : 'study',
         },
       });
-      roomId = room.id;
     }
 
     await setRoomState(roomId, {
