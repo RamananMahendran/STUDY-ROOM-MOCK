@@ -1,10 +1,21 @@
 import { Server, Socket } from 'socket.io';
 import { setRoomState, getRoomState, getRoomUsers } from '../../services/redis.service.js';
+import User from '../../modules/auth/User.js';
 
 const activeTimers = new Map<string, NodeJS.Timeout>();
 
 const recordSessionToDatabase = async (userIds: string[], duration: number): Promise<void> => {
-  console.log(`[STUB] Recording session for users: ${userIds.join(', ')}, duration: ${duration}ms`);
+  console.log(`Recording session for users: ${userIds.join(', ')}, duration: ${duration}ms`);
+  for (const uid of userIds) {
+    const numId = Number(uid);
+    if (!isNaN(numId)) {
+      try {
+        await User.recordStudySession(numId, duration);
+      } catch (err) {
+        console.error(`Failed to record study session for user ${numId}:`, err);
+      }
+    }
+  }
 };
 
 export const registerTimerHandlers = (io: Server, socket: Socket) => {

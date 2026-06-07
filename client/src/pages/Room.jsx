@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+
 // ─── CSS Variables injected globally (Removed hardcoded styles to use index.css) ──────────
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -1451,12 +1453,41 @@ export default function App() {
   const isBreak = mode === "break";
 
   useEffect(() => {
+    const logFocusSessionToDatabase = (durationMs) => {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      if (!token) return;
+
+      fetch(`${API}/api/auth/study-session`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ duration: durationMs })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.success) {
+            if (window.addNotification) {
+              window.addNotification(`Focus session logged: +${(durationMs / 60000).toFixed(0)}m focus time!`);
+            }
+          }
+        })
+        .catch(err => console.error("Error logging study session:", err));
+    };
+
     if (running) {
       intervalRef.current = setInterval(() => {
         setTimeLeft(t => {
-          if (t <= 0) {
+          if (t <= 1) {
             setRunning(false);
             setWasPaused(false);
+            if (!isBreak) {
+              const durationMs = focusMins * 60 * 1000;
+              setTimeout(() => {
+                logFocusSessionToDatabase(durationMs);
+              }, 0);
+            }
             return (isBreak ? breakMins : focusMins) * 60;
           }
           return t - 1;

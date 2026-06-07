@@ -1,5 +1,5 @@
-import { useState,  useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { data, useNavigate } from "react-router-dom";
 
 const SolveVelocityChart = () => {
   return (
@@ -9,13 +9,13 @@ const SolveVelocityChart = () => {
         <span style={{ transform: "translateY(-50%)" }}>1</span>
         <span style={{ transform: "translateY(50%)" }}>0</span>
       </div>
-      
+
       {/* SVG Chart Area */}
       <div style={{ position: "absolute", left: 24, right: 8, top: 0, bottom: 20 }}>
         {/* Horizontal grid lines */}
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, backgroundColor: "var(--border)" }} />
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 1, backgroundColor: "var(--border)" }} />
-        
+
         <svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 100 100" style={{ overflow: "visible" }}>
           <defs>
             <linearGradient id="solve-grad" x1="0" y1="0" x2="0" y2="1">
@@ -23,16 +23,16 @@ const SolveVelocityChart = () => {
               <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
             </linearGradient>
           </defs>
-          
+
           {/* Daily Line Area */}
           <polygon points="0,100 95,100 100,0 100,100" fill="url(#solve-grad)" />
-          
+
           {/* Daily Line (solid purple) */}
           <polyline points="0,100 95,100 100,0" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-          
+
           {/* 7-day Avg Line (dashed pink) */}
           <polyline points="0,100 95,100 100,80" fill="none" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="3,3" strokeLinejoin="round" strokeLinecap="round" />
-          
+
           {/* Peak Dot */}
           <circle cx="100" cy="0" r="3" fill="#6366f1" />
           <circle cx="100" cy="0" r="8" fill="#6366f1" opacity="0.25" />
@@ -63,7 +63,7 @@ const IcoCheck = ({ s = 14 }) => <svg width={s} height={s} viewBox="0 0 24 24" f
 const IcoArrow = ({ s = 12 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>;
 const IcoMsg = ({ s = 20 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" /></svg>;
 const IcoBookOpen = ({ s = 13 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 7v14" /><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" /></svg>;
-const IcoSparkles = ({ s = 16 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M3 5h4"/></svg>;
+const IcoSparkles = ({ s = 16 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /><path d="M5 3v4" /><path d="M3 5h4" /></svg>;
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
@@ -88,6 +88,16 @@ function HeroCard({ onStartFocus, username, streak }) {
 
   // Mock global state (replace with real Auth/API context later)
   const currentUser = { name: "Mayur" };
+
+  // Dynamic milestones calculation based on current streak
+  const milestones = [3, 7, 14, 30, 50, 100, 150, 200, 365];
+  const nextMilestone = milestones.find(m => m > streak) || (Math.floor(streak / 100) + 1) * 100;
+  const prevMilestoneIndex = milestones.findIndex(m => m > streak) - 1;
+  const prevMilestone = prevMilestoneIndex >= 0 ? milestones[prevMilestoneIndex] : 0;
+  const totalDays = nextMilestone - prevMilestone;
+  const currentProgress = streak - prevMilestone;
+  const daysToGo = nextMilestone - streak;
+  const maxBoxes = totalDays <= 10 ? totalDays : 10;
 
   return (
     <div
@@ -127,7 +137,7 @@ function HeroCard({ onStartFocus, username, streak }) {
             className="inline-flex items-center cursor-pointer"
             style={{ gap: 8, padding: "11px 18px", borderRadius: 10, background: "#6366f1", color: "#fff", border: "none", fontSize: 13, fontWeight: 700, letterSpacing: "-0.1px", boxShadow: "0 8px 20px rgba(99,102,241,0.267)", fontFamily: "inherit" }}
           >
-            <svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
             Resume · Focus session
           </button>
           <button
@@ -139,7 +149,7 @@ function HeroCard({ onStartFocus, username, streak }) {
           </button>
         </div>
       </div>
-      
+
       {/* CURRENT STREAK CARD */}
       <div style={{
         padding: "18px 22px",
@@ -157,10 +167,10 @@ function HeroCard({ onStartFocus, username, streak }) {
           <IcoFlame s={14} style={{ color: "#fbbf24" }} />
           <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "1px", color: "#fbbf24", textTransform: "uppercase" }}>CURRENT STREAK</span>
         </div>
-        
+
         {/* Streak number */}
         <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginTop: 4 }}>
-          <span style={{ 
+          <span style={{
             fontSize: 46, fontWeight: 800, lineHeight: 1,
             background: "linear-gradient(180deg, #fef08a, #fbbf24)",
             WebkitBackgroundClip: "text",
@@ -171,19 +181,47 @@ function HeroCard({ onStartFocus, username, streak }) {
 
         {/* Milestone boxes */}
         <div style={{ display: "flex", gap: 5, marginTop: 12 }}>
-          {Array.from({ length: 11 }).map((_, i) => (
-             <div key={i} style={{ flex: 1, height: 16, borderRadius: 4, background: "rgba(245, 158, 11, 0.35)" }} />
-          ))}
-          <div style={{ 
-            flex: 1, height: 16, borderRadius: 4, 
-            background: "linear-gradient(180deg, #fbbf24, #f43f5e)",
-            boxShadow: "0 0 12px rgba(244, 63, 94, 0.5)"
-          }} />
+          {Array.from({ length: maxBoxes }).map((_, i) => {
+            const isLast = i === maxBoxes - 1;
+            const isFilled = isLast
+              ? currentProgress >= totalDays
+              : (totalDays <= 10 ? i < currentProgress : (i / (maxBoxes - 1) < currentProgress / totalDays));
+
+            if (isLast) {
+              return (
+                <div
+                  key={i}
+                  style={{
+                    flex: 1, height: 16, borderRadius: 4,
+                    background: isFilled
+                      ? "linear-gradient(180deg, #fbbf24, #f43f5e)"
+                      : "rgba(244, 63, 94, 0.2)",
+                    border: isFilled ? "none" : "1px dashed rgba(244, 63, 94, 0.5)",
+                    boxShadow: isFilled ? "0 0 12px rgba(244, 63, 94, 0.5)" : "none",
+                    transition: "all 0.3s ease"
+                  }}
+                />
+              );
+            }
+
+            return (
+              <div
+                key={i}
+                style={{
+                  flex: 1, height: 16, borderRadius: 4,
+                  background: isFilled
+                    ? "linear-gradient(180deg, #fef08a, #fbbf24)"
+                    : "rgba(245, 158, 11, 0.15)",
+                  transition: "all 0.3s ease"
+                }}
+              />
+            );
+          })}
         </div>
 
         {/* Footer text */}
         <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontWeight: 500, marginTop: 4 }}>
-          Next milestone: <span style={{ color: "var(--text)", fontWeight: 700 }}>3 days</span> · 2 to go
+          Next milestone: <span style={{ color: "var(--text)", fontWeight: 700 }}>{nextMilestone} days</span> · {daysToGo} {daysToGo === 1 ? "day" : "days"} to go
         </div>
       </div>
     </div>
@@ -235,6 +273,7 @@ export default function Dashboard() {
   const [email, setEmail] = useState("");
   const [userId, setUserId] = useState("");
   const [streak, setStreak] = useState(0);
+  const [profileData, setProfileData] = useState(null);
   const navigate = useNavigate();
 
   const [enrolledDate, setEnrolledDate] = useState(() => {
@@ -252,8 +291,29 @@ export default function Dashboard() {
     currentDayNumber = Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
     if (currentDayNumber > 30) currentDayNumber = 30;
   }
-  
+
   const progressPercent = Math.min((currentDayNumber / 30) * 100, 100);
+
+  const subjectMix = profileData?.subjectMix || {};
+  const totalRecorded = Object.values(subjectMix).reduce((a, b) => a + Number(b), 0) || 0.1;
+  const subjectEntries = Object.entries(subjectMix).length > 0
+    ? Object.entries(subjectMix).map(([name, hours]) => ({
+      name,
+      hours: Number(hours),
+      percent: Math.round((Number(hours) / totalRecorded) * 100)
+    }))
+    : [{ name: "First focus block", hours: 0.1, percent: 100 }];
+
+  const primaryPercent = subjectEntries[0]?.percent || 100;
+  const strokeOffset = 339.292 - (339.292 * (primaryPercent / 100));
+
+  const heatmapCells = profileData?.heatmapData || [];
+  const isCellActive = (col, row) => {
+    if (Array.isArray(heatmapCells) && heatmapCells.length > 0) {
+      return heatmapCells.some(cell => cell && cell.type === "weekly" && cell.col === col && cell.row === row);
+    }
+    return col === 4; // default Friday highlight
+  };
 
   useEffect(() => {
     // 1. Fetch the stringified user object from localStorage
@@ -271,7 +331,7 @@ export default function Dashboard() {
     try {
       // 3. Parse the JSON string back into a JavaScript object
       const userObj = JSON.parse(storedUser);
-      
+
       if (userObj && userObj.username) {
         setUsername(userObj.username);
       }
@@ -281,25 +341,28 @@ export default function Dashboard() {
       if (userObj && userObj.userId) {
         setUserId(userObj.userId);
       }
-      if (userObj && userObj.streak){
+      if (userObj && userObj.streak) {
         setStreak(userObj.streak);
       }
-      
+
       // Fetch fresh profile data to ensure streak is updated and accurate
       fetch(`${API}/api/auth/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.streak !== undefined) {
-          setStreak(data.streak);
-          userObj.streak = data.streak;
-          localStorage.setItem("user", JSON.stringify(userObj));
-        }
-      })
-      .catch(err => console.error("Error fetching fresh profile:", err));
+        .then(res => res.json())
+        .then(data => {
+          if (data) {
+            setProfileData(data);
+            if (data.streak !== undefined) {
+              setStreak(data.streak);
+              userObj.streak = data.streak;
+              localStorage.setItem("user", JSON.stringify(userObj));
+            }
+          }
+        })
+        .catch(err => console.error("Error fetching fresh profile:", err));
 
-      console.log("User data loaded successfully:", { username: userObj.username, email: userObj.email, userId: userObj.userId, streak: userObj.streak });
+      console.log("User data loaded successfully:", { userObj });
     } catch (error) {
       console.error("Error parsing user data from localStorage:", error);
     }
@@ -339,255 +402,263 @@ export default function Dashboard() {
 
   return (
     <>
-        <main
-          className="shell-main-content route-transition"
-          style={{ flex: "1 1 0%", minHeight: 0, display: "flex", flexDirection: "column" }}
-        >
-          <div style={{ flex: "1 1 0%", overflowY: "auto", minHeight: 0 }}>
-            <div
-              className="dashboard-container"
-              style={{
-                maxWidth: 1240,
-                margin: "0 auto",
-                padding: "clamp(20px,3vw,28px) clamp(16px,2.5vw,28px) 48px",
-                display: "flex",
-                flexDirection: "column",
-                gap: 16,
-              }}
-            >
-              {/* Daily challenge */}
-              <DailyChallenge />
+      <main
+        className="shell-main-content route-transition"
+        style={{ flex: "1 1 0%", minHeight: 0, display: "flex", flexDirection: "column" }}
+      >
+        <div style={{ flex: "1 1 0%", overflowY: "auto", minHeight: 0 }}>
+          <div
+            className="dashboard-container"
+            style={{
+              maxWidth: 1240,
+              margin: "0 auto",
+              padding: "clamp(20px,3vw,28px) clamp(16px,2.5vw,28px) 48px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
+            }}
+          >
+            {/* Daily challenge */}
+            <DailyChallenge />
 
-              {/* Hero greeting */}
-              <HeroCard onStartFocus={handleStartFocus} username={username} streak={streak} />
+            {/* Hero greeting */}
+            <HeroCard onStartFocus={handleStartFocus} username={username} streak={streak} />
 
-              {/* KPI row */}
-              <div className="kpi-row" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
-                <KpiCard icon={IcoTimer} iconBg="var(--accent-bg)" iconColor="var(--accent)" label="Focus this week" value="0h" />
-                <KpiCard icon={IcoTimer} iconBg="rgba(16,185,129,0.12)" iconColor="#10b981" label="Pomodoros today" value="0" sub="0 total" />
-                <KpiCard icon={IcoCheck} iconBg="rgba(139,92,246,0.12)" iconColor="#8b5cf6" label="Solved this month" value="0" sub="0 of 50 all-time" />
-              </div>
+            {/* KPI row */}
+            <div className="kpi-row" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
+              <KpiCard icon={IcoTimer} iconBg="var(--accent-bg)" iconColor="var(--accent)" label="Focus this week" value={profileData ? `${profileData.studyHoursThisWeek}h` : "0h"} />
+              <KpiCard icon={IcoTimer} iconBg="rgba(16,185,129,0.12)" iconColor="#10b981" label="Pomodoros today" value={profileData ? profileData.pomodorosToday : "0"} sub={profileData ? `${profileData.pomodorosTotal} total` : "0 total"} />
+              <KpiCard icon={IcoCheck} iconBg="rgba(139,92,246,0.12)" iconColor="#8b5cf6" label="Solved this month" value={profileData ? profileData.solvedThisMonth : "0"} sub={profileData ? `${profileData.solvedAllTime} of 50 all-time` : "0 of 50 all-time"} />
+            </div>
 
-              {/* Charts row */}
-              <div className="home-charts-row" style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr)", gap: 16 }}>
-                {/* When you study best */}
-                <div style={{ padding: 18, borderRadius: 14, backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--card-shadow)", display: "flex", flexDirection: "column" }}>
-                  <div className="flex items-baseline justify-between flex-wrap" style={{ marginBottom: 14, gap: 10 }}>
-                    <div>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.1px" }}>When you study best</div>
-                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Last 7 weeks · darker = more focus minutes</div>
-                    </div>
-                    <div className="flex items-center" style={{ gap: 6, fontSize: 10, color: "var(--text-muted)" }}>
-                      <span>less</span>
-                      {[0.15, 0.35, 0.55, 0.75, 0.95].map((op, i) => (
-                        <span key={i} style={{ width: 12, height: 12, borderRadius: 3, background: `rgb(99,102,241)`, opacity: op, border: "1px solid rgba(255,255,255,0.05)", display: "inline-block" }} />
-                      ))}
-                      <span>more</span>
-                    </div>
+            {/* Charts row */}
+            <div className="home-charts-row" style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr)", gap: 16 }}>
+              {/* When you study best */}
+              <div style={{ padding: 18, borderRadius: 14, backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--card-shadow)", display: "flex", flexDirection: "column" }}>
+                <div className="flex items-baseline justify-between flex-wrap" style={{ marginBottom: 14, gap: 10 }}>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.1px" }}>When you study best</div>
+                    <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Last 7 weeks · darker = more focus minutes</div>
                   </div>
-                  
-                  {/* Heatmap Grid */}
-                  <div style={{ flex: 1, display: "flex", flexDirection: "column", marginTop: 8 }}>
-                    <div style={{ display: "flex", paddingLeft: 30, marginBottom: 8 }}>
-                      {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => (
-                        <div key={d} style={{ flex: 1, textAlign: "center", fontSize: 10, color: "var(--text-muted)", fontWeight: 500 }}>{d}</div>
+                  <div className="flex items-center" style={{ gap: 6, fontSize: 10, color: "var(--text-muted)" }}>
+                    <span>less</span>
+                    {[0.15, 0.35, 0.55, 0.75, 0.95].map((op, i) => (
+                      <span key={i} style={{ width: 12, height: 12, borderRadius: 3, background: `rgb(99,102,241)`, opacity: op, border: "1px solid rgba(255,255,255,0.05)", display: "inline-block" }} />
+                    ))}
+                    <span>more</span>
+                  </div>
+                </div>
+
+                {/* Heatmap Grid */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", marginTop: 8 }}>
+                  <div style={{ display: "flex", paddingLeft: 30, marginBottom: 8 }}>
+                    {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => (
+                      <div key={d} style={{ flex: 1, textAlign: "center", fontSize: 10, color: "var(--text-muted)", fontWeight: 500 }}>{d}</div>
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", flex: 1, gap: 4 }}>
+                    <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", width: 26, paddingBottom: 4, paddingTop: 4 }}>
+                      {["6a", "8a", "10a", "12p", "2p", "4p", "6p", "8p", "10p"].map(t => (
+                        <div key={t} style={{ fontSize: 10, color: "var(--text-muted)", height: 14, display: "flex", alignItems: "center" }}>{t}</div>
                       ))}
                     </div>
                     <div style={{ display: "flex", flex: 1, gap: 4 }}>
-                      <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", width: 26, paddingBottom: 4, paddingTop: 4 }}>
-                        {["6a", "8a", "10a", "12p", "2p", "4p", "6p", "8p", "10p"].map(t => (
-                          <div key={t} style={{ fontSize: 10, color: "var(--text-muted)", height: 14, display: "flex", alignItems: "center" }}>{t}</div>
-                        ))}
-                      </div>
-                      <div style={{ display: "flex", flex: 1, gap: 4 }}>
-                        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d, colIdx) => (
-                          <div key={d} style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
-                            {Array.from({ length: 9 }).map((_, rowIdx) => {
-                              const isFriday = colIdx === 4;
-                              return (
-                                <div
-                                  key={rowIdx}
-                                  style={{
-                                    flex: 1,
-                                    borderRadius: 4,
-                                    border: "1px solid rgba(255,255,255,0.02)",
-                                    background: isFriday ? "rgba(99, 102, 241, 0.85)" : "var(--surface-2)"
-                                  }}
-                                />
-                              )
-                            })}
-                          </div>
-                        ))}
-                      </div>
+                      {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d, colIdx) => (
+                        <div key={d} style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
+                          {Array.from({ length: 9 }).map((_, rowIdx) => {
+                            const active = isCellActive(colIdx, rowIdx);
+                            return (
+                              <div
+                                key={rowIdx}
+                                style={{
+                                  flex: 1,
+                                  borderRadius: 4,
+                                  border: "1px solid rgba(255,255,255,0.02)",
+                                  background: active ? "rgba(99, 102, 241, 0.85)" : "var(--surface-2)"
+                                }}
+                              />
+                            )
+                          })}
+                        </div>
+                      ))}
                     </div>
-                  </div>
-
-                  <div style={{ marginTop: 24, fontSize: 11, color: "var(--text-muted)", fontWeight: 500 }}>
-                    Peak window: <span style={{ color: "var(--text)", fontWeight: 700 }}>Fri · 6a–8a</span>
                   </div>
                 </div>
 
-                {/* Subject mix */}
-                <div style={{ padding: 18, borderRadius: 14, backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--card-shadow)", display: "flex", flexDirection: "column" }}>
-                  <div style={{ marginBottom: 6 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>Subject mix</div>
-                    <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Where your hours go</div>
-                  </div>
-                  
-                  {/* Doughnut Chart */}
-                  <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "16px 0" }}>
-                    <div style={{ position: "relative", width: 140, height: 140 }}>
-                      <svg width="140" height="140" viewBox="0 0 140 140" style={{ transform: "rotate(-90deg)" }}>
-                        <circle cx="70" cy="70" r="54" fill="none" stroke="var(--surface-2)" strokeWidth="16" />
-                        {/* 100% stroke */}
-                        <circle cx="70" cy="70" r="54" fill="none" stroke="#6366f1" strokeWidth="16" strokeDasharray="339.292" strokeDashoffset="0" strokeLinecap="round" />
-                      </svg>
-                      <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                        <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text)", lineHeight: 1.1 }}>0.1h</div>
-                        <div style={{ fontSize: 9, fontWeight: 800, color: "var(--text-muted)", letterSpacing: "1px", marginTop: 2 }}>RECORDED</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Legend */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto", paddingTop: 8 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ width: 10, height: 10, borderRadius: 3, background: "#6366f1" }} />
-                      <span style={{ fontSize: 12 }}>📚</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>First focus block</span>
-                    </div>
-                    <div style={{ display: "flex", gap: 10, fontSize: 11 }}>
-                      <span style={{ color: "var(--text-muted)" }}>0.1h</span>
-                      <span style={{ color: "var(--text-muted)" }}>100%</span>
-                    </div>
-                  </div>
+                <div style={{ marginTop: 24, fontSize: 11, color: "var(--text-muted)", fontWeight: 500 }}>
+                  Peak window: <span style={{ color: "var(--text)", fontWeight: 700 }}>Fri · 6a–8a</span>
                 </div>
               </div>
 
-              {/* Solve velocity */}
-              <div style={{ padding: 18, borderRadius: 14, backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--card-shadow)" }}>
-                <div className="flex items-baseline justify-between flex-wrap" style={{ marginBottom: 8, gap: 10 }}>
+              {/* Subject mix */}
+              <div style={{ padding: 18, borderRadius: 14, backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--card-shadow)", display: "flex", flexDirection: "column" }}>
+                <div style={{ marginBottom: 6 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>Subject mix</div>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Where your hours go</div>
+                </div>
+
+                {/* Doughnut Chart */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "16px 0" }}>
+                  <div style={{ position: "relative", width: 140, height: 140 }}>
+                    <svg width="140" height="140" viewBox="0 0 140 140" style={{ transform: "rotate(-90deg)" }}>
+                      <circle cx="70" cy="70" r="54" fill="none" stroke="var(--surface-2)" strokeWidth="16" />
+                      {/* 100% stroke */}
+                      <circle cx="70" cy="70" r="54" fill="none" stroke="#6366f1" strokeWidth="16" strokeDasharray="339.292" strokeDashoffset={strokeOffset} strokeLinecap="round" />
+                    </svg>
+                    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                      <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text)", lineHeight: 1.1 }}>{totalRecorded.toFixed(1)}h</div>
+                      <div style={{ fontSize: 9, fontWeight: 800, color: "var(--text-muted)", letterSpacing: "1px", marginTop: 2 }}>RECORDED</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Legend */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: "auto", paddingTop: 8 }}>
+                  {subjectEntries.map((sub, idx) => {
+                    const colors = ["#6366f1", "#10b981", "#fbbf24", "#ef4444", "#8b5cf6"];
+                    const color = colors[idx % colors.length];
+                    return (
+                      <div key={idx} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <div style={{ width: 10, height: 10, borderRadius: 3, background: color }} />
+                          <span style={{ fontSize: 12 }}>📚</span>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 120 }}>{sub.name}</span>
+                        </div>
+                        <div style={{ display: "flex", gap: 10, fontSize: 11 }}>
+                          <span style={{ color: "var(--text-muted)" }}>{sub.hours}h</span>
+                          <span style={{ color: "var(--text-muted)" }}>{sub.percent}%</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Solve velocity */}
+            <div style={{ padding: 18, borderRadius: 14, backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--card-shadow)" }}>
+              <div className="flex items-baseline justify-between flex-wrap" style={{ marginBottom: 8, gap: 10 }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>Solve velocity</div>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Problems solved per day · last 30 days</div>
+                </div>
+                <div className="flex items-center flex-wrap" style={{ gap: 14, fontSize: 11 }}>
+                  <div className="flex items-center" style={{ gap: 6 }}>
+                    <span style={{ width: 18, height: 3, background: "#6366f1", borderRadius: 2, display: "inline-block" }} />
+                    <span style={{ color: "var(--text-muted)" }}>Daily</span>
+                  </div>
+                  <div className="flex items-center" style={{ gap: 6 }}>
+                    <span style={{ width: 18, height: 0, borderTop: "2px dashed #ec4899", display: "inline-block" }} />
+                    <span style={{ color: "var(--text-muted)" }}>7-day avg</span>
+                  </div>
+                </div>
+              </div>
+              <SolveVelocityChart />
+            </div>
+
+            {/* Active Study Plan */}
+            {isEnrolled && (
+              <div style={{
+                padding: "20px 24px", borderRadius: 14, backgroundColor: "var(--surface)", border: "1px solid var(--border)",
+                boxShadow: "var(--card-shadow)", marginTop: 8
+              }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
                   <div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>Solve velocity</div>
-                    <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Problems solved per day · last 30 days</div>
-                  </div>
-                  <div className="flex items-center flex-wrap" style={{ gap: 14, fontSize: 11 }}>
-                    <div className="flex items-center" style={{ gap: 6 }}>
-                      <span style={{ width: 18, height: 3, background: "#6366f1", borderRadius: 2, display: "inline-block" }} />
-                      <span style={{ color: "var(--text-muted)" }}>Daily</span>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>
+                      30-Day Placement Sprint <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>· 30-day plan</span>
                     </div>
-                    <div className="flex items-center" style={{ gap: 6 }}>
-                      <span style={{ width: 18, height: 0, borderTop: "2px dashed #ec4899", display: "inline-block" }} />
-                      <span style={{ color: "var(--text-muted)" }}>7-day avg</span>
+                    <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
+                      Day {currentDayNumber} · 0 / 59 problems
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate("/practice/study-plans/placement-sprint-30")}
+                    style={{
+                      padding: "8px 16px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,255,255,0.15)",
+                      color: "var(--text)", fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "0.2s"
+                    }}
+                  >
+                    View plan
+                  </button>
+                </div>
+
+                <div style={{ position: "relative", marginTop: 32, marginBottom: 16 }}>
+                  {/* Today Marker */}
+                  <div style={{ position: "absolute", left: `${progressPercent}%`, top: -30, transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", transition: "left 0.5s ease" }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.5px", color: "var(--text)", marginBottom: 2 }}>TODAY</div>
+                    <div style={{ width: 2, height: 26, background: "var(--text)" }} />
+                  </div>
+
+                  {/* Progress Bar Container */}
+                  <div style={{ display: "flex", height: 12, borderRadius: 6, overflow: "hidden", background: "var(--surface-2)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                    {/* Fill */}
+                    <div style={{ width: `${progressPercent}%`, height: "100%", background: "linear-gradient(90deg, #10b981, #3b82f6)", transition: "width 0.5s ease" }} />
+                    {/* Remaining Segments */}
+                    <div style={{ flex: 1, display: "flex" }}>
+                      {[...Array(5)].map((_, i) => (
+                        <div key={i} style={{ flex: 1, borderLeft: "1px solid rgba(255,255,255,0.08)", background: `rgba(99,102,241,${0.03 + i * 0.015})` }} />
+                      ))}
                     </div>
                   </div>
                 </div>
-                <SolveVelocityChart />
+
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11, color: "var(--text-muted)", fontWeight: 500 }}>
+                  <span>Day 1</span>
+                  <span style={{ color: "var(--text)", fontWeight: 600 }}>{Math.round(progressPercent)}% through</span>
+                  <span>Day 30</span>
+                </div>
+              </div>
+            )}
+
+            {/* Insights Section */}
+            <div style={{ marginTop: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--text)" }}>
+                  <IcoSparkles s={16} />
+                  <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: "-0.2px" }}>Insights for this week</span>
+                </div>
+                <div style={{
+                  padding: "2px 8px", borderRadius: 99, background: "rgba(99,102,241,0.15)",
+                  color: "#818cf8", fontSize: 10, fontWeight: 800, letterSpacing: "1px"
+                }}>
+                  AUTO
+                </div>
               </div>
 
-              {/* Active Study Plan */}
-              {isEnrolled && (
+              <div style={{
+                padding: 20, borderRadius: 14, backgroundColor: "var(--surface)", border: "1px solid var(--border)",
+                boxShadow: "var(--card-shadow)", display: "flex", gap: 16, alignItems: "flex-start"
+              }}>
                 <div style={{
-                  padding: "20px 24px", borderRadius: 14, backgroundColor: "var(--surface)", border: "1px solid var(--border)",
-                  boxShadow: "var(--card-shadow)", marginTop: 8
+                  width: 36, height: 36, flexShrink: 0, borderRadius: 10,
+                  background: "rgba(99,102,241,0.1)", display: "flex", alignItems: "center", justifyContent: "center",
+                  color: "#818cf8"
                 }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>
-                        30-Day Placement Sprint <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>· 30-day plan</span>
-                      </div>
-                      <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
-                        Day {currentDayNumber} · 0 / 59 problems
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => navigate("/practice/study-plans/placement-sprint-30")}
-                      style={{
-                        padding: "8px 16px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,255,255,0.15)",
-                        color: "var(--text)", fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "0.2s"
-                      }}
-                    >
-                      View plan
-                    </button>
-                  </div>
-                  
-                  <div style={{ position: "relative", marginTop: 32, marginBottom: 16 }}>
-                    {/* Today Marker */}
-                    <div style={{ position: "absolute", left: `${progressPercent}%`, top: -30, transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", transition: "left 0.5s ease" }}>
-                      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.5px", color: "var(--text)", marginBottom: 2 }}>TODAY</div>
-                      <div style={{ width: 2, height: 26, background: "var(--text)" }} />
-                    </div>
-
-                    {/* Progress Bar Container */}
-                    <div style={{ display: "flex", height: 12, borderRadius: 6, overflow: "hidden", background: "var(--surface-2)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                      {/* Fill */}
-                      <div style={{ width: `${progressPercent}%`, height: "100%", background: "linear-gradient(90deg, #10b981, #3b82f6)", transition: "width 0.5s ease" }} />
-                      {/* Remaining Segments */}
-                      <div style={{ flex: 1, display: "flex" }}>
-                        {[...Array(5)].map((_, i) => (
-                           <div key={i} style={{ flex: 1, borderLeft: "1px solid rgba(255,255,255,0.08)", background: `rgba(99,102,241,${0.03 + i * 0.015})` }} />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11, color: "var(--text-muted)", fontWeight: 500 }}>
-                    <span>Day 1</span>
-                    <span style={{ color: "var(--text)", fontWeight: 600 }}>{Math.round(progressPercent)}% through</span>
-                    <span>Day 30</span>
-                  </div>
+                  <IcoSparkles s={18} />
                 </div>
-              )}
-
-              {/* Insights Section */}
-              <div style={{ marginTop: 8 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--text)" }}>
-                    <IcoSparkles s={16} />
-                    <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: "-0.2px" }}>Insights for this week</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
+                    Afternoons are your superpower
                   </div>
-                  <div style={{
-                    padding: "2px 8px", borderRadius: 99, background: "rgba(99,102,241,0.15)",
-                    color: "#818cf8", fontSize: 10, fontWeight: 800, letterSpacing: "1px"
-                  }}>
-                    AUTO
+                  <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5, maxWidth: 640 }}>
+                    You log most focus minutes in the afternoon. Locking in a 25-min block here clears today's plan in one sitting.
                   </div>
-                </div>
-                
-                <div style={{
-                  padding: 20, borderRadius: 14, backgroundColor: "var(--surface)", border: "1px solid var(--border)",
-                  boxShadow: "var(--card-shadow)", display: "flex", gap: 16, alignItems: "flex-start"
-                }}>
-                  <div style={{
-                    width: 36, height: 36, flexShrink: 0, borderRadius: 10,
-                    background: "rgba(99,102,241,0.1)", display: "flex", alignItems: "center", justifyContent: "center",
-                    color: "#818cf8"
-                  }}>
-                    <IcoSparkles s={18} />
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
-                      Afternoons are your superpower
-                    </div>
-                    <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5, maxWidth: 640 }}>
-                      You log most focus minutes in the afternoon. Locking in a 25-min block here clears today's plan in one sitting.
-                    </div>
-                    <button
-                      onClick={() => window.dispatchEvent(new Event("open-create-room-modal"))}
-                      style={{
-                        marginTop: 4, background: "transparent", border: "none", padding: 0,
-                        color: "#6366f1", fontSize: 13, fontWeight: 700, cursor: "pointer",
-                        display: "inline-flex", alignItems: "center", gap: 4, alignSelf: "flex-start"
-                      }}
-                    >
-                      Schedule a focus block <IcoChevRight s={14} />
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => window.dispatchEvent(new Event("open-create-room-modal"))}
+                    style={{
+                      marginTop: 4, background: "transparent", border: "none", padding: 0,
+                      color: "#6366f1", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                      display: "inline-flex", alignItems: "center", gap: 4, alignSelf: "flex-start"
+                    }}
+                  >
+                    Schedule a focus block <IcoChevRight s={14} />
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-        </main>
+        </div>
+      </main>
       <style>{`
         .live-dot { animation: pulse-green 1.6s ease-in-out infinite; }
         .hero-analytics { display: grid; grid-template-columns: minmax(0,1fr) 280px; }

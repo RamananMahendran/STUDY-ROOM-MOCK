@@ -452,6 +452,7 @@ export default function Profile() {
   const [userId, setUserId] = useState("");
   const [streak, setStreak] = useState(0);
   const [solvedCount, setSolvedCount] = useState(0); // 👈 3. Saved solved count profile state
+  const [profileData, setProfileData] = useState(null);
   
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [passwordSet, setPasswordSet] = useState(false);
@@ -533,10 +534,13 @@ export default function Profile() {
       })
       .then(res => res.json())
       .then(data => {
-        if (data && data.streak !== undefined) {
-          setStreak(data.streak);
-          userObj.streak = data.streak;
-          localStorage.setItem("user", JSON.stringify(userObj));
+        if (data) {
+          setProfileData(data);
+          if (data.streak !== undefined) {
+            setStreak(data.streak);
+            userObj.streak = data.streak;
+            localStorage.setItem("user", JSON.stringify(userObj));
+          }
         }
       })
       .catch(err => console.error("Error fetching fresh profile:", err));
@@ -557,15 +561,15 @@ export default function Profile() {
   const heatmapCols = 24;
 
   const badges = [
-    { icon: "🔥", title: "On a Roll", desc: "3-day study streak", earned: false },
-    { icon: "⚡", title: "Week Warrior", desc: "7-day study streak", earned: false },
-    { icon: "🏆", title: "Unstoppable", desc: "30-day study streak", earned: false },
-    { icon: "🍅", title: "Getting Started", desc: "10 focus sessions", earned: false },
-    { icon: "💪", title: "Focused", desc: "50 focus sessions", earned: false },
-    { icon: "💯", title: "Centurion", desc: "100 focus sessions", earned: false },
-    { icon: "☑️", title: "First Blood", desc: "First problem solved", earned: solvedCount > 0 },
-    { icon: "🧠", title: "Problem Solver", desc: "10 problems solved", earned: solvedCount >= 10 },
-    { icon: "🥷", title: "Coding Ninja", desc: "25 problems solved", earned: solvedCount >= 25 },
+    { icon: "🔥", title: "On a Roll", desc: "3-day study streak", earned: streak >= 3 },
+    { icon: "⚡", title: "Week Warrior", desc: "7-day study streak", earned: streak >= 7 },
+    { icon: "🏆", title: "Unstoppable", desc: "30-day study streak", earned: streak >= 30 },
+    { icon: "🍅", title: "Getting Started", desc: "10 focus sessions", earned: (profileData?.focusSessionsCount || 0) >= 10 },
+    { icon: "💪", title: "Focused", desc: "50 focus sessions", earned: (profileData?.focusSessionsCount || 0) >= 50 },
+    { icon: "💯", title: "Centurion", desc: "100 focus sessions", earned: (profileData?.focusSessionsCount || 0) >= 100 },
+    { icon: "☑️", title: "First Blood", desc: "First problem solved", earned: (profileData?.problemsSolved || solvedCount) > 0 },
+    { icon: "🧠", title: "Problem Solver", desc: "10 problems solved", earned: (profileData?.problemsSolved || solvedCount) >= 10 },
+    { icon: "🥷", title: "Coding Ninja", desc: "25 problems solved", earned: (profileData?.problemsSolved || solvedCount) >= 25 },
     { icon: "📅", title: "Daily Starter", desc: "3-day daily challenge streak", earned: false },
     { icon: "🗓️", title: "Daily Regular", desc: "7-day daily challenge streak", earned: false },
     { icon: "🔥", title: "Daily Devotee", desc: "30-day daily challenge streak", earned: false },
@@ -605,9 +609,9 @@ export default function Profile() {
               {/* Stats Grid */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 140px), 1fr))", gap: 12, marginBottom: 24 }}>
                 <StatCard icon={<IcoFlame s={16}/>} label="Current Streak" value={streak} unit="days" color="#f59e0b" gradient="linear-gradient(90deg, #f59e0b, #ef4444)" />
-                <StatCard icon={<IcoClock s={16}/>} label="Total Hours" value="0.4" unit="h" color="#6366f1" gradient="linear-gradient(90deg, #6366f1, #8b5cf6)" />
-                <StatCard icon={<IcoTarget s={16}/>} label="Focus Sessions" value="1" color="#10b981" gradient="linear-gradient(90deg, #10b981, #059669)" />
-                <StatCard icon={<IcoStar s={16}/>} label="Problems Solved" value={solvedCount} color="#facc15" gradient="linear-gradient(90deg, #facc15, #eab308)" /> {/* 👈 5. Linked to state */}
+                <StatCard icon={<IcoClock s={16}/>} label="Total Hours" value={profileData ? profileData.totalStudyHours : "0.4"} unit="h" color="#6366f1" gradient="linear-gradient(90deg, #6366f1, #8b5cf6)" />
+                <StatCard icon={<IcoTarget s={16}/>} label="Focus Sessions" value={profileData ? profileData.focusSessionsCount : "1"} color="#10b981" gradient="linear-gradient(90deg, #10b981, #059669)" />
+                <StatCard icon={<IcoStar s={16}/>} label="Problems Solved" value={profileData ? profileData.problemsSolved : solvedCount} color="#facc15" gradient="linear-gradient(90deg, #facc15, #eab308)" />
               </div>
 
               {/* Tabs navigation */}
@@ -637,159 +641,183 @@ export default function Profile() {
               </div>
 
               {/* OVERVIEW TAB */}
-              {activeTab === "Overview" && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "22px 24px" }}>
-                    <div className="chart-header-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>Study hours</span>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: "var(--accent)" }}>0.6h total</span>
+              {activeTab === "Overview" && (() => {
+                const studyLog = profileData?.studyHoursLog || [];
+                const getLogValueForLabel = (label) => {
+                  const entry = studyLog.find(item => item.label === label);
+                  return entry ? Number(entry.value) : 0;
+                };
+
+                const heatmapCells = profileData?.heatmapData || [];
+                const isHeatmapCellActive = (col, row) => {
+                  if (Array.isArray(heatmapCells) && heatmapCells.length > 0) {
+                    return heatmapCells.some(cell => cell && cell.type === "yearly" && cell.col === col && cell.row === row);
+                  }
+                  return col === 30 && row === 1; // default fallback active cell
+                };
+
+                return (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                    <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "22px 24px" }}>
+                      <div className="chart-header-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>Study hours</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--accent)" }}>{profileData ? `${profileData.studyHoursThisWeek}h total` : "0.6h total"}</span>
+                        </div>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          {["7d", "14d", "30d"].map(range => (
+                            <button
+                              key={range}
+                              onClick={() => setHoursRange(range)}
+                              style={{
+                                padding: "4px 12px", borderRadius: 99, fontSize: 11, fontWeight: 600, cursor: "pointer",
+                                backgroundColor: hoursRange === range ? "var(--accent-bg)" : "transparent",
+                                color: hoursRange === range ? "var(--accent)" : "var(--text-muted)",
+                                border: hoursRange === range ? "1px solid rgba(99, 102, 241, 0.4)" : "1px solid var(--border)"
+                              }}
+                            >
+                              {range}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                      <div style={{ display: "flex", gap: 8 }}>
-                        {["7d", "14d", "30d"].map(range => (
-                          <button
-                            key={range}
-                            onClick={() => setHoursRange(range)}
-                            style={{
-                              padding: "4px 12px", borderRadius: 99, fontSize: 11, fontWeight: 600, cursor: "pointer",
-                              backgroundColor: hoursRange === range ? "var(--accent-bg)" : "transparent",
-                              color: hoursRange === range ? "var(--accent)" : "var(--text-muted)",
-                              border: hoursRange === range ? "1px solid rgba(99, 102, 241, 0.4)" : "1px solid var(--border)"
-                            }}
-                          >
-                            {range}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    {(() => {
-                      let data = [];
-                      const today = new Date();
                       
-                      const formatDate = (date) => `${date.getMonth() + 1}/${date.getDate()}`;
-                      const getDayName = (date) => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][date.getDay()];
+                      {(() => {
+                        let data = [];
+                        const today = new Date();
+                        
+                        const formatDate = (date) => `${date.getMonth() + 1}/${date.getDate()}`;
+                        const getDayName = (date) => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][date.getDay()];
 
-                      if (hoursRange === "7d") {
-                        for (let i = 6; i >= 0; i--) {
-                          const d = new Date(today);
-                          d.setDate(today.getDate() - i);
-                          data.push({
-                            label: getDayName(d),
-                            height: i === 0 ? "40px" : "4px",
-                            active: i === 0,
-                            value: i === 0 ? "0.6h" : undefined
-                          });
+                        if (hoursRange === "7d") {
+                          for (let i = 6; i >= 0; i--) {
+                            const d = new Date(today);
+                            d.setDate(today.getDate() - i);
+                            const lbl = getDayName(d);
+                            const val = getLogValueForLabel(formatDate(d)) || (i === 0 ? 0.6 : 0);
+                            data.push({
+                              label: lbl,
+                              height: val > 0 ? `${Math.min(val * 60, 80)}px` : "4px",
+                              active: i === 0,
+                              value: val > 0 ? `${val}h` : undefined
+                            });
+                          }
+                        } else if (hoursRange === "14d") {
+                          for (let i = 13; i >= 0; i--) {
+                            const d = new Date(today);
+                            d.setDate(today.getDate() - i);
+                            const lbl = formatDate(d);
+                            const val = getLogValueForLabel(lbl) || (i === 1 ? 0.6 : 0);
+                            data.push({
+                              label: lbl,
+                              height: val > 0 ? `${Math.min(val * 60, 80)}px` : "4px",
+                              active: i === 0,
+                              value: val > 0 ? `${val}h` : undefined
+                            });
+                          }
+                        } else if (hoursRange === "30d") {
+                          for (let i = 3; i >= 0; i--) {
+                            const d = new Date(today);
+                            d.setDate(today.getDate() - i * 7);
+                            let val = 0;
+                            if (i === 0) {
+                              val = profileData ? profileData.studyHoursThisWeek : 0.6;
+                            }
+                            data.push({
+                              label: i === 0 ? "This wk" : `${d.getDate()} ${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d.getMonth()]}`,
+                              height: val > 0 ? `${Math.min(val * 60, 80)}px` : "4px",
+                              active: i === 0,
+                              value: val > 0 ? `${val}h` : undefined
+                            });
+                          }
                         }
-                      } else if (hoursRange === "14d") {
-                        for (let i = 13; i >= 0; i--) {
-                          const d = new Date(today);
-                          d.setDate(today.getDate() - i);
-                          data.push({
-                            label: formatDate(d),
-                            height: i === 0 ? "4px" : (i === 1 ? "40px" : "4px"),
-                            active: i === 0,
-                            value: i === 1 ? "0.6h" : undefined
-                          });
-                        }
-                      } else if (hoursRange === "30d") {
-                        for (let i = 3; i >= 0; i--) {
-                          const d = new Date(today);
-                          d.setDate(today.getDate() - i * 7);
-                          data.push({
-                            label: i === 0 ? "This wk" : `${d.getDate()} ${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d.getMonth()]}`,
-                            height: i === 0 ? "40px" : "4px",
-                            active: i === 0,
-                            value: i === 0 ? "0.6h" : undefined
-                          });
-                        }
-                      }
 
-                      return (
-                        <div className="study-hours-chart-scroll" style={{ width: "100%", overflowX: "auto", paddingBottom: 4 }}>
-                          <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 110, minWidth: hoursRange === "14d" ? 480 : 280 }}>
-                            {data.map((item, idx) => (
-                              <div key={idx} style={{ flex: "1 1 0%", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, height: "100%", position: "relative" }}>
-                                {item.value && <div style={{ position: "absolute", top: 10, fontSize: 10, color: item.active ? "var(--accent)" : "var(--text-muted)", fontWeight: 700 }}>{item.value}</div>}
-                                <div style={{ flex: "1 1 0%", width: "100%", display: "flex", alignItems: "flex-end", position: "relative", padding: hoursRange === "14d" ? "0 2px" : "0 10px" }}>
-                                  <div style={{ width: "100%", borderRadius: "5px 5px 0px 0px", background: item.height !== "4px" || item.active ? "linear-gradient(rgb(129, 140, 248), rgb(99, 102, 241))" : "var(--surface-2)", height: item.height }}></div>
+                        return (
+                          <div className="study-hours-chart-scroll" style={{ width: "100%", overflowX: "auto", paddingBottom: 4 }}>
+                            <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 110, minWidth: hoursRange === "14d" ? 480 : 280 }}>
+                              {data.map((item, idx) => (
+                                <div key={idx} style={{ flex: "1 1 0%", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, height: "100%", position: "relative" }}>
+                                  {item.value && <div style={{ position: "absolute", top: 10, fontSize: 10, color: item.active ? "var(--accent)" : "var(--text-muted)", fontWeight: 700 }}>{item.value}</div>}
+                                  <div style={{ flex: "1 1 0%", width: "100%", display: "flex", alignItems: "flex-end", position: "relative", padding: hoursRange === "14d" ? "0 2px" : "0 10px" }}>
+                                    <div style={{ width: "100%", borderRadius: "5px 5px 0px 0px", background: item.height !== "4px" || item.active ? "linear-gradient(rgb(129, 140, 248), rgb(99, 102, 241))" : "var(--surface-2)", height: item.height }}></div>
+                                  </div>
+                                  <div style={{ width: "100%", height: 2, backgroundColor: item.active ? "var(--accent)" : "var(--surface-2)", marginBottom: 4, borderRadius: 2 }}></div>
+                                  <span style={{ fontSize: 11, color: item.active ? "var(--accent)" : "var(--text-subtle)", fontWeight: item.active ? 700 : 400 }}>{item.label}</span>
                                 </div>
-                                <div style={{ width: "100%", height: 2, backgroundColor: item.active ? "var(--accent)" : "var(--surface-2)", marginBottom: 4, borderRadius: 2 }}></div>
-                                <span style={{ fontSize: 11, color: item.active ? "var(--accent)" : "var(--text-subtle)", fontWeight: item.active ? 700 : 400 }}>{item.label}</span>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    {/* Heatmap */}
+                    <div className="analytics-heatmap-scroll" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "22px 24px", overflowX: "auto" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, minWidth: 600 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                          <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>Activity</span>
+                          <span style={{ fontSize: 13, color: "var(--text-muted)" }}>{profileData ? `${profileData.activityActiveDays} active days` : "1 active days"}</span>
+                          <span style={{ fontSize: 13, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6 }}><IcoFlame s={14} color="#f97316" /> Longest: {profileData ? `${profileData.longestStreak}d` : "1d"}</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--text-muted)" }}>
+                          Less
+                          <div style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: "var(--surface-2)" }}></div>
+                          <div style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: "rgba(99, 102, 241, 0.3)" }}></div>
+                          <div style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: "rgba(99, 102, 241, 0.6)" }}></div>
+                          <div style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: "rgba(99, 102, 241, 0.8)" }}></div>
+                          <div style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: "rgb(99, 102, 241)" }}></div>
+                          More
+                        </div>
+                      </div>
+                      
+                      <div style={{ display: "flex" }}>
+                        <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", paddingRight: 10, paddingTop: 20, paddingBottom: 2, fontSize: 10, color: "var(--text-muted)" }}>
+                          <span>Mo</span>
+                          <span>We</span>
+                          <span>Fr</span>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", paddingLeft: 10, paddingRight: 10, fontSize: 10, color: "var(--text-muted)", marginBottom: 4 }}>
+                            <span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span>
+                          </div>
+                          <div style={{ display: "flex", gap: 3 }}>
+                            {Array.from({ length: 32 }).map((_, cIndex) => (
+                              <div key={cIndex} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                                {Array.from({ length: 7 }).map((_, rIndex) => {
+                                  const isActive = isHeatmapCellActive(cIndex, rIndex);
+                                  return <div key={rIndex} style={{ width: 12, height: 12, borderRadius: 2, backgroundColor: isActive ? "rgb(99, 102, 241)" : "var(--surface-2)" }}></div>;
+                                })}
                               </div>
                             ))}
                           </div>
                         </div>
-                      );
-                    })()}
-                  </div>
+                      </div>
+                    </div>
 
-                  {/* Heatmap */}
-                  <div className="analytics-heatmap-scroll" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "22px 24px", overflowX: "auto" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, minWidth: 600 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>Activity</span>
-                        <span style={{ fontSize: 13, color: "var(--text-muted)" }}>1 active days</span>
-                        <span style={{ fontSize: 13, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6 }}><IcoFlame s={14} color="#f97316" /> Longest: 1d</span>
+                    {/* Badges container */}
+                    <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "22px 24px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                        <IcoAward s={16} /> <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>Badges</span>
+                        <span style={{ fontSize: 13, color: "var(--text-muted)" }}>— {badges.filter(b => b.earned).length} / 12 earned</span>
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--text-muted)" }}>
-                        Less
-                        <div style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: "var(--surface-2)" }}></div>
-                        <div style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: "rgba(99, 102, 241, 0.3)" }}></div>
-                        <div style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: "rgba(99, 102, 241, 0.6)" }}></div>
-                        <div style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: "rgba(99, 102, 241, 0.8)" }}></div>
-                        <div style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: "rgb(99, 102, 241)" }}></div>
-                        More
-                      </div>
-                    </div>
-                    
-                    <div style={{ display: "flex" }}>
-                      <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", paddingRight: 10, paddingTop: 20, paddingBottom: 2, fontSize: 10, color: "var(--text-muted)" }}>
-                        <span>Mo</span>
-                        <span>We</span>
-                        <span>Fr</span>
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", paddingLeft: 10, paddingRight: 10, fontSize: 10, color: "var(--text-muted)", marginBottom: 4 }}>
-                          <span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span>
-                        </div>
-                        <div style={{ display: "flex", gap: 3 }}>
-                          {Array.from({ length: 32 }).map((_, cIndex) => (
-                            <div key={cIndex} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                              {Array.from({ length: 7 }).map((_, rIndex) => {
-                                const isActive = cIndex === 30 && rIndex === 1;
-                                return <div key={rIndex} style={{ width: 12, height: 12, borderRadius: 2, backgroundColor: isActive ? "rgb(99, 102, 241)" : "var(--surface-2)" }}></div>;
-                              })}
-                            </div>
-                          ))}
-                        </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+                        {badges.map((b, i) => (
+                          <BadgeCard key={i} icon={b.icon} title={b.title} desc={b.desc} earned={b.earned} />
+                        ))}
                       </div>
                     </div>
                   </div>
-
-                  {/* Badges container */}
-                  <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "22px 24px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                      <IcoAward s={16} /> <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>Badges</span>
-                      <span style={{ fontSize: 13, color: "var(--text-muted)" }}>— 0 / 12 earned</span>
-                    </div>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-                      {badges.map((b, i) => (
-                        <BadgeCard key={i} icon={b.icon} title={b.title} desc={b.desc} earned={b.earned} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* STUDY TAB */}
               {activeTab === "Study" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 140px), 1fr))", gap: 12 }}>
-                    <StatCard icon={<IcoTarget s={16}/>} label="Total sessions" value="4" color="#8b5cf6" gradient="linear-gradient(90deg, #8b5cf6, #6366f1)" />
-                    <StatCard icon={<IcoTrendingUp s={16}/>} label="This week" value="0.6" unit="h" color="#10b981" gradient="linear-gradient(90deg, #10b981, #059669)" />
-                    <StatCard icon={<IcoZap s={16}/>} label="Today" value="0" unit="sessions" color="#f59e0b" gradient="linear-gradient(90deg, #f59e0b, #ef4444)" />
-                    <StatCard icon={<IcoFlame s={16}/>} label="Longest streak" value="1" unit="d" color="#f97316" gradient="linear-gradient(90deg, #f97316, #ea580c)" />
+                    <StatCard icon={<IcoTarget s={16}/>} label="Total sessions" value={profileData ? profileData.totalSessions : "4"} color="#8b5cf6" gradient="linear-gradient(90deg, #8b5cf6, #6366f1)" />
+                    <StatCard icon={<IcoTrendingUp s={16}/>} label="This week" value={profileData ? profileData.studyHoursThisWeek : "0.6"} unit="h" color="#10b981" gradient="linear-gradient(90deg, #10b981, #059669)" />
+                    <StatCard icon={<IcoZap s={16}/>} label="Today" value={profileData ? profileData.pomodorosToday : "0"} unit="sessions" color="#f59e0b" gradient="linear-gradient(90deg, #f59e0b, #ef4444)" />
+                    <StatCard icon={<IcoFlame s={16}/>} label="Longest streak" value={profileData ? profileData.longestStreak : "1"} unit="d" color="#f97316" gradient="linear-gradient(90deg, #f97316, #ea580c)" />
                   </div>
                   
                   <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "22px 24px" }}>

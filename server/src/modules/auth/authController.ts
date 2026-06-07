@@ -93,6 +93,23 @@ export const getUserProfile = async (req: AuthenticatedRequest, res: Response, n
         username: user.username,
         email: user.email,
         streak: newStreak,
+        totalStudyHours: user.totalStudyHours,
+        focusSessionsCount: user.focusSessionsCount,
+        problemsSolved: user.problemsSolved,
+        problemsAttempted: user.problemsAttempted,
+        acceptanceRate: user.acceptanceRate,
+        pomodorosToday: user.pomodorosToday,
+        pomodorosTotal: user.pomodorosTotal,
+        solvedThisMonth: user.solvedThisMonth,
+        solvedAllTime: user.solvedAllTime,
+        studyHoursThisWeek: user.studyHoursThisWeek,
+        activityActiveDays: user.activityActiveDays,
+        longestStreak: user.longestStreak,
+        totalSessions: user.totalSessions,
+        studyHoursToday: user.studyHoursToday,
+        subjectMix: user.subjectMix,
+        studyHoursLog: user.studyHoursLog,
+        heatmapData: user.heatmapData,
       });
     } else {
       res.status(404);
@@ -355,6 +372,34 @@ export const googleAuth = async (req: Request, res: Response, next: NextFunction
       avatarUrl: user.avatar_url ?? null,
       streak: newStreak,
       token,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Log a new study session
+// @route   POST /api/auth/study-session
+// @access  Private
+export const logStudySession = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (!req.user || !req.user.id) {
+      res.status(401);
+      throw new Error('Not authorized, session identifier reference is missing');
+    }
+
+    const { duration } = req.body;
+    if (!duration || typeof duration !== 'number') {
+      res.status(400);
+      throw new Error('Invalid duration provided');
+    }
+
+    const updatedUser = await User.recordStudySession(req.user.id, duration);
+
+    res.status(200).json({
+      success: true,
+      message: 'Study session logged successfully',
+      user: updatedUser
     });
   } catch (error) {
     next(error);

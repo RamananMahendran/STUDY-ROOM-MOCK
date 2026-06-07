@@ -4,45 +4,68 @@ import crypto from 'crypto';
 
 const User = {
   async findByEmail(email: string) {
-    const rows: any = await prisma.$queryRaw`
-      SELECT id, name AS username, email, password, streak_count AS streak, last_active_at, created_at
-      FROM users
-      WHERE email = ${email}
-    `;
-    return rows[0];
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) return undefined;
+    return {
+      ...user,
+      username: user.name,
+      streak: user.streakCount,
+      last_active_at: user.lastActiveAt,
+      created_at: user.createdAt,
+      avatar_url: user.avatarUrl,
+    };
   },
 
   async findByUsername(username: string) {
-    const rows: any = await prisma.$queryRaw`
-      SELECT id, name AS username, email, password, streak_count AS streak, last_active_at, created_at
-      FROM users
-      WHERE name = ${username}
-    `;
-    return rows[0];
+    const user = await prisma.user.findFirst({ where: { name: username } });
+    if (!user) return undefined;
+    return {
+      ...user,
+      username: user.name,
+      streak: user.streakCount,
+      last_active_at: user.lastActiveAt,
+      created_at: user.createdAt,
+      avatar_url: user.avatarUrl,
+    };
   },
 
   async findById(id: number | string) {
     const userId = Number(id);
     if (!Number.isInteger(userId)) return undefined;
 
-    const rows: any = await prisma.$queryRaw`
-      SELECT id, name AS username, email, streak_count AS streak, last_active_at, created_at
-      FROM users
-      WHERE id = ${userId}
-    `;
-    return rows[0];
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return undefined;
+    return {
+      ...user,
+      username: user.name,
+      streak: user.streakCount,
+      last_active_at: user.lastActiveAt,
+      created_at: user.createdAt,
+      avatar_url: user.avatarUrl,
+    };
   },
 
   async create({ username, email, password }: any) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const rows: any = await prisma.$queryRaw`
-      INSERT INTO users (name, email, password, streak_count, updated_at)
-      VALUES (${username}, ${email}, ${hashedPassword}, 0, CURRENT_TIMESTAMP)
-      RETURNING id, name AS username, email, streak_count AS streak, created_at
-    `;
-    return rows[0];
+    const user = await prisma.user.create({
+      data: {
+        name: username,
+        email,
+        password: hashedPassword,
+        streakCount: 0,
+      }
+    });
+
+    return {
+      ...user,
+      username: user.name,
+      streak: user.streakCount,
+      last_active_at: user.lastActiveAt,
+      created_at: user.createdAt,
+      avatar_url: user.avatarUrl,
+    };
   },
 
   async matchPassword(enteredPassword: string, hashedPassword: string) {
@@ -71,121 +94,118 @@ const User = {
       newStreak = 1;
     }
 
-    await prisma.$executeRaw`
-      UPDATE users
-      SET streak_count = ${newStreak},
-          last_active_at = ${now}
-      WHERE id = ${userId}
-    `;
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        streakCount: newStreak,
+        lastActiveAt: now
+      }
+    });
 
     return newStreak;
   },
 
   // ── Password Reset Methods ─────────────────────────────────────────────────
 
-  /**
-   * Generates a secure random token, hashes it for DB storage,
-   * saves the hash + expiry (10 min) to the user row,
-   * and returns the PLAIN token to send in the email.
-   */
   async saveResetToken(userId: number): Promise<string> {
-    // 1. Generate cryptographically secure random token (32 bytes → 64 hex chars)
     const plainToken = crypto.randomBytes(32).toString('hex');
-
-    // 2. Hash it before storing – so even if DB is compromised, tokens can't be used
     const hashedToken = crypto.createHash('sha256').update(plainToken).digest('hex');
-
-    // 3. 10-minute expiry
     const expireAt = new Date(Date.now() + 10 * 60 * 1000);
 
-    await prisma.$executeRaw`
-      UPDATE users
-      SET reset_password_token = ${hashedToken},
-          reset_password_expire = ${expireAt}
-      WHERE id = ${userId}
-    `;
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        resetPasswordToken: hashedToken,
+        resetPasswordExpire: expireAt
+      }
+    });
 
-    return plainToken; // ← send this in the email link
+    return plainToken;
   },
 
-  /**
-   * Looks up a user by the hashed form of the plain token,
-   * only if the token hasn't expired yet.
-   */
   async findByResetToken(plainToken: string) {
     const hashedToken = crypto.createHash('sha256').update(plainToken).digest('hex');
     const now = new Date();
 
-    const rows: any = await prisma.$queryRaw`
-      SELECT id, name AS username, email, streak_count AS streak
-      FROM users
-      WHERE reset_password_token = ${hashedToken}
-        AND reset_password_expire > ${now}
-    `;
-    return rows[0];
+    const user = await prisma.user.findFirst({
+      where: {
+        resetPasswordToken: hashedToken,
+        resetPasswordExpire: { gt: now }
+      }
+    });
+
+    if (!user) return undefined;
+    return {
+      ...user,
+      username: user.name,
+      streak: user.streakCount,
+    };
   },
 
-  /**
-   * Hashes and saves the new password for the given user ID.
-   */
   async updatePassword(userId: number, newPassword: string): Promise<void> {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-    await prisma.$executeRaw`
-      UPDATE users
-      SET password = ${hashedPassword},
-          updated_at = CURRENT_TIMESTAMP
-      WHERE id = ${userId}
-    `;
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedPassword,
+        updatedAt: new Date()
+      }
+    });
   },
 
-  /**
-   * Clears the reset token fields after a successful reset.
-   */
   async clearResetToken(userId: number): Promise<void> {
-    await prisma.$executeRaw`
-      UPDATE users
-      SET reset_password_token = NULL,
-          reset_password_expire = NULL
-      WHERE id = ${userId}
-    `;
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        resetPasswordToken: null,
+        resetPasswordExpire: null
+      }
+    });
   },
 
   // ── OAuth Methods ─────────────────────────────────────────────────────────
 
-  /**
-   * Find a user by their OAuth provider ID (e.g. Google sub).
-   * Returns the user row if found, else undefined.
-   */
   async findByOAuthId(provider: string, providerClientId: string) {
-    const rows: any = await prisma.$queryRaw`
-      SELECT u.id, u.name AS username, u.email, u.streak_count AS streak, u.last_active_at, u.avatar_url
-      FROM users u
-      INNER JOIN oauth_accounts oa ON oa.user_id = u.id
-      WHERE oa.provider = ${provider}
-        AND oa.provider_client_id = ${providerClientId}
-    `;
-    return rows[0];
+    const oauthAccount = await prisma.oAuthAccount.findFirst({
+      where: {
+        provider,
+        providerClientId
+      },
+      include: {
+        user: true
+      }
+    });
+
+    if (!oauthAccount || !oauthAccount.user) return undefined;
+    const user = oauthAccount.user;
+    return {
+      ...user,
+      username: user.name,
+      streak: user.streakCount,
+      last_active_at: user.lastActiveAt,
+      avatar_url: user.avatarUrl,
+    };
   },
 
-  /**
-   * Link an existing user (found by email) to a Google account.
-   * Idempotent — uses ON CONFLICT DO NOTHING so calling it twice is safe.
-   */
   async linkOAuthAccount(userId: number, provider: string, providerClientId: string) {
-    await prisma.$executeRaw`
-      INSERT INTO oauth_accounts (user_id, provider, provider_client_id)
-      VALUES (${userId}, ${provider}, ${providerClientId})
-      ON CONFLICT (provider, provider_client_id) DO NOTHING
-    `;
+    await prisma.oAuthAccount.upsert({
+      where: {
+        provider_providerClientId: {
+          provider,
+          providerClientId
+        }
+      },
+      update: {},
+      create: {
+        userId,
+        provider,
+        providerClientId
+      }
+    });
   },
 
-  /**
-   * Create a brand-new user from a Google profile and record the OAuth link
-   * in a single transaction. Password is an unusable random string so they
-   * can only log in via Google unless they later set a password via reset.
-   */
   async createOAuthUser({
     username,
     email,
@@ -199,28 +219,121 @@ const User = {
     provider: string;
     providerClientId: string;
   }) {
-    // Unusable random password — 32 bytes of entropy
     const crypto = await import('crypto');
     const randomPassword = crypto.randomBytes(32).toString('hex');
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(randomPassword, salt);
 
-    // Insert user
-    const userRows: any = await prisma.$queryRaw`
-      INSERT INTO users (name, email, password, avatar_url, streak_count, updated_at)
-      VALUES (${username}, ${email}, ${hashedPassword}, ${avatarUrl ?? null}, 0, CURRENT_TIMESTAMP)
-      RETURNING id, name AS username, email, streak_count AS streak, avatar_url
-    `;
-    const newUser = userRows[0];
+    const user = await prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
+        data: {
+          name: username,
+          email,
+          password: hashedPassword,
+          avatarUrl: avatarUrl ?? null,
+          streakCount: 0,
+        }
+      });
 
-    // Link OAuth account
-    await prisma.$executeRaw`
-      INSERT INTO oauth_accounts (user_id, provider, provider_client_id)
-      VALUES (${newUser.id}, ${provider}, ${providerClientId})
-      ON CONFLICT (provider, provider_client_id) DO NOTHING
-    `;
+      await tx.oAuthAccount.create({
+        data: {
+          userId: newUser.id,
+          provider,
+          providerClientId,
+        }
+      });
 
-    return newUser;
+      return newUser;
+    });
+
+    return {
+      ...user,
+      username: user.name,
+      streak: user.streakCount,
+      last_active_at: user.lastActiveAt,
+      created_at: user.createdAt,
+      avatar_url: user.avatarUrl,
+    };
+  },
+
+  async recordStudySession(userId: number, durationMs: number) {
+    const durationHours = durationMs / (1000 * 60 * 60);
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new Error('User not found');
+
+    const now = new Date();
+    const todayLabel = `${now.getMonth() + 1}/${now.getDate()}`;
+
+    // Update study log
+    let studyHoursLog = Array.isArray(user.studyHoursLog) ? (user.studyHoursLog as any[]) : [];
+    const logIndex = studyHoursLog.findIndex((item: any) => item && item.label === todayLabel);
+    if (logIndex > -1) {
+      studyHoursLog[logIndex].value = parseFloat((studyHoursLog[logIndex].value + durationHours).toFixed(2));
+    } else {
+      studyHoursLog.push({ label: todayLabel, value: parseFloat(durationHours.toFixed(2)) });
+    }
+
+    // Determine heatmap coordinates
+    const dayOfWeek = now.getDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+    const weeklyCol = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const hour = now.getHours();
+    let weeklyRow = Math.floor((hour - 6) / 2);
+    if (weeklyRow < 0) weeklyRow = 0;
+    if (weeklyRow > 8) weeklyRow = 8;
+
+    const yearlyCol = 31;
+    const yearlyRow = weeklyCol;
+
+    // Update heatmapData
+    let heatmapData = Array.isArray(user.heatmapData) ? (user.heatmapData as any[]) : [];
+    
+    // Add weekly cell
+    const hasWeekly = heatmapData.some((cell: any) => 
+      cell && cell.type === 'weekly' && cell.col === weeklyCol && cell.row === weeklyRow
+    );
+    if (!hasWeekly) {
+      heatmapData.push({ type: 'weekly', col: weeklyCol, row: weeklyRow });
+    }
+
+    // Add yearly cell
+    const hasYearly = heatmapData.some((cell: any) => 
+      cell && cell.type === 'yearly' && cell.col === yearlyCol && cell.row === yearlyRow
+    );
+    if (!hasYearly) {
+      heatmapData.push({ type: 'yearly', col: yearlyCol, row: yearlyRow });
+    }
+
+    let incrementActiveDays = 0;
+    if (user.studyHoursToday === 0) {
+      incrementActiveDays = 1;
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        totalStudyHours: { increment: durationHours },
+        studyHoursToday: { increment: durationHours },
+        studyHoursThisWeek: { increment: durationHours },
+        focusSessionsCount: { increment: 1 },
+        pomodorosToday: { increment: 1 },
+        pomodorosTotal: { increment: 1 },
+        totalSessions: { increment: 1 },
+        activityActiveDays: { increment: incrementActiveDays },
+        studyHoursLog,
+        heatmapData,
+        lastActiveAt: now
+      }
+    });
+
+    return {
+      ...updatedUser,
+      username: updatedUser.name,
+      streak: updatedUser.streakCount,
+      last_active_at: updatedUser.lastActiveAt,
+      created_at: updatedUser.createdAt,
+      avatar_url: updatedUser.avatarUrl,
+    };
   },
 };
 

@@ -1,5 +1,5 @@
 import express from 'express';
-import { registerUser, loginUser, getUserProfile, forgotPassword, resetPassword, googleAuth } from './authController.js';
+import { registerUser, loginUser, getUserProfile, forgotPassword, resetPassword, googleAuth, logStudySession } from './authController.js';
 import { protect } from '../../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -8,6 +8,7 @@ router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.post('/google', googleAuth);           // Google OAuth
 router.get('/profile', protect, getUserProfile);
+router.post('/study-session', protect, logStudySession);
 
 // Password reset flow
 router.post('/forgotpassword', forgotPassword);
