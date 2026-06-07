@@ -1107,7 +1107,7 @@ function ActivityPanel({ items = [] }) {
 }
 
 // ─── Members Panel ────────────────────────────────────────────────────────────
-function MembersPanel({ members, currentUser, friendStatus, onAddFriend, onAcceptFriend, showToast }) {
+function MembersPanel({ members, currentUser, friendStatus, onAddFriend, onAcceptFriend, showToast, roomOwnerId }) {
   const onlineCount = members.filter(m => m.isOnline).length;
 
   return (
@@ -1141,6 +1141,7 @@ function MembersPanel({ members, currentUser, friendStatus, onAddFriend, onAccep
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {members.map(member => {
             const isMe = currentUser && Number(member.userId) === Number(currentUser.id);
+            const isAdmin = Number(member.userId) === Number(roomOwnerId);
             const initials = (member.userName || "U").substring(0, 2).toUpperCase();
             const status = friendStatus[member.userId];
 
@@ -1533,6 +1534,7 @@ export default function App() {
   const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
   const [members, setMembers] = useState([]);
+  const [roomOwnerId, setRoomOwnerId] = useState(null);
   
   // ── Activity log ─────────────────────────────────────────────────────────────
   const [activityLog, setActivityLog] = useState([]);
@@ -1564,8 +1566,9 @@ export default function App() {
       console.error("[Socket] Connection error:", err.message);
     });
 
-    socketIo.on("room_state", ({ users }) => {
+    socketIo.on("room_state", ({ users, ownerId }) => {
       setMembers(users || []);
+      if (ownerId) setRoomOwnerId(ownerId);
     });
 
     socketIo.on("user_joined", (data) => {
@@ -1869,7 +1872,8 @@ export default function App() {
       friendStatus={friendStatus}
       onAddFriend={handleAddFriend}
       onAcceptFriend={handleAcceptFriend}
-      showToast={showToast} 
+      showToast={showToast}
+      roomOwnerId={roomOwnerId}
     />,
   };
 

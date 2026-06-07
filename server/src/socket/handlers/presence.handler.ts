@@ -77,7 +77,11 @@ export const registerPresenceHandlers = (io: Server, socket: Socket) => {
       });
       const users = allUsersDb.map(u => ({ userId: u.id, userName: u.name, email: u.email, isOnline: true }));
 
-      socket.emit('room_state', { roomId, state: roomState, users });
+      // Fetch the actual room owner
+      const roomDb = await prisma.studyRoom.findUnique({ where: { id: roomId } });
+      const ownerId = roomDb?.ownerId;
+
+      socket.emit('room_state', { roomId, state: roomState, users, ownerId });
       socket.to(roomId).emit('user_joined', { userId, userName, socketId: socket.id });
 
       // Friend Requests
