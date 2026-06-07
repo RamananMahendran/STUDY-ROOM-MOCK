@@ -1609,7 +1609,17 @@ export default function App() {
     });
 
     socketIo.on("new_message", (m) => {
-      const isMine = currentUser && Number(m.userId) === Number(currentUser.id);
+      // Primary check: ID
+      let isMine = currentUser && Number(m.userId) === Number(currentUser.id);
+      
+      // Fallback check: Name
+      if (!isMine && m.userName && currentUser?.name) {
+        const normalize = (s) => s.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+        if (normalize(m.userName) === normalize(currentUser.name)) {
+          isMine = true;
+        }
+      }
+
       const confirmed = {
         id: m.id || Date.now(),
         userId: m.userId,   // needed for ChatPanel.isMine()
