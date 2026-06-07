@@ -1168,6 +1168,16 @@ function MembersPanel({ members, currentUser, friendStatus, onAddFriend, onAccep
                   <p style={{ fontSize: "0.85rem", color: "var(--text)", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                     {member.userName || `User ${member.userId}`}
                     {isMe && <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>(you)</span>}
+                    {isAdmin && (
+                      <span style={{
+                        display: "flex", alignItems: "center", gap: 3,
+                        padding: "2px 6px", borderRadius: 6,
+                        background: "rgba(108,99,255,0.15)", color: "#a5b4fc",
+                        fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.05em"
+                      }}>
+                        <Icon.Crown size={10} /> Admin
+                      </span>
+                    )}
                   </p>
                   {member.email && (
                     <p style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{member.email}</p>
