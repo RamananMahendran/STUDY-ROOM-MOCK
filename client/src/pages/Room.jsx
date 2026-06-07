@@ -1139,9 +1139,13 @@ function MembersPanel({ members, currentUser, friendStatus, onAddFriend, onAccep
           Study Group · {onlineCount} Online / {members.length} Total
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {members.map(member => {
+          {members.map((member, index) => {
             const isMe = currentUser && Number(member.userId) === Number(currentUser.id);
-            const isAdmin = Number(member.userId) === Number(roomOwnerId);
+            // Fallback: If backend hasn't been deployed and doesn't send roomOwnerId, assume the first person to join (index 0) is the Admin.
+            const isAdmin = roomOwnerId 
+              ? Number(member.userId) === Number(roomOwnerId) 
+              : index === 0;
+            
             const initials = (member.userName || "U").substring(0, 2).toUpperCase();
             const status = friendStatus[member.userId];
 
@@ -1567,6 +1571,7 @@ export default function App() {
     });
 
     socketIo.on("room_state", ({ users, ownerId }) => {
+      console.log("[Socket] room_state received:", { users, ownerId });
       setMembers(users || []);
       if (ownerId) setRoomOwnerId(ownerId);
     });
