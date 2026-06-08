@@ -380,10 +380,14 @@ export default function Rooms() {
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
                     {publicRooms
                       .filter(r => r.roomId.toLowerCase().includes(search.toLowerCase()) || r.mode.toLowerCase().includes(search.toLowerCase()))
-                      .map((room) => (
+                      .map((room) => {
+                        const isExpired = room.status === "EXPIRED";
+                        return (
                       <button
                         key={room.roomId}
+                        disabled={isExpired}
                         onClick={() => {
+                          if (isExpired) return;
                           const existingRoom = myRooms.find(r => r.id === room.roomId);
                           const joinedRoom = existingRoom || {
                             id: room.roomId,
@@ -402,14 +406,27 @@ export default function Rooms() {
                           display: "flex", flexDirection: "column", gap: 10,
                           padding: 14, borderRadius: 12,
                           backgroundColor: "var(--surface)",
-                          border: `2px solid rgba(16, 185, 129, 0.44)`,
-                          cursor: "pointer", textAlign: "left",
+                          border: isExpired ? "1px solid var(--border)" : `2px solid rgba(16, 185, 129, 0.44)`,
+                          cursor: isExpired ? "default" : "pointer", textAlign: "left",
                           fontFamily: "inherit", color: "var(--text)",
                           transition: "border-color 0.15s, box-shadow 0.15s, transform 0.15s",
                           boxShadow: "var(--card-shadow)",
+                          opacity: isExpired ? 0.5 : 1,
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = "#10b981"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 6px 20px rgba(16, 185, 129, 0.30)`; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = `rgba(16, 185, 129, 0.44)`; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--card-shadow)"; }}
+                        onMouseEnter={e => { 
+                          if (!isExpired) {
+                            e.currentTarget.style.borderColor = "#10b981"; 
+                            e.currentTarget.style.transform = "translateY(-2px)"; 
+                            e.currentTarget.style.boxShadow = `0 6px 20px rgba(16, 185, 129, 0.30)`; 
+                          }
+                        }}
+                        onMouseLeave={e => { 
+                          if (!isExpired) {
+                            e.currentTarget.style.borderColor = `rgba(16, 185, 129, 0.44)`; 
+                            e.currentTarget.style.transform = "translateY(0)"; 
+                            e.currentTarget.style.boxShadow = "var(--card-shadow)"; 
+                          }
+                        }}
                       >
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -418,21 +435,28 @@ export default function Rooms() {
                           </div>
                           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                             <span style={{ fontSize: 10, fontFamily: "monospace", color: "var(--text-muted)", background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 5, padding: "2px 6px" }}>{room.joinCode}</span>
-                            <span style={{ color: "var(--text-muted)", fontSize: 12 }}>→</span>
+                            {!isExpired && <span style={{ color: "var(--text-muted)", fontSize: 12 }}>→</span>}
                           </div>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 6, borderTop: "1px solid var(--border)" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                            <span style={{ fontSize: 10, background: "rgba(16,185,129,0.12)", color: "#10b981", border: "1px solid rgba(16,185,129,0.25)", borderRadius: 999, padding: "2px 7px", fontWeight: 700 }}>
-                              {room.status}
-                            </span>
+                            {isExpired ? (
+                              <span style={{ fontSize: 10, background: "rgba(239, 68, 68, 0.12)", color: "#ef4444", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: 999, padding: "2px 7px", fontWeight: 700 }}>
+                                EXPIRED
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: 10, background: "rgba(16,185,129,0.12)", color: "#10b981", border: "1px solid rgba(16,185,129,0.25)", borderRadius: 999, padding: "2px 7px", fontWeight: 700 }}>
+                                {room.status}
+                              </span>
+                            )}
                           </div>
                           <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 10, color: "var(--text-muted)" }}>
                             <span>👥 {room.participantCount} / {room.maxCapacity} members</span>
                           </div>
                         </div>
                       </button>
-                    ))}
+                        );
+                      })}
                   </div>
                 )}
               </section>
@@ -455,6 +479,7 @@ export default function Rooms() {
                   const renderRoomCard = (room, isExpired) => (
                     <button
                       key={room.id}
+                      disabled={isExpired}
                       onClick={() => {
                         if (isExpired) return;
                         sessionStorage.setItem("currentRoom", JSON.stringify(room));
@@ -464,15 +489,27 @@ export default function Rooms() {
                         display: "flex", flexDirection: "column", gap: 10,
                         padding: 14, borderRadius: 12,
                         backgroundColor: "var(--surface)",
-                        border: `2px solid ${room.color}44`,
+                        border: isExpired ? "1px solid var(--border)" : `2px solid ${room.color}44`,
                         cursor: isExpired ? "default" : "pointer", textAlign: "left",
                         fontFamily: "inherit", color: "var(--text)",
                         transition: "border-color 0.15s, box-shadow 0.15s, transform 0.15s",
                         boxShadow: "var(--card-shadow)",
-                        opacity: isExpired ? 0.6 : 1,
+                        opacity: isExpired ? 0.5 : 1,
                       }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = room.color; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 6px 20px ${room.color}30`; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = `${room.color}44`; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--card-shadow)"; }}
+                      onMouseEnter={e => { 
+                        if (!isExpired) {
+                          e.currentTarget.style.borderColor = room.color; 
+                          e.currentTarget.style.transform = "translateY(-2px)"; 
+                          e.currentTarget.style.boxShadow = `0 6px 20px ${room.color}30`; 
+                        }
+                      }}
+                      onMouseLeave={e => { 
+                        if (!isExpired) {
+                          e.currentTarget.style.borderColor = `${room.color}44`; 
+                          e.currentTarget.style.transform = "translateY(0)"; 
+                          e.currentTarget.style.boxShadow = "var(--card-shadow)"; 
+                        }
+                      }}
                     >
                       {/* Top row */}
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>

@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 async function seedDatabase() {
   const client = new Client({
-    connectionString: "postgresql://studyadmin:studypass123@localhost:5432/studyroom_db?schema=public", // Adjust to your config
+    connectionString: process.env.DATABASE_URL || "postgresql://studyadmin:studypass123@localhost:5432/studyroom_db?schema=public",
   });
 
   try {

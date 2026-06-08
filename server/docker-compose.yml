@@ -15,8 +15,11 @@ services:
       JUDGE0_AUTH_TOKEN: ${JUDGE0_AUTH_TOKEN:-}
       CLIENT_URL: ${CLIENT_URL:-http://localhost:5173}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      REDIS_HOST: redis
     depends_on:
       postgres_db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   postgres_db:
@@ -35,6 +38,21 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: studyroom-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
   judge0-server:
     image: judge0/judge0:1.13.1
@@ -86,3 +104,4 @@ services:
 volumes:
   postgres_data:
   judge0_data:
+  redis-data:

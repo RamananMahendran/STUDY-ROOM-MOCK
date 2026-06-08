@@ -1327,7 +1327,7 @@ function Header({ roomCode, onSettings, onInvite, roomName }) {
 }
 
 // ─── Focus Mode Overlay ────────────────────────────────────────────────────────
-function FocusModeOverlay({ minutes, seconds, isBreak, running, onPlay, onReset, onSkip, onClose }) {
+function FocusModeOverlay({ minutes, seconds, isBreak, running, onPlay, onReset, onSkip, onClose, focusMins, breakMins, onModeChange }) {
   return (
     <div style={{
       position: "fixed", inset: 0, zIndex: 50,
@@ -1340,8 +1340,16 @@ function FocusModeOverlay({ minutes, seconds, isBreak, running, onPlay, onReset,
           display: "flex", borderRadius: 10, padding: 3,
           backgroundColor: "var(--surface)", border: "1px solid var(--border)",
         }}>
-          <button style={{ padding: "8px 28px", borderRadius: 8, backgroundColor: "var(--surface-2)", color: "var(--text)", fontSize: "0.85rem", fontWeight: 500, cursor: "pointer" }}>Focus</button>
-          <button style={{ padding: "8px 28px", color: "var(--text-muted)", fontSize: "0.85rem", cursor: "pointer" }}>Break</button>
+          <button 
+            onClick={() => onModeChange("focus")}
+            style={{ padding: "8px 28px", borderRadius: 8, backgroundColor: !isBreak ? "var(--surface-2)" : "transparent", color: !isBreak ? "var(--text)" : "var(--text-muted)", fontSize: "0.85rem", fontWeight: !isBreak ? 500 : 400, cursor: "pointer", border: "none", transition: "all 0.2s" }}>
+            Focus
+          </button>
+          <button 
+            onClick={() => onModeChange("break")}
+            style={{ padding: "8px 28px", borderRadius: 8, backgroundColor: isBreak ? "var(--surface-2)" : "transparent", color: isBreak ? "var(--text)" : "var(--text-muted)", fontSize: "0.85rem", fontWeight: isBreak ? 500 : 400, cursor: "pointer", border: "none", transition: "all 0.2s" }}>
+            Break
+          </button>
         </div>
 
         <TimerCircle minutes={minutes} seconds={seconds} label={running ? (isBreak ? "Break..." : "Focusing...") : "Ready"} isBreak={isBreak} running={running} size={240} totalMins={isBreak ? breakMins : focusMins} />
@@ -1875,6 +1883,25 @@ export default function App() {
     setFocusMins(fm);
     setBreakMins(bm);
     setRoomName(rn);
+    
+    // Persist to session storage
+    const saved = sessionStorage.getItem("currentRoom");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      parsed.name = rn;
+      parsed.focusMin = fm;
+      parsed.breakMin = bm;
+      sessionStorage.setItem("currentRoom", JSON.stringify(parsed));
+    }
+    
+    // Persist to local storage
+    const myRoomsSaved = localStorage.getItem("myRooms");
+    if (myRoomsSaved) {
+      const myRooms = JSON.parse(myRoomsSaved);
+      const updated = myRooms.map(r => r.id === roomId ? { ...r, name: rn, focusMin: fm, breakMin: bm } : r);
+      localStorage.setItem("myRooms", JSON.stringify(updated));
+    }
+
     // Reset timer to new values only if not currently running
     if (!running) {
       setTimeLeft((isBreak ? bm : fm) * 60);
@@ -2052,6 +2079,7 @@ export default function App() {
           onPlay={handlePlay} onReset={reset} onSkip={skip}
           onClose={() => setFocusMode(false)}
           focusMins={focusMins} breakMins={breakMins}
+          onModeChange={handleModeChange}
         />
       )}
       {showSettings && (
