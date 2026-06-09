@@ -87,11 +87,35 @@ export const registerPresenceHandlers = (io: Server, socket: Socket) => {
       // Friend Requests
       socket.on('send_friend_request', async ({ targetUserId }) => {
         try {
+          const fromId = parseInt(userId, 10);
+          const targetId = parseInt(targetUserId, 10);
+          
+          // Check if relationship already exists
+          const existing = await prisma.friendship.findFirst({
+            where: {
+              OR: [
+                { userAId: fromId, userBId: targetId },
+                { userAId: targetId, userBId: fromId }
+              ]
+            }
+          });
+          
+          if (!existing) {
+            await prisma.friendship.create({
+              data: {
+                userAId: fromId,
+                userBId: targetId,
+                status: 'pending'
+              }
+            });
+            console.log(`[DB] Created pending friendship from ${fromId} to ${targetId}`);
+          }
+
           // Send back to room (so the target user receives it)
           // Client will check if they are the target
           socket.to(roomId).emit('friend_request_received', {
-            fromUserId: parseInt(userId, 10),
-            targetUserId: parseInt(targetUserId, 10)
+            fromUserId: fromId,
+            targetUserId: targetId
           });
         } catch (error) {
           console.error("Error sending friend request:", error);
@@ -100,9 +124,44 @@ export const registerPresenceHandlers = (io: Server, socket: Socket) => {
 
       socket.on('accept_friend_request', async ({ fromUserId }) => {
         try {
+          const fromId = parseInt(fromUserId, 10);
+          const targetId = parseInt(userId, 10); // current user is target accepting it
+
+          // Update DB to accepted
+          const existing = await prisma.friendship.findFirst({
+            where: {
+              userAId: fromId,
+              userBId: targetId,
+              status: 'pending'
+            }
+          });
+          
+          if (existing) {
+            await prisma.friendship.update({
+              where: { id: existing.id },
+              data: { status: 'accepted' }
+            });
+            console.log(`[DB] Accepted friendship between ${fromId} and ${targetId}`);
+          } else {
+            const reverseExisting = await prisma.friendship.findFirst({
+              where: {
+                userAId: targetId,
+                userBId: fromId,
+                status: 'pending'
+              }
+            });
+            if (reverseExisting) {
+              await prisma.friendship.update({
+                where: { id: reverseExisting.id },
+                data: { status: 'accepted' }
+              });
+              console.log(`[DB] Accepted reverse friendship between ${targetId} and ${fromId}`);
+            }
+          }
+
           socket.to(roomId).emit('friend_request_accepted', {
-            fromUserId: parseInt(fromUserId, 10),
-            targetUserId: parseInt(userId, 10)
+            fromUserId: fromId,
+            targetUserId: targetId
           });
         } catch (error) {
           console.error("Error accepting friend request:", error);

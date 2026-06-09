@@ -20,6 +20,9 @@ interface RoomState {
   isPublic: boolean;
   joinCode: string;
   createdAt: number;
+  name?: string;
+  focusMin?: number;
+  breakMin?: number;
 }
 
 export const setRoomState = async (roomId: string, state: Partial<RoomState>): Promise<void> => {
@@ -40,6 +43,9 @@ export const getRoomState = async (roomId: string): Promise<RoomState | null> =>
     isPublic: data.isPublic === 'true',
     joinCode: data.joinCode,
     createdAt: parseInt(data.createdAt),
+    name: data.name,
+    focusMin: data.focusMin ? parseInt(data.focusMin) : undefined,
+    breakMin: data.breakMin ? parseInt(data.breakMin) : undefined,
   };
 };
 

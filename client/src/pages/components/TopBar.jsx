@@ -351,7 +351,10 @@ export function CreateRoomModal({ onClose, onNavigate }) {
                   body: JSON.stringify({
                     mode: "study",
                     isPublic: true,
-                    maxCapacity: 10
+                    maxCapacity: 10,
+                    name: roomName || "My Room",
+                    focusMin: focus,
+                    breakMin: brk
                   })
                 });
                 
