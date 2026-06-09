@@ -51,7 +51,7 @@ export const getRooms = async (req: Request, res: Response): Promise<void> => {
 
 export const createRoom = async (req: Request | any, res: Response): Promise<void> => {
   try {
-    const { mode, isPublic, maxCapacity } = req.body;
+    const { mode, isPublic, maxCapacity, name, focusMin, breakMin } = req.body;
     const userId = req.user?.id; // Optional
 
     if (!mode || !['solo', 'pair', 'study', 'mock_interview'].includes(mode)) {
@@ -61,6 +61,8 @@ export const createRoom = async (req: Request | any, res: Response): Promise<voi
 
     const capacity = maxCapacity || (mode === 'solo' ? 1 : mode === 'pair' ? 2 : 10);
     const joinCode = generateJoinCode();
+    const defaultName = `${mode.charAt(0).toUpperCase() + mode.slice(1)} Room`;
+    const roomName = name || defaultName;
     
     // Use joinCode as the actual ID everywhere
     let roomId = joinCode;
@@ -69,7 +71,7 @@ export const createRoom = async (req: Request | any, res: Response): Promise<voi
       const room = await prisma.studyRoom.create({
         data: {
           id: roomId,
-          name: `${mode.charAt(0).toUpperCase() + mode.slice(1)} Room`,
+          name: roomName,
           slug: `${mode}-${joinCode.toLowerCase()}`,
           ownerId: userId,
           isPrivate: !isPublic,
@@ -85,6 +87,9 @@ export const createRoom = async (req: Request | any, res: Response): Promise<voi
       isPublic: isPublic || false,
       joinCode,
       createdAt: Date.now(),
+      name: roomName,
+      focusMin: focusMin || 50,
+      breakMin: breakMin || 10,
     });
 
     res.status(201).json({
@@ -97,5 +102,20 @@ export const createRoom = async (req: Request | any, res: Response): Promise<voi
   } catch (error) {
     console.error('Error creating room:', error);
     res.status(500).json({ error: 'Failed to create room' });
+  }
+};
+
+export const getRoomById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const state = await getRoomState(id as string);
+    if (!state) {
+      res.status(404).json({ error: 'Room not found' });
+      return;
+    }
+    res.status(200).json({ room: state });
+  } catch (error) {
+    console.error('Error fetching room:', error);
+    res.status(500).json({ error: 'Failed to fetch room' });
   }
 };

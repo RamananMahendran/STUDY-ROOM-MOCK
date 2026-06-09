@@ -203,23 +203,41 @@ export default function Rooms() {
                   </div>
                 </div>
 
-                <form className="flex" style={{ gap: 8 }} onSubmit={e => {
+                <form className="flex" style={{ gap: 8 }} onSubmit={async e => {
                   e.preventDefault();
                   const code = roomCode.trim();
                   if (code) {
-                    const existingRoom = myRooms.find(r => r.id === code);
-                    const joinedRoom = existingRoom || {
-                      id: code,
-                      name: "Focus Session",
-                      icon: "🚪",
-                      color: "#6366f1",
-                      goal: "",
-                      focusMin: 50,
-                      breakMin: 10,
-                      expires: "24h"
-                    };
-                    sessionStorage.setItem("currentRoom", JSON.stringify(joinedRoom));
-                    navigate(`/room/${code}`);
+                    try {
+                      let joinedRoom = myRooms.find(r => r.id === code);
+                      if (!joinedRoom) {
+                        const token = localStorage.getItem("token");
+                        const res = await fetch(`http://localhost:5001/api/rooms/${code}`, {
+                          headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                        });
+                        if (res.ok) {
+                          const data = await res.json();
+                          const state = data.room;
+                          joinedRoom = {
+                            id: code,
+                            name: state.name || "Focus Session",
+                            icon: "🚪",
+                            color: "#6366f1",
+                            goal: "",
+                            focusMin: state.focusMin || 50,
+                            breakMin: state.breakMin || 10,
+                            expires: "24h"
+                          };
+                        } else {
+                          alert("Room not found or expired.");
+                          return;
+                        }
+                      }
+                      sessionStorage.setItem("currentRoom", JSON.stringify(joinedRoom));
+                      navigate(`/room/${code}`);
+                    } catch (err) {
+                      console.error(err);
+                      alert("Error joining room");
+                    }
                   }
                 }}>
                   {/* Input */}

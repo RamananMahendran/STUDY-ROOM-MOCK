@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getRooms, createRoom } from './roomController.js';
+import { getRooms, createRoom, getRoomById } from './roomController.js';
 import { protect } from '../../middleware/authMiddleware.js';
 
 const router = Router();
@@ -12,6 +12,7 @@ router.get('/flush', async (req, res) => {
   res.send('Flushed');
 });
 
+router.get('/:id', getRoomById);
 router.post('/', createRoom);
 
 export default router;

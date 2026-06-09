@@ -544,9 +544,7 @@ function ChatPanel({ messages, sendMessage, currentUserId }) {
 
   // Determine if a message belongs to the current user
   const isMine = (m) => {
-    // We rely purely on the 'self' flag which is reliably set by the server (for history)
-    // or set locally (for optimistic updates and incoming new messages) based on ID.
-    return m.self === true;
+    return m.self === true || (currentUserId && Number(m.userId) === Number(currentUserId));
   };
 
   return (
@@ -1596,6 +1594,47 @@ export default function App() {
       if (ownerId) setRoomOwnerId(ownerId);
     });
 
+    socketIo.on("friendship_update", (data) => {
+      if (currentUser && String(data.fromUserId) === String(currentUser.id || currentUser.userId)) {
+        console.log("[Socket] Ignored friendship update initiated by myself");
+        return;
+      }
+      setFriendStatus(prev => ({ ...prev, [data.fromUserId]: data.status }));
+    });
+
+    socketIo.on("timer_sync", (data) => {
+      if (data.state === "FOCUS" || data.state === "BREAK") {
+        setMode(data.state.toLowerCase());
+        setRunning(true);
+        if (data.remainingTime) {
+          setTimeLeft(Math.floor(data.remainingTime / 1000));
+        } else if (data.endTime) {
+          setTimeLeft(Math.max(0, Math.floor((data.endTime - Date.now()) / 1000)));
+        } else if (data.duration) {
+          setTimeLeft(Math.floor(data.duration / 1000));
+        }
+      } else if (data.state === "PAUSED") {
+        setRunning(false);
+        setWasPaused(true);
+        if (data.remainingTime) {
+          setTimeLeft(Math.floor(data.remainingTime / 1000));
+        }
+      } else if (data.state === "IDLE") {
+        setRunning(false);
+        setWasPaused(false);
+      }
+    });
+
+    socketIo.on("timer_complete", (data) => {
+      setRunning(false);
+      setWasPaused(false);
+      if (data.type === "FOCUS") {
+        setMode("break");
+      } else {
+        setMode("focus");
+      }
+    });
+
     socketIo.on("user_joined", (data) => {
       setMembers(prev => {
         if (prev.find(m => m.userId == data.userId)) return prev;
@@ -1698,6 +1737,7 @@ export default function App() {
     if (!socket) return;
     socket.emit("accept_friend_request", { fromUserId: targetUserId });
     setFriendStatus(prev => ({ ...prev, [targetUserId]: "accepted" }));
+    showToast("Friend request accepted!", "success");
   };
 
   // Load from sessionStorage or use defaults
@@ -1739,6 +1779,49 @@ export default function App() {
   const [showCreateRoom, setShowCreateRoom] = useState(false);
   const [friendStatus, setFriendStatus] = useState({}); // { [userId]: "pending_sent" | "pending_received" | "accepted" }
   const intervalRef = useRef(null);
+
+  useEffect(() => {
+    const fetchFriendships = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        const [friendsRes, requestsRes] = await Promise.all([
+          fetch(`${API}/api/friendships`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch(`${API}/api/friendships/requests`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
+        
+        const friendsData = await friendsRes.json();
+        const requestsData = await requestsRes.json();
+        
+        const statusMap = {};
+        if (friendsData.success && friendsData.data) {
+          friendsData.data.forEach(f => {
+            statusMap[f.id] = "accepted";
+          });
+        }
+        if (requestsData.success) {
+          if (requestsData.incoming) {
+            requestsData.incoming.forEach(r => {
+              statusMap[r.id] = "pending_received";
+            });
+          }
+          if (requestsData.outgoing) {
+            requestsData.outgoing.forEach(r => {
+              statusMap[r.id] = "pending_sent";
+            });
+          }
+        }
+        setFriendStatus(prev => ({ ...prev, ...statusMap }));
+      } catch (err) {
+        console.error("Error fetching friendships in room:", err);
+      }
+    };
+    fetchFriendships();
+  }, [currentUser?.id]);
 
   // ── Settings state (lifted so timer chips and header react) ─────────────────
   const [focusMins, setFocusMins] = useState(initialRoom.focusMin || 90);
@@ -1852,9 +1935,11 @@ export default function App() {
     setRunning(willRun);
     if (willRun) {
       setWasPaused(false);
+      socket?.emit("timer_start", { roomId, duration: timeLeft * 1000, type: isBreak ? "BREAK" : "FOCUS" });
       addActivity(isBreak ? "Break started" : "Focus session started");
     } else {
       setWasPaused(true); // paused mid-session
+      socket?.emit("timer_pause", { roomId });
     }
   };
 
@@ -1862,6 +1947,7 @@ export default function App() {
     setRunning(false);
     setWasPaused(false);
     setTimeLeft((isBreak ? breakMins : focusMins) * 60);
+    socket?.emit("timer_reset", { roomId });
   };
 
   const skip = () => {
@@ -1870,6 +1956,7 @@ export default function App() {
     const next = mode === "focus" ? "break" : "focus";
     setMode(next);
     setTimeLeft((next === "break" ? breakMins : focusMins) * 60);
+    socket?.emit("timer_reset", { roomId });
   };
 
   const handleModeChange = (m) => {
