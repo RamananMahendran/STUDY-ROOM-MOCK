@@ -4,6 +4,7 @@ import authRoutes from './modules/auth/authRoutes.js';
 import problemRoutes from './modules/practice/problemRoutes.js';
 import codeExecutionRoutes from './modules/codeExecution/codeExecutionRoutes.js';
 import submissionRoutes from './modules/submission/submissionRoutes.js';
+import discussionRoutes from "./modules/discussion/discussionRoutes.js";
 import pairRoutes from './modules/pair/pairRoutes.js';
 import interviewRoutes from './modules/interview/interviewRoutes.js';
 import roomRoutes from './modules/rooms/roomRoutes.js';
@@ -36,6 +37,7 @@ app.use('/api/auth', authRoutes);           // Authentication (Register, Login, 
 app.use('/api/problems', problemRoutes);     // Problems CRUD
 app.use('/api/code', codeExecutionRoutes);   // Code Execution (Judge0)
 app.use('/api/submissions', submissionRoutes); // Submissions (Day 3)
+app.use('/api/discussions', discussionRoutes);
 app.use('/api/pair', pairRoutes);            // Pair Coding (Day 4)
 app.use('/api/interviews', interviewRoutes);  // Mock Interviews (Day 5) - PRO ONLY
 app.use('/api/rooms', roomRoutes);           // Real-time Study Rooms (BE2)

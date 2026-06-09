@@ -544,7 +544,7 @@ function DiscussionsPanel({ problemId }) {
 
   const load = useCallback(() => {
     setLoading(true);
-    fetch(`${API}/api/discussions/${problemId}`, { headers: authHeaders() })
+    fetch(`${API}/api/discussions/problem/${problemId}`, { headers: authHeaders() })
       .then(r => r.json())
       .then(data => { if (data.success) setDiscussions(data.data || []); })
       .catch(console.error)
@@ -572,6 +572,7 @@ function DiscussionsPanel({ problemId }) {
     }
   };
 
+  
   return (
     <div className="flex flex-col h-full">
       <div className="p-5 border-b border-[#1e2433] shrink-0 bg-[#0d1117]/30">
