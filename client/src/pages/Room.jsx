@@ -1388,7 +1388,7 @@ function FocusModeOverlay({ minutes, seconds, isBreak, running, onPlay, onReset,
 }
 
 // ─── Settings Modal ────────────────────────────────────────────────────────────
-function SettingsModal({ onClose, onSave, onDeleteRoom, initialFocus, initialBreak, initialRoomName }) {
+function SettingsModal({ onClose, onSave, onDeleteRoom, initialFocus, initialBreak, initialRoomName, members = [], roomOwnerId }) {
   const [focus, setFocus] = useState(initialFocus);
   const [brk, setBrk] = useState(initialBreak);
   const [roomName, setRoomName] = useState(initialRoomName);
@@ -1492,15 +1492,31 @@ function SettingsModal({ onClose, onSave, onDeleteRoom, initialFocus, initialBre
             💾 Save Changes
           </button>
 
-          {/* Members List */}
-          <p style={{ fontSize: "0.68rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-subtle)", marginTop: 12 }}>Members (1)</p>
-          <div style={{ padding: "12px 16px", borderRadius: 10, backgroundColor: "var(--bg)", display: "flex", alignItems: "center", gap: 12, border: "1px solid var(--border)" }}>
-            <div style={{ width: 36, height: 36, borderRadius: "50%", backgroundColor: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.85rem", fontWeight: 700, color: "var(--text-muted)" }}>M</div>
-            <div>
-              <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)", display: "flex", alignItems: "center", gap: 6 }}>Mayur K S <span style={{ fontSize: "0.65rem", padding: "2px 6px", borderRadius: 4, backgroundColor: "var(--accent-bg)", color: "var(--accent)", border: "1px solid rgba(108,99,255,0.2)" }}>👑 Admin</span></p>
-              <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: 2 }}>mayur2310574@ssn.edu.in</p>
-            </div>
-          </div>
+          {/* Admin Details */}
+          {(() => {
+            const adminMember = members.find((member, index) => 
+              roomOwnerId ? Number(member.userId) === Number(roomOwnerId) : index === 0
+            );
+            if (!adminMember) return null;
+            const initials = (adminMember.userName || "U").substring(0, 2).toUpperCase();
+            return (
+              <>
+                <p style={{ fontSize: "0.68rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-subtle)", marginTop: 12 }}>Admin</p>
+                <div style={{ padding: "12px 16px", borderRadius: 10, backgroundColor: "var(--bg)", display: "flex", alignItems: "center", gap: 12, border: "1px solid var(--border)" }}>
+                  <div style={{ width: 36, height: 36, borderRadius: "50%", backgroundColor: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.85rem", fontWeight: 700, color: "var(--text-muted)", flexShrink: 0 }}>
+                    {initials}
+                  </div>
+                  <div>
+                    <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)", display: "flex", alignItems: "center", gap: 6 }}>
+                      {adminMember.userName || `User ${adminMember.userId}`}
+                      <span style={{ fontSize: "0.65rem", padding: "2px 6px", borderRadius: 4, backgroundColor: "var(--accent-bg)", color: "var(--accent)", border: "1px solid rgba(108,99,255,0.2)" }}>👑 Admin</span>
+                    </p>
+                    {adminMember.email && <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: 2 }}>{adminMember.email}</p>}
+                  </div>
+                </div>
+              </>
+            );
+          })()}
 
           {/* Danger Zone */}
           <div style={{ padding: 20, borderRadius: 10, border: "1px solid rgba(239, 68, 68, 0.3)", backgroundColor: "rgba(239, 68, 68, 0.05)", marginTop: 12 }}>
@@ -2177,6 +2193,8 @@ export default function App() {
           initialFocus={focusMins}
           initialBreak={breakMins}
           initialRoomName={roomName}
+          members={members}
+          roomOwnerId={roomOwnerId}
         />
       )}
       {showInvite && <InviteModal onClose={() => setShowInvite(false)} roomName={roomName} roomCode={roomId || "ffaaae"} />}

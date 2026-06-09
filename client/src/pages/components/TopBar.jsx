@@ -350,7 +350,7 @@ export function CreateRoomModal({ onClose, onNavigate }) {
                   },
                   body: JSON.stringify({
                     mode: "study",
-                    isPublic: true,
+                    isPublic: false,
                     maxCapacity: 10,
                     name: roomName || "My Room",
                     focusMin: focus,
@@ -378,17 +378,9 @@ export function CreateRoomModal({ onClose, onNavigate }) {
                   members: 1
                 };
                 sessionStorage.setItem("currentRoom", JSON.stringify(room));
-                const existingRooms = JSON.parse(localStorage.getItem("myRooms") || "null");
-                if (!existingRooms) {
-                  const defaults = [
-                    { id: "ffaaae", name: "try", icon: "📚", color: "#6366f1", goal: "", focusMin: 90, breakMin: 15, left: "23H 59M", members: 1 },
-                    { id: "f3e62f", name: "try", icon: "🟡", color: "#f59e0b", goal: "work should be completed", focusMin: 90, breakMin: 15, left: "23H 56M", members: 1 },
-                  ];
-                  localStorage.setItem("myRooms", JSON.stringify([...defaults, room]));
-                } else {
-                  existingRooms.push(room);
-                  localStorage.setItem("myRooms", JSON.stringify(existingRooms));
-                }
+                const existingRooms = JSON.parse(localStorage.getItem("myRooms") || "[]");
+                existingRooms.push(room);
+                localStorage.setItem("myRooms", JSON.stringify(existingRooms));
                 window.addNotification(`You successfully created the room "${room.name}".`);
                 onClose();
                 if (onNavigate) onNavigate(`/room/${id}`);
@@ -531,9 +523,9 @@ const COMMANDS = [
     items: [
       { id: "home",        label: "Go to Home",          icon: <IcoGrid />,     path: "/home" },
       { id: "rooms",       label: "My Rooms",            icon: <IcoBook />,     path: "/rooms" },
-      { id: "problems",    label: "Problems",            icon: <IcoFile />,     path: "/problems" },
-      { id: "playground",  label: "Code Playground",     icon: <IcoTerminal />, path: "/playground" },
-      { id: "pair",        label: "Start Pair Session",  icon: <IcoPair />,     path: "/pair" },
+      { id: "problems",    label: "Problems",            icon: <IcoFile />,     path: "/practice/problems" },
+      { id: "playground",  label: "Code Playground",     icon: <IcoTerminal />, path: "/practice/playground" },
+      { id: "pair",        label: "Start Pair Session",  icon: <IcoPair />,     path: "/practice/pair-code" },
       { id: "leaderboard", label: "Leaderboard",         icon: <IcoTrophy />,   path: "/practice/leaderboard" },
       { id: "profile",     label: "Profile / Analytics", icon: <IcoChart />,    path: "/profile" },
       { id: "community",   label: "Community / Friends", icon: <IcoUsers />,    path: "/community" },
@@ -544,7 +536,7 @@ const COMMANDS = [
     items: [
       { id: "createRoom",  label: "Create a room",       icon: <IcoPlus s={16} />, shortcut: "Study" },
       { id: "invite",      label: "Invite a friend",     icon: <IcoAddUser />,     shortcut: "Social", path: "/refer" },
-      { id: "openProblem", label: "Open a problem",      icon: <IcoLightning />,   shortcut: "Practice" },
+      { id: "openProblem", label: "Open a problem",      icon: <IcoLightning />,   shortcut: "Practice", path: "/practice/problems" },
     ]
   }
 ];

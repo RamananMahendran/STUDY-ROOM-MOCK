@@ -38,6 +38,8 @@ export const getRooms = async (req: Request, res: Response): Promise<void> => {
           status: state.status,
           joinCode: state.joinCode,
           activeProblemId: state.activeProblemId,
+          name: state.name,
+          createdAt: state.createdAt,
         });
       }
     }

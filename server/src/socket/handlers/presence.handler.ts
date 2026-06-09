@@ -16,10 +16,17 @@ export const registerPresenceHandlers = (io: Server, socket: Socket) => {
     try {
       const userId = socket.data.userId.toString();
       
+      const roomState = await getRoomState(roomId);
+      if (!roomState) {
+        return socket.emit('room_error', { message: 'Room not found or expired' });
+      }
+
       const canJoin = await enforceRoomCapacity(roomId);
       if (!canJoin) {
         return socket.emit('room_error', { message: 'Room is full' });
       }
+
+      const isPrivate = !roomState.isPublic;
 
       // Ensure room exists in PostgreSQL to satisfy foreign key constraints
       try {
@@ -28,11 +35,11 @@ export const registerPresenceHandlers = (io: Server, socket: Socket) => {
           update: {},
           create: {
             id: roomId,
-            name: `Room ${roomId}`,
+            name: roomState?.name || `Room ${roomId}`,
             slug: `room-${roomId}`,
             ownerId: parseInt(userId, 10),
-            isPrivate: false,
-            roomType: 'study',
+            isPrivate: isPrivate,
+            roomType: roomState?.mode === 'mock_interview' ? 'mock_interview' : 'study',
           }
         });
         console.log(`[DB] Room ${roomId} upserted successfully`);
@@ -45,11 +52,11 @@ export const registerPresenceHandlers = (io: Server, socket: Socket) => {
           await prisma.studyRoom.create({
             data: {
               id: roomId,
-              name: `Room ${roomId}`,
+              name: roomState?.name || `Room ${roomId}`,
               slug: `room-${roomId}-${Date.now()}`,
               ownerId: parseInt(userId, 10),
-              isPrivate: false,
-              roomType: 'study',
+              isPrivate: isPrivate,
+              roomType: roomState?.mode === 'mock_interview' ? 'mock_interview' : 'study',
             }
           });
           console.log(`[DB] Room ${roomId} created with fallback slug`);
@@ -63,7 +70,6 @@ export const registerPresenceHandlers = (io: Server, socket: Socket) => {
       await mapSocketToUser(socket.id, userId);
       await setUserMediaState(roomId, userId, false, false);
 
-      const roomState = await getRoomState(roomId);
       const userIds = await getRoomUsers(roomId);
 
       const userDb = await prisma.user.findUnique({ where: { id: parseInt(userId, 10) } });

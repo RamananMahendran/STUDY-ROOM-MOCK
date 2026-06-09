@@ -106,7 +106,7 @@ export default function Rooms() {
     const saved = localStorage.getItem("myRooms");
     if (saved) return JSON.parse(saved);
     const now = Date.now();
-    return [
+    const defaults = [
       { id: "11ab6b", name: "Focus session", icon: "📚", color: "#6366f1", goal: "First focus block", focusMin: 50, breakMin: 10, members: 1, createdAt: now, expires: "2h" },
       { id: "a07088", name: "Focus session", icon: "📚", color: "#6366f1", goal: "First focus block", focusMin: 50, breakMin: 10, members: 1, createdAt: now - (3 * 60000), expires: "2h" },
       { id: "7b3c4c", name: "Focus session", icon: "📚", color: "#6366f1", goal: "First focus block", focusMin: 50, breakMin: 10, members: 1, createdAt: now - (7 * 60000), expires: "2h" },
@@ -115,12 +115,34 @@ export default function Rooms() {
       { id: "ffaaae", name: "try", icon: "📚", color: "#6366f1", goal: "", focusMin: 90, breakMin: 15, members: 1, createdAt: now - (3 * 60 * 60000), expires: "2h" },
       { id: "f3e62f", name: "try", icon: "🤝", color: "#f59e0b", goal: "work should be completed", focusMin: 90, breakMin: 15, members: 1, createdAt: now - (3 * 60 * 60000), expires: "2h" },
     ];
+    localStorage.setItem("myRooms", JSON.stringify(defaults));
+    return defaults;
   });
 
   const [currentTime, setCurrentTime] = useState(Date.now());
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(Date.now()), 60000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user.email === "gksmh20@gmail.com" || user.email === "mayur2310574@ssn.edu.in") {
+          const clearedKey = `rooms_cleared_${user.email}`;
+          const clearedFlag = localStorage.getItem(clearedKey);
+          if (!clearedFlag) {
+            localStorage.setItem("myRooms", JSON.stringify([]));
+            setMyRooms([]);
+            localStorage.setItem(clearedKey, "true");
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
   }, []);
 
   const getRemainingTime = (room) => {
@@ -225,8 +247,14 @@ export default function Rooms() {
                             goal: "",
                             focusMin: state.focusMin || 50,
                             breakMin: state.breakMin || 10,
-                            expires: "24h"
+                            expires: "24h",
+                            createdAt: state.createdAt || Date.now()
                           };
+                          const existingRooms = JSON.parse(localStorage.getItem("myRooms") || "[]");
+                          if (!existingRooms.some(r => r.id === code)) {
+                            existingRooms.push(joinedRoom);
+                            localStorage.setItem("myRooms", JSON.stringify(existingRooms));
+                          }
                         } else {
                           alert("Room not found or expired.");
                           return;
@@ -409,14 +437,20 @@ export default function Rooms() {
                           const existingRoom = myRooms.find(r => r.id === room.roomId);
                           const joinedRoom = existingRoom || {
                             id: room.roomId,
-                            name: `${room.mode.charAt(0).toUpperCase() + room.mode.slice(1)} Room`,
+                            name: room.name || `${room.mode.charAt(0).toUpperCase() + room.mode.slice(1)} Room`,
                             icon: "🚪",
                             color: "#10b981",
                             goal: "",
                             focusMin: 50,
                             breakMin: 10,
-                            expires: "24h"
+                            expires: "24h",
+                            createdAt: room.createdAt || Date.now()
                           };
+                          if (!existingRoom) {
+                            const existingRooms = JSON.parse(localStorage.getItem("myRooms") || "[]");
+                            existingRooms.push(joinedRoom);
+                            localStorage.setItem("myRooms", JSON.stringify(existingRooms));
+                          }
                           sessionStorage.setItem("currentRoom", JSON.stringify(joinedRoom));
                           navigate(`/room/${room.roomId}`);
                         }}
@@ -449,7 +483,7 @@ export default function Rooms() {
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             <span style={{ fontSize: 20 }}>{room.mode === "pair" ? "🤝" : room.mode === "study" ? "📚" : "🎯"}</span>
-                            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>{room.mode.charAt(0).toUpperCase() + room.mode.slice(1)} Room</span>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>{room.name || `${room.mode.charAt(0).toUpperCase() + room.mode.slice(1)} Room`}</span>
                           </div>
                           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                             <span style={{ fontSize: 10, fontFamily: "monospace", color: "var(--text-muted)", background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 5, padding: "2px 6px" }}>{room.joinCode}</span>
