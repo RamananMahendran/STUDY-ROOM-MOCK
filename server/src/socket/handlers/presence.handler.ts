@@ -8,6 +8,7 @@ import {
   deleteSocketMapping,
   enforceRoomCapacity,
   setUserMediaState,
+  getUserMediaState,
 } from '../../services/redis.service.js';
 import prisma from '../../config/database.js';
 
@@ -208,6 +209,7 @@ export const registerPresenceHandlers = (io: Server, socket: Socket) => {
 
       const userName = socket.data.userName;
       socket.to(roomId).emit('user_left', { userId, userName, socketId: socket.id });
+      socket.to(roomId).emit('user_left_call', { userId, socketId: socket.id });
 
       console.log(`User ${userId} left room ${roomId}`);
     } catch (error) {
@@ -224,6 +226,7 @@ export const registerPresenceHandlers = (io: Server, socket: Socket) => {
       for (const roomId of rooms) {
         await removeUserFromRoom(roomId, userId);
         socket.to(roomId).emit('user_left', { userId, userName, socketId: socket.id });
+        socket.to(roomId).emit('user_left_call', { userId, socketId: socket.id });
       }
 
       await deleteSocketMapping(socket.id);
@@ -237,12 +240,11 @@ export const registerPresenceHandlers = (io: Server, socket: Socket) => {
     try {
       const userId = socket.data.userId.toString();
       
-      const currentState = { micOn: false, camOn: false };
-      if (data.type === 'mic') {
-        currentState.micOn = data.enabled;
-      } else {
-        currentState.camOn = data.enabled;
-      }
+      const existingState = await getUserMediaState(data.roomId, userId) || { micOn: true, camOn: true };
+      const currentState = {
+        micOn: data.type === 'mic' ? data.enabled : existingState.micOn,
+        camOn: data.type === 'cam' ? data.enabled : existingState.camOn,
+      };
       
       await setUserMediaState(data.roomId, userId, currentState.micOn, currentState.camOn);
       
@@ -260,4 +262,29 @@ export const registerPresenceHandlers = (io: Server, socket: Socket) => {
   socket.on('leave_room', handleLeaveRoom);
   socket.on('disconnect', handleDisconnect);
   socket.on('toggle_media', handleToggleMedia);
+
+  socket.on('join_call', (data: { roomId: string }) => {
+    const userId = socket.data.userId.toString();
+    socket.to(data.roomId).emit('user_joined_call', {
+      userId,
+      socketId: socket.id
+    });
+  });
+
+  socket.on('leave_call', (data: { roomId: string }) => {
+    const userId = socket.data.userId.toString();
+    socket.to(data.roomId).emit('user_left_call', {
+      userId,
+      socketId: socket.id
+    });
+  });
+
+  socket.on('webrtc_signal', (data: { targetSocketId: string; signal: any }) => {
+    const userId = socket.data.userId.toString();
+    io.to(data.targetSocketId).emit('webrtc_signal', {
+      senderSocketId: socket.id,
+      senderUserId: userId,
+      signal: data.signal
+    });
+  });
 };

@@ -1091,11 +1091,11 @@ function ActivityPanel({ items = [] }) {
             <div style={{
               width: 30, height: 30, borderRadius: "50%",
               display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-              backgroundColor: item.type === "file" ? "rgba(217, 119, 6, 0.15)" : item.type === "join" ? "rgba(34,197,94,0.15)" : "var(--accent-bg)", 
-              border: item.type === "file" ? "1px solid rgba(217, 119, 6, 0.25)" : item.type === "join" ? "1px solid rgba(34,197,94,0.25)" : "1px solid rgba(108,99,255,0.2)", 
-              color: item.type === "file" ? "#d97706" : item.type === "join" ? "var(--success)" : "var(--accent)",
+              backgroundColor: item.type === "file" ? "rgba(217, 119, 6, 0.15)" : item.type === "join" ? "rgba(34,197,94,0.15)" : item.type === "voice" ? "rgba(139, 92, 246, 0.15)" : "var(--accent-bg)", 
+              border: item.type === "file" ? "1px solid rgba(217, 119, 6, 0.25)" : item.type === "join" ? "1px solid rgba(34,197,94,0.25)" : item.type === "voice" ? "1px solid rgba(139, 92, 246, 0.25)" : "1px solid rgba(108,99,255,0.2)", 
+              color: item.type === "file" ? "#d97706" : item.type === "join" ? "var(--success)" : item.type === "voice" ? "#8b5cf6" : "var(--accent)",
             }}>
-              {item.type === "file" ? <Icon.Paperclip /> : item.type === "join" ? <Icon.AddUser /> : <Icon.Clock />}
+              {item.type === "file" ? <Icon.Paperclip /> : item.type === "join" ? <Icon.AddUser /> : item.type === "voice" ? <Icon.Mic /> : <Icon.Clock />}
             </div>
             <span style={{ flex: 1, fontSize: "0.85rem", color: "var(--text)" }}>{item.label}</span>
             <span style={{ fontSize: "0.72rem", color: "var(--text-subtle)" }}>{formatAgo(item.ts)}</span>
@@ -1107,31 +1107,104 @@ function ActivityPanel({ items = [] }) {
 }
 
 // ─── Members Panel ────────────────────────────────────────────────────────────
-function MembersPanel({ members, currentUser, friendStatus, onAddFriend, onAcceptFriend, showToast, roomOwnerId }) {
+function MembersPanel({ 
+  members, 
+  currentUser, 
+  friendStatus, 
+  onAddFriend, 
+  onAcceptFriend, 
+  showToast, 
+  roomOwnerId,
+  inCall,
+  handleLeaveCall,
+  handleJoinCall,
+  participantData = []
+}) {
   const onlineCount = members.filter(m => m.isOnline).length;
 
   return (
     <div style={{ flex: 1, overflowY: "auto" }}>
       {/* Voice & Video */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderBottom: "1px solid var(--border)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--text-muted)" }}>
-          <Icon.Mic /><Icon.Camera />
+      <div style={{
+        margin: "12px 16px",
+        padding: "14px 16px",
+        borderRadius: 12,
+        backgroundColor: "rgba(108,99,255,0.02)",
+        border: "1px solid var(--border)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 12
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--text-muted)" }}>
+            <Icon.Mic /><Icon.Camera />
+          </div>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)" }}>Voice & Video</p>
+            <p style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+              {participantData.length > 0
+                ? `${participantData.length} ${participantData.length === 1 ? "person" : "people"} studying live`
+                : "Study together on camera — join the call"}
+            </p>
+          </div>
+          <button 
+            onClick={inCall ? handleLeaveCall : handleJoinCall}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "6px 14px", borderRadius: 8,
+              border: inCall ? "1px solid #ef4444" : "1px solid rgba(108,99,255,0.3)",
+              color: inCall ? "#ef4444" : "var(--accent)",
+              fontSize: "0.78rem", cursor: "pointer",
+              backgroundColor: inCall ? "rgba(239, 68, 68, 0.08)" : "transparent",
+              fontWeight: 500
+            }}
+          >
+            {inCall ? (
+              <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <svg style={{ width: 14, height: 14 }} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5l4.553-2.276A1 1 0 0121 9.118v5.764a1 1 0 01-1.447.894L15 13.5M3 9a2 2 0 012-2h5.5M3 9v6a2 2 0 002 2h8a2 2 0 002-2v-.5M1 1l22 22" />
+                </svg>
+                Leave
+              </span>
+            ) : (
+              <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Icon.Camera /> Join Call</span>
+            )}
+          </button>
         </div>
-        <div style={{ flex: 1 }}>
-          <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)" }}>Voice & Video</p>
-          <p style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Study together on camera — join the call</p>
-        </div>
-        <button 
-          onClick={() => showToast("Microphone access was blocked. Allow it in your browser settings to join the call.", "error")}
-          style={{
-            display: "flex", alignItems: "center", gap: 6,
-            padding: "6px 14px", borderRadius: 8,
-            border: "1px solid rgba(108,99,255,0.3)", color: "var(--accent)",
-            fontSize: "0.78rem", cursor: "pointer",
-          }}
-        >
-          <Icon.Camera /> Join Call
-        </button>
+
+        {/* Call Participants List */}
+        {participantData.length > 0 && (
+          <div style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            paddingTop: 10,
+            borderTop: "1px solid var(--border)"
+          }}>
+            {participantData.map(p => {
+              const initials = (p.userName || "U").substring(0, 2).toUpperCase();
+              return (
+                <div key={p.userId} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{
+                    width: 24, height: 24, borderRadius: "50%",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    backgroundColor: "var(--accent)", color: "#fff",
+                    fontSize: "0.68rem", fontWeight: 700
+                  }}>
+                    {initials}
+                  </div>
+                  <span style={{
+                    fontSize: "0.8rem",
+                    fontWeight: 500,
+                    color: p.isMe ? "#22c55e" : "var(--text)"
+                  }}>
+                    {p.isMe ? "You" : p.userName}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div style={{ padding: "12px 16px" }}>
@@ -1148,6 +1221,9 @@ function MembersPanel({ members, currentUser, friendStatus, onAddFriend, onAccep
             
             const initials = (member.userName || "U").substring(0, 2).toUpperCase();
             const status = friendStatus[member.userId];
+            const participant = participantData.find(p => String(p.userId) === String(member.userId));
+            const isInCall = !!participant;
+            const isMicOn = participant ? participant.micOn : false;
 
             return (
               <div key={member.userId} style={{
@@ -1178,37 +1254,62 @@ function MembersPanel({ members, currentUser, friendStatus, onAddFriend, onAccep
                         <Icon.Crown size={10} /> Admin
                       </span>
                     )}
+                    {isInCall && isMicOn && (
+                      <span style={{
+                        display: "flex", alignItems: "center", gap: 3,
+                        padding: "2px 6px", borderRadius: 6,
+                        background: "rgba(108,99,255,0.15)", color: "#818cf8",
+                        fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.05em"
+                      }}>
+                        SPEAKING
+                      </span>
+                    )}
                   </p>
                   {member.email && (
                     <p style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{member.email}</p>
                   )}
                 </div>
                 
-                {/* Friend Request UI */}
-                {!isMe && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    {status === "accepted" ? (
-                      <span style={{ fontSize: "0.7rem", color: "var(--success)", padding: "4px 8px", backgroundColor: "rgba(34,197,94,0.1)", borderRadius: 6 }}>Friends</span>
-                    ) : status === "pending_sent" ? (
-                      <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", backgroundColor: "rgba(217, 119, 6, 0.15)", border: "1px solid rgba(217,119,6,0.3)", borderRadius: 6, color: "#d97706", fontSize: "0.7rem" }}>
-                        <Icon.Clock /> Pending
-                      </div>
-                    ) : status === "pending_received" ? (
-                      <button onClick={() => onAcceptFriend(member.userId)} style={{ padding: "4px 10px", borderRadius: 6, backgroundColor: "var(--success)", color: "#fff", fontSize: "0.7rem", fontWeight: 600, border: "none", cursor: "pointer" }}>
-                        Accept
-                      </button>
-                    ) : (
-                      <button onClick={() => onAddFriend(member.userId)} style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", borderRadius: 6, backgroundColor: "var(--surface-2)", color: "var(--text)", border: "1px solid var(--border)", fontSize: "0.7rem", cursor: "pointer" }}>
-                        <Icon.AddUser />
-                      </button>
-                    )}
-                    <div style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: member.isOnline ? "var(--success)" : "var(--text-muted)" }} />
-                  </div>
-                )}
-                
-                {isMe && (
+                {/* Right side: Mic indicator and status dot */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  {isInCall && (
+                    <div style={{
+                      width: 24, height: 24, borderRadius: "50%",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      backgroundColor: isMicOn ? "rgba(108,99,255,0.15)" : "rgba(239, 68, 68, 0.12)", 
+                      color: isMicOn ? "#818cf8" : "#ef4444"
+                    }}>
+                      {isMicOn ? (
+                        <Icon.Mic />
+                      ) : (
+                        <svg style={{ width: 12, height: 12 }} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 9a3 3 0 0 0 3 3m1.2-1.2A3 3 0 0 0 15 9V5a3 3 0 0 0-6 0v.8m10.2 11.2a7 7 0 0 1-7 7m0 0a7 7 0 0 1-7-7m7 7v4m0 0H8m4 0h4m-4-8v-3m10 6L1 1" />
+                        </svg>
+                      )}
+                    </div>
+                  )}
+
+                  {!isMe && (
+                    <>
+                      {status === "accepted" ? (
+                        <span style={{ fontSize: "0.7rem", color: "var(--success)", padding: "4px 8px", backgroundColor: "rgba(34,197,94,0.1)", borderRadius: 6 }}>Friends</span>
+                      ) : status === "pending_sent" ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", backgroundColor: "rgba(217, 119, 6, 0.15)", border: "1px solid rgba(217,119,6,0.3)", borderRadius: 6, color: "#d97706", fontSize: "0.7rem" }}>
+                          <Icon.Clock /> Pending
+                        </div>
+                      ) : status === "pending_received" ? (
+                        <button onClick={() => onAcceptFriend(member.userId)} style={{ padding: "4px 10px", borderRadius: 6, backgroundColor: "var(--success)", color: "#fff", fontSize: "0.7rem", fontWeight: 600, border: "none", cursor: "pointer" }}>
+                          Accept
+                        </button>
+                      ) : (
+                        <button onClick={() => onAddFriend(member.userId)} style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", borderRadius: 6, backgroundColor: "var(--surface-2)", color: "var(--text)", border: "1px solid var(--border)", fontSize: "0.7rem", cursor: "pointer" }}>
+                          <Icon.AddUser />
+                        </button>
+                      )}
+                    </>
+                  )}
                   <div style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: member.isOnline ? "var(--success)" : "var(--text-muted)" }} />
-                )}
+                </div>
               </div>
             );
           })}
@@ -1219,7 +1320,21 @@ function MembersPanel({ members, currentUser, friendStatus, onAddFriend, onAccep
 }
 
 // ─── Top Header Bar ────────────────────────────────────────────────────────────
-function Header({ roomCode, onSettings, onInvite, roomName }) {
+function Header({ 
+  roomCode, 
+  onSettings, 
+  onInvite, 
+  roomName,
+  inCall,
+  handleToggleMic,
+  handleToggleCam,
+  localMicOn,
+  localCamOn,
+  setShowCallPanel,
+  participantData,
+  handleLeaveCall,
+  handleJoinCall
+}) {
   const [copied, setCopied] = useState(false);
   const [theme, setTheme] = useState(
     () => document.documentElement.getAttribute("data-theme") || "dark"
@@ -1284,15 +1399,52 @@ function Header({ roomCode, onSettings, onInvite, roomName }) {
         <button onClick={onInvite} style={{ width: 30, height: 30, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "var(--surface)", color: "var(--text-muted)", border: "1px solid var(--border)", cursor: "pointer" }}>
           <Icon.AddUser />
         </button>
-        <button style={{
-          display: "flex", alignItems: "center", gap: 5,
-          padding: "5px 12px", borderRadius: 7,
-          border: "1px solid rgba(108,99,255,0.35)", color: "var(--accent)",
-          fontSize: "0.78rem", fontWeight: 500, cursor: "pointer",
-          backgroundColor: "var(--accent-bg)",
-        }}>
-          <Icon.Mic /><Icon.Camera /> Call
-        </button>
+        {inCall ? (
+          <>
+            <button onClick={handleToggleMic} style={{
+              width: 30, height: 30, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center",
+              backgroundColor: localMicOn ? "var(--accent)" : "rgba(239, 68, 68, 0.15)",
+              color: localMicOn ? "#fff" : "#ef4444",
+              border: "1px solid var(--border)", cursor: "pointer"
+            }} title={localMicOn ? "Mute Mic" : "Unmute Mic"}>
+              <Icon.Mic />
+            </button>
+            <button onClick={handleToggleCam} style={{
+              width: 30, height: 30, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center",
+              backgroundColor: localCamOn ? "var(--accent)" : "rgba(239, 68, 68, 0.15)",
+              color: localCamOn ? "#fff" : "#ef4444",
+              border: "1px solid var(--border)", cursor: "pointer"
+            }} title={localCamOn ? "Stop Camera" : "Start Camera"}>
+              <Icon.Camera />
+            </button>
+            <button onClick={() => setShowCallPanel(prev => !prev)} style={{
+              display: "flex", alignItems: "center", gap: 5,
+              padding: "5px 12px", height: 30, borderRadius: 7,
+              border: "1px solid rgba(108,99,255,0.35)", color: "#fff",
+              fontSize: "0.78rem", fontWeight: 600, cursor: "pointer",
+              backgroundColor: "var(--accent)",
+            }} title="Toggle Call Panel">
+              <Icon.Members /> {participantData.length}
+            </button>
+            <button onClick={handleLeaveCall} style={{
+              width: 30, height: 30, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center",
+              backgroundColor: "#ef4444", color: "#fff",
+              border: "none", cursor: "pointer"
+            }} title="End Call">
+              ✕
+            </button>
+          </>
+        ) : (
+          <button onClick={handleJoinCall} style={{
+            display: "flex", alignItems: "center", gap: 5,
+            padding: "5px 12px", borderRadius: 7,
+            border: "1px solid rgba(108,99,255,0.35)", color: "var(--accent)",
+            fontSize: "0.78rem", fontWeight: 500, cursor: "pointer",
+            backgroundColor: "var(--accent-bg)",
+          }}>
+            <Icon.Mic /><Icon.Camera /> Call
+          </button>
+        )}
         <button onClick={onSettings} style={{ width: 30, height: 30, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "var(--surface)", color: "var(--text-muted)", border: "1px solid var(--border)", cursor: "pointer" }}>
           <Icon.Settings />
         </button>
@@ -1460,6 +1612,69 @@ function SettingsModal({ onClose, onSave, onDeleteRoom, initialFocus, initialBre
             </div>
           </label>
 
+          {/* Admin Details */}
+          {(() => {
+            const adminMember = members.find((member, index) => 
+              roomOwnerId ? Number(member.userId) === Number(roomOwnerId) : index === 0
+            );
+            if (!adminMember) return null;
+            const initials = (adminMember.userName || "U").substring(0, 2).toUpperCase();
+            return (
+              <>
+                <p style={{ fontSize: "0.68rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-subtle)", marginTop: 12 }}>
+                  MEMBERS (1)
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ 
+                    padding: "12px 16px", 
+                    borderRadius: 10, 
+                    backgroundColor: "var(--bg)", 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: 12, 
+                    border: "1px solid var(--border)" 
+                  }}>
+                    <div style={{ 
+                      width: 36, 
+                      height: 36, 
+                      borderRadius: "50%", 
+                      backgroundColor: "var(--surface)", 
+                      display: "flex", 
+                      alignItems: "center", 
+                      justifyContent: "center", 
+                      fontSize: "0.85rem", 
+                      fontWeight: 700, 
+                      color: "var(--text-muted)", 
+                      flexShrink: 0 
+                    }}>
+                      {initials}
+                    </div>
+                    <div>
+                      <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)", display: "flex", alignItems: "center", gap: 6 }}>
+                        {adminMember.userName || `User ${adminMember.userId}`}
+                        <span style={{ 
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 3,
+                          fontSize: "0.65rem", 
+                          padding: "2px 6px", 
+                          borderRadius: 4, 
+                          backgroundColor: "rgba(108,99,255,0.15)", 
+                          color: "#a5b4fc", 
+                          border: "1px solid rgba(108,99,255,0.2)",
+                          fontWeight: 700
+                        }}>
+                          <Icon.Crown size={10} /> Admin
+                        </span>
+                      </p>
+                      {adminMember.email && <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: 2 }}>{adminMember.email}</p>}
+                    </div>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
+
           <p style={{ fontSize: "0.68rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-subtle)", marginTop: 4 }}>Pomodoro Timer</p>
 
           <div style={{ display: "flex", gap: 20 }}>
@@ -1492,31 +1707,6 @@ function SettingsModal({ onClose, onSave, onDeleteRoom, initialFocus, initialBre
             💾 Save Changes
           </button>
 
-          {/* Admin Details */}
-          {(() => {
-            const adminMember = members.find((member, index) => 
-              roomOwnerId ? Number(member.userId) === Number(roomOwnerId) : index === 0
-            );
-            if (!adminMember) return null;
-            const initials = (adminMember.userName || "U").substring(0, 2).toUpperCase();
-            return (
-              <>
-                <p style={{ fontSize: "0.68rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-subtle)", marginTop: 12 }}>Admin</p>
-                <div style={{ padding: "12px 16px", borderRadius: 10, backgroundColor: "var(--bg)", display: "flex", alignItems: "center", gap: 12, border: "1px solid var(--border)" }}>
-                  <div style={{ width: 36, height: 36, borderRadius: "50%", backgroundColor: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.85rem", fontWeight: 700, color: "var(--text-muted)", flexShrink: 0 }}>
-                    {initials}
-                  </div>
-                  <div>
-                    <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)", display: "flex", alignItems: "center", gap: 6 }}>
-                      {adminMember.userName || `User ${adminMember.userId}`}
-                      <span style={{ fontSize: "0.65rem", padding: "2px 6px", borderRadius: 4, backgroundColor: "var(--accent-bg)", color: "var(--accent)", border: "1px solid rgba(108,99,255,0.2)" }}>👑 Admin</span>
-                    </p>
-                    {adminMember.email && <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: 2 }}>{adminMember.email}</p>}
-                  </div>
-                </div>
-              </>
-            );
-          })()}
 
           {/* Danger Zone */}
           <div style={{ padding: 20, borderRadius: 10, border: "1px solid rgba(239, 68, 68, 0.3)", backgroundColor: "rgba(239, 68, 68, 0.05)", marginTop: 12 }}>
@@ -1568,11 +1758,213 @@ export default function App() {
   const { roomId } = useParams();
   const navigate = useNavigate();
 
+  const _rawUser = JSON.parse(localStorage.getItem("user") || "null");
+  // Normalize: support both old format (userId only) and new format (id + userId)
+  const currentUser = _rawUser ? { ..._rawUser, id: _rawUser.id || _rawUser.userId } : null;
+
   // Socket, Chat, and Sync State
   const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
   const [members, setMembers] = useState([]);
   const [roomOwnerId, setRoomOwnerId] = useState(null);
+
+  // Audio / Video call state
+  const [inCall, setInCall] = useState(false);
+  const [localMicOn, setLocalMicOn] = useState(true);
+  const [localCamOn, setLocalCamOn] = useState(true);
+  const [callParticipants, setCallParticipants] = useState({}); // { [socketId]: { userId, micOn, camOn, stream } }
+  const [showCallPanel, setShowCallPanel] = useState(true);
+
+  const localStreamRef = useRef(null);
+  const peerConnectionsRef = useRef({}); // { [socketId]: RTCPeerConnection }
+  const pendingCandidatesRef = useRef({}); // { [socketId]: RTCIceCandidateInit[] }
+
+  const membersRef = useRef([]);
+  useEffect(() => {
+    membersRef.current = members;
+  }, [members]);
+
+  const [callPosition, setCallPosition] = useState({ x: 0, y: 0 });
+  const [callMinimized, setCallMinimized] = useState(false);
+  const [callExpanded, setCallExpanded] = useState(false);
+  const isDraggingRef = useRef(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const positionStartRef = useRef({ x: 0, y: 0 });
+
+  const handlePointerDown = (e) => {
+    if (e.target.closest('button')) return;
+    isDraggingRef.current = true;
+    dragStartRef.current = { x: e.clientX, y: e.clientY };
+    positionStartRef.current = { ...callPosition };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isDraggingRef.current) return;
+    const dx = e.clientX - dragStartRef.current.x;
+    const dy = e.clientY - dragStartRef.current.y;
+    setCallPosition({
+      x: positionStartRef.current.x + dx,
+      y: positionStartRef.current.y + dy
+    });
+  };
+
+  const handlePointerUp = (e) => {
+    isDraggingRef.current = false;
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch (err) {
+      // ignore
+    }
+  };
+
+  const participantData = Object.keys(callParticipants).map(sid => {
+    const p = callParticipants[sid];
+    if (sid === "local") {
+      return {
+        ...p,
+        userName: currentUser?.name || currentUser?.username || "You",
+        email: currentUser?.email,
+        isMe: true
+      };
+    }
+    const member = members.find(m => String(m.userId) === String(p.userId));
+    return {
+      ...p,
+      userName: member ? member.userName : `User ${p.userId}`,
+      email: member ? member.email : "",
+      isMe: false,
+      socketId: sid
+    };
+  });
+
+  const handleJoinCall = async () => {
+    try {
+      let stream = null;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+        setLocalMicOn(true);
+        setLocalCamOn(true);
+      } catch (err) {
+        console.warn("[Call] Failed to get audio/video, trying audio only:", err);
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+          setLocalMicOn(true);
+          setLocalCamOn(false);
+        } catch (audioErr) {
+          console.error("[Call] Failed to get audio track:", audioErr);
+        }
+      }
+
+      localStreamRef.current = stream;
+      setInCall(true);
+      setShowCallPanel(true);
+
+      setCallParticipants(prev => ({
+        ...prev,
+        local: {
+          userId: currentUser?.id,
+          micOn: stream ? stream.getAudioTracks().length > 0 : false,
+          camOn: stream ? stream.getVideoTracks().length > 0 : false,
+          stream
+        }
+      }));
+
+      const myName = currentUser?.name || currentUser?.username || "You";
+      addActivity(`${myName} joined voice`, "voice");
+
+      if (socket) {
+        socket.emit("join_call", { roomId });
+        socket.emit("toggle_media", {
+          roomId,
+          type: "mic",
+          enabled: stream ? stream.getAudioTracks().length > 0 : false
+        });
+        socket.emit("toggle_media", {
+          roomId,
+          type: "cam",
+          enabled: stream ? stream.getVideoTracks().length > 0 : false
+        });
+      }
+    } catch (e) {
+      console.error("[Call] Error joining call:", e);
+    }
+  };
+
+  const handleLeaveCall = () => {
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track => track.stop());
+      localStreamRef.current = null;
+    }
+
+    Object.keys(peerConnectionsRef.current).forEach(sid => {
+      peerConnectionsRef.current[sid].close();
+    });
+    peerConnectionsRef.current = {};
+    pendingCandidatesRef.current = {};
+
+    if (socket) {
+      socket.emit("leave_call", { roomId });
+    }
+
+    setInCall(false);
+    setCallParticipants({});
+
+    const myName = currentUser?.name || currentUser?.username || "You";
+    addActivity(`${myName} left voice`, "voice");
+  };
+
+  const handleToggleMic = () => {
+    const nextVal = !localMicOn;
+    setLocalMicOn(nextVal);
+    if (localStreamRef.current) {
+      localStreamRef.current.getAudioTracks().forEach(track => {
+        track.enabled = nextVal;
+      });
+    }
+    if (socket) {
+      socket.emit("toggle_media", { roomId, type: "mic", enabled: nextVal });
+    }
+    setCallParticipants(prev => ({
+      ...prev,
+      local: {
+        ...prev.local,
+        micOn: nextVal
+      }
+    }));
+  };
+
+  const handleToggleCam = () => {
+    const nextVal = !localCamOn;
+    setLocalCamOn(nextVal);
+    if (localStreamRef.current) {
+      localStreamRef.current.getVideoTracks().forEach(track => {
+        track.enabled = nextVal;
+      });
+    }
+    if (socket) {
+      socket.emit("toggle_media", { roomId, type: "cam", enabled: nextVal });
+    }
+    setCallParticipants(prev => ({
+      ...prev,
+      local: {
+        ...prev.local,
+        camOn: nextVal
+      }
+    }));
+  };
+
+  useEffect(() => {
+    return () => {
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+      Object.keys(peerConnectionsRef.current).forEach(sid => {
+        peerConnectionsRef.current[sid].close();
+      });
+      pendingCandidatesRef.current = {};
+    };
+  }, []);
   
   // ── Activity log ─────────────────────────────────────────────────────────────
   const [activityLog, setActivityLog] = useState([]);
@@ -1581,10 +1973,6 @@ export default function App() {
   const addActivity = (label, type = "info") => {
     setActivityLog(prev => [{ id: Date.now(), label, ts: Date.now(), type }, ...prev]);
   };
-
-  const _rawUser = JSON.parse(localStorage.getItem("user") || "null");
-  // Normalize: support both old format (userId only) and new format (id + userId)
-  const currentUser = _rawUser ? { ..._rawUser, id: _rawUser.id || _rawUser.userId } : null;
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -1718,6 +2106,238 @@ export default function App() {
         setFriendStatus(prev => ({ ...prev, [data.targetUserId]: "accepted" }));
         showToast("Friend request accepted!", "success");
       }
+    });
+
+    socketIo.on("user_joined_call", async ({ userId, socketId }) => {
+      console.log("[Call] User joined call:", userId, socketId);
+      
+      // Close existing peer connection for this socketId if it exists
+      if (peerConnectionsRef.current[socketId]) {
+        peerConnectionsRef.current[socketId].close();
+      }
+      delete pendingCandidatesRef.current[socketId];
+
+      setCallParticipants(prev => ({
+        ...prev,
+        [socketId]: {
+          userId,
+          micOn: true,
+          camOn: true,
+          stream: null
+        }
+      }));
+
+      const pc = new RTCPeerConnection({
+        iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+      });
+
+      peerConnectionsRef.current[socketId] = pc;
+
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track => {
+          pc.addTrack(track, localStreamRef.current);
+        });
+      }
+
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          socketIo.emit("webrtc_signal", {
+            targetSocketId: socketId,
+            signal: { type: "ice-candidate", candidate: event.candidate }
+          });
+        }
+      };
+
+      pc.ontrack = (event) => {
+        console.log("[Call] Received remote track:", event.streams[0]);
+        setCallParticipants(prev => {
+          if (!prev[socketId]) return prev;
+          const stream = (event.streams && event.streams[0]) 
+            ? event.streams[0] 
+            : (prev[socketId].stream || new MediaStream());
+          if (!(event.streams && event.streams[0])) {
+            try {
+              stream.addTrack(event.track);
+            } catch (err) {
+              // ignore
+            }
+          }
+          return {
+            ...prev,
+            [socketId]: {
+              ...prev[socketId],
+              stream
+            }
+          };
+        });
+      };
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      socketIo.emit("webrtc_signal", {
+        targetSocketId: socketId,
+        signal: { type: "offer", offer }
+      });
+
+      const member = membersRef.current.find(m => String(m.userId) === String(userId));
+      const userName = member ? member.userName : `User ${userId}`;
+      addActivity(`${userName} joined voice`, "voice");
+    });
+
+    socketIo.on("user_left_call", ({ userId, socketId }) => {
+      console.log("[Call] User left call:", userId, socketId);
+      if (peerConnectionsRef.current[socketId]) {
+        peerConnectionsRef.current[socketId].close();
+        delete peerConnectionsRef.current[socketId];
+      }
+      delete pendingCandidatesRef.current[socketId];
+      setCallParticipants(prev => {
+        const next = { ...prev };
+        delete next[socketId];
+        return next;
+      });
+
+      const member = membersRef.current.find(m => String(m.userId) === String(userId));
+      const userName = member ? member.userName : `User ${userId}`;
+      addActivity(`${userName} left voice`, "voice");
+    });
+
+    socketIo.on("webrtc_signal", async ({ senderSocketId, senderUserId, signal }) => {
+      console.log("[Call] WebRTC signal received:", signal.type);
+      let pc = peerConnectionsRef.current[senderSocketId];
+
+      if (signal.type === "offer") {
+        let isNew = !pc;
+        if (pc) {
+          pc.close();
+        }
+        delete pendingCandidatesRef.current[senderSocketId];
+
+        pc = new RTCPeerConnection({
+          iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+        });
+        peerConnectionsRef.current[senderSocketId] = pc;
+
+        if (localStreamRef.current) {
+          localStreamRef.current.getTracks().forEach(track => {
+            pc.addTrack(track, localStreamRef.current);
+          });
+        }
+
+        pc.onicecandidate = (event) => {
+          if (event.candidate) {
+            socketIo.emit("webrtc_signal", {
+              targetSocketId: senderSocketId,
+              signal: { type: "ice-candidate", candidate: event.candidate }
+            });
+          }
+        };
+
+        pc.ontrack = (event) => {
+          console.log("[Call] Received remote track (on offer):", event.streams[0]);
+          setCallParticipants(prev => {
+            if (!prev[senderSocketId]) return prev;
+            const stream = (event.streams && event.streams[0]) 
+              ? event.streams[0] 
+              : (prev[senderSocketId].stream || new MediaStream());
+            if (!(event.streams && event.streams[0])) {
+              try {
+                stream.addTrack(event.track);
+              } catch (err) {
+                // ignore
+              }
+            }
+            return {
+              ...prev,
+              [senderSocketId]: {
+                ...prev[senderSocketId],
+                stream
+              }
+            };
+          });
+        };
+
+        setCallParticipants(prev => ({
+          ...prev,
+          [senderSocketId]: {
+            userId: senderUserId,
+            micOn: true,
+            camOn: true,
+            stream: prev[senderSocketId]?.stream || null
+          }
+        }));
+
+        if (isNew) {
+          const member = membersRef.current.find(m => String(m.userId) === String(senderUserId));
+          const userName = member ? member.userName : `User ${senderUserId}`;
+          addActivity(`${userName} joined voice`, "voice");
+        }
+
+        await pc.setRemoteDescription(new RTCSessionDescription(signal.offer));
+        
+        // Drain pending candidates for offer
+        const candidates = pendingCandidatesRef.current[senderSocketId] || [];
+        for (const cand of candidates) {
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(cand));
+          } catch (err) {
+            console.error("[Call] Error adding queued ICE candidate (offer):", err);
+          }
+        }
+        pendingCandidatesRef.current[senderSocketId] = [];
+
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        socketIo.emit("webrtc_signal", {
+          targetSocketId: senderSocketId,
+          signal: { type: "answer", answer }
+        });
+      } else if (signal.type === "answer") {
+        if (pc) {
+          await pc.setRemoteDescription(new RTCSessionDescription(signal.answer));
+          
+          // Drain pending candidates for answer
+          const candidates = pendingCandidatesRef.current[senderSocketId] || [];
+          for (const cand of candidates) {
+            try {
+              await pc.addIceCandidate(new RTCIceCandidate(cand));
+            } catch (err) {
+              console.error("[Call] Error adding queued ICE candidate (answer):", err);
+            }
+          }
+          pendingCandidatesRef.current[senderSocketId] = [];
+        }
+      } else if (signal.type === "ice-candidate") {
+        if (pc && pc.remoteDescription && pc.remoteDescription.type) {
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
+          } catch (err) {
+            console.error("[Call] Error adding ICE candidate directly:", err);
+          }
+        } else {
+          if (!pendingCandidatesRef.current[senderSocketId]) {
+            pendingCandidatesRef.current[senderSocketId] = [];
+          }
+          pendingCandidatesRef.current[senderSocketId].push(signal.candidate);
+        }
+      }
+    });
+
+    socketIo.on("media_state_changed", ({ userId, micOn, camOn }) => {
+      console.log("[Call] Media state changed:", userId, { micOn, camOn });
+      setCallParticipants(prev => {
+        const next = { ...prev };
+        Object.keys(next).forEach(sid => {
+          if (String(next[sid].userId) === String(userId)) {
+            next[sid] = {
+              ...next[sid],
+              micOn,
+              camOn
+            };
+          }
+        });
+        return next;
+      });
     });
 
     setSocket(socketIo);
@@ -2050,6 +2670,10 @@ export default function App() {
       onAcceptFriend={handleAcceptFriend}
       showToast={showToast}
       roomOwnerId={roomOwnerId}
+      inCall={inCall}
+      handleLeaveCall={handleLeaveCall}
+      handleJoinCall={handleJoinCall}
+      participantData={participantData}
     />,
   };
 
@@ -2084,7 +2708,21 @@ export default function App() {
         </div>
       )}
 
-      <Header roomCode={roomId || "ffaaae"} roomName={roomName} onSettings={() => setShowSettings(true)} onInvite={() => setShowInvite(true)} />
+      <Header 
+        roomCode={roomId || "ffaaae"} 
+        roomName={roomName} 
+        onSettings={() => setShowSettings(true)} 
+        onInvite={() => setShowInvite(true)}
+        inCall={inCall}
+        handleToggleMic={handleToggleMic}
+        handleToggleCam={handleToggleCam}
+        localMicOn={localMicOn}
+        localCamOn={localCamOn}
+        setShowCallPanel={setShowCallPanel}
+        participantData={participantData}
+        handleLeaveCall={handleLeaveCall}
+        handleJoinCall={handleJoinCall}
+      />
 
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         <Sidebar
@@ -2153,6 +2791,21 @@ export default function App() {
             </div>
           )}
 
+          {inCall && callExpanded && (
+            <CallPanel
+              isExpanded={true}
+              participantData={participantData}
+              localCamOn={localCamOn}
+              localMicOn={localMicOn}
+              handleToggleCam={handleToggleCam}
+              handleToggleMic={handleToggleMic}
+              setCallExpanded={setCallExpanded}
+              setCallMinimized={setCallMinimized}
+              callMinimized={callMinimized}
+              handleLeaveCall={handleLeaveCall}
+            />
+          )}
+
           <TabBar active={tab} setActive={setTab} badge={activityBadge} />
           <div style={{ display: tab === "notes" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "hidden" }}>
             {tabContent.notes}
@@ -2199,7 +2852,234 @@ export default function App() {
       )}
       {showInvite && <InviteModal onClose={() => setShowInvite(false)} roomName={roomName} roomCode={roomId || "ffaaae"} />}
       {showCreateRoom && <CreateRoomModal onClose={() => setShowCreateRoom(false)} onNavigate={navigate} />}
+
+      {inCall && !callExpanded && showCallPanel && (
+        <CallPanel
+          isExpanded={false}
+          participantData={participantData}
+          localCamOn={localCamOn}
+          localMicOn={localMicOn}
+          handleToggleCam={handleToggleCam}
+          handleToggleMic={handleToggleMic}
+          setCallExpanded={setCallExpanded}
+          setCallMinimized={setCallMinimized}
+          callMinimized={callMinimized}
+          handleLeaveCall={handleLeaveCall}
+          dragPosition={callPosition}
+          handlePointerDown={handlePointerDown}
+          handlePointerMove={handlePointerMove}
+          handlePointerUp={handlePointerUp}
+        />
+      )}
       </div>
     </ErrorBoundary>
+  );
+}
+
+function LocalVideo({ stream }) {
+  const videoRef = useRef(null);
+  useEffect(() => {
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [stream]);
+  return <video ref={videoRef} autoPlay playsInline muted style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8, transform: "scaleX(-1)" }} />;
+}
+
+function RemoteVideo({ stream }) {
+  const videoRef = useRef(null);
+  useEffect(() => {
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [stream]);
+  return <video ref={videoRef} autoPlay playsInline style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }} />;
+}
+
+function CallPanel({
+  isExpanded,
+  participantData,
+  localCamOn,
+  localMicOn,
+  handleToggleCam,
+  handleToggleMic,
+  setCallExpanded,
+  setCallMinimized,
+  callMinimized,
+  handleLeaveCall,
+  dragPosition,
+  handlePointerDown,
+  handlePointerMove,
+  handlePointerUp
+}) {
+  const headerStyle = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "12px 16px",
+    borderBottom: "1px solid #1e2433",
+    backgroundColor: "#1a1f2e",
+    cursor: isExpanded ? "default" : "move",
+    userSelect: "none"
+  };
+
+  const containerStyle = isExpanded ? {
+    position: "absolute",
+    inset: 0,
+    zIndex: 40,
+    backgroundColor: "#12151c",
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden"
+  } : {
+    position: "fixed",
+    bottom: 24,
+    right: 24,
+    zIndex: 50,
+    width: 380,
+    backgroundColor: "#12151c",
+    border: "1px solid #1e2433",
+    borderRadius: 16,
+    boxShadow: "0 20px 50px rgba(0,0,0,0.6)",
+    color: "#fff",
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden",
+    transform: `translate(${dragPosition?.x || 0}px, ${dragPosition?.y || 0}px)`,
+    transition: "none"
+  };
+
+  return (
+    <div 
+      style={containerStyle}
+      {...(!isExpanded ? {
+        onPointerDown: handlePointerDown,
+        onPointerMove: handlePointerMove,
+        onPointerUp: handlePointerUp
+      } : {})}
+    >
+      {/* Header */}
+      <div style={headerStyle}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.85rem", fontWeight: 600 }}>
+          {!isExpanded && <span style={{ color: "#475569", marginRight: 2, cursor: "move" }}>:::</span>}
+          <span style={{ color: "#818cf8" }}>●</span> Call • {participantData.length} participant{participantData.length !== 1 ? "s" : ""}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button onClick={handleToggleCam} style={{
+            background: "none", border: "none", color: localCamOn ? "#a5b4fc" : "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: 6, backgroundColor: localCamOn ? "rgba(99,102,241,0.15)" : "transparent"
+          }}>
+            <Icon.Camera />
+          </button>
+          <button onClick={handleToggleMic} style={{
+            background: "none", border: "none", color: localMicOn ? "#a5b4fc" : "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: 6, backgroundColor: localMicOn ? "rgba(99,102,241,0.15)" : "transparent"
+          }}>
+            <Icon.Mic />
+          </button>
+          
+          <button onClick={() => setCallExpanded(!isExpanded)} style={{
+            background: "none", border: "none", color: "#94a3b8", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: 6
+          }} title={isExpanded ? "Exit Fullscreen" : "Fullscreen"}>
+            <span style={{ fontSize: "0.85rem", transform: "rotate(45deg)", display: "inline-block" }}>⤢</span>
+          </button>
+          
+          <button onClick={() => setCallMinimized(!callMinimized)} style={{
+            background: "none", border: "none", color: "#94a3b8", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: 6
+          }} title={callMinimized ? "Expand" : "Minimize"}>
+            {callMinimized ? "▲" : "▼"}
+          </button>
+
+          <button onClick={handleLeaveCall} style={{
+            background: "#ef4444", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: 6, fontWeight: 700
+          }}>
+            ✕
+          </button>
+        </div>
+      </div>
+
+      {/* Grid of participants */}
+      {!callMinimized && (
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: participantData.length > 1 ? "1fr 1fr" : "1fr",
+          gap: 12,
+          padding: 16,
+          backgroundColor: "#12151c",
+          flex: isExpanded ? 1 : "initial",
+          overflowY: "auto"
+        }}>
+          {participantData.map(p => (
+            <div key={p.isMe ? "local" : p.socketId} style={{
+              aspectRatio: isExpanded ? "16/10" : "4/3",
+              maxHeight: isExpanded ? "calc(100vh - 200px)" : "initial",
+              position: "relative",
+              borderRadius: 10,
+              backgroundColor: "#1a1f2e",
+              border: "1px solid #1e2433",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center"
+            }}>
+              {p.camOn && p.stream ? (
+                p.isMe ? <LocalVideo stream={p.stream} /> : <RemoteVideo stream={p.stream} />
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                  <div style={{
+                    width: isExpanded ? 72 : 54, height: isExpanded ? 72 : 54, borderRadius: "50%",
+                    backgroundColor: "rgba(108,99,255,0.08)", color: "#818cf8",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: isExpanded ? "1.6rem" : "1.2rem", fontWeight: 700,
+                    border: "1px solid rgba(108,99,255,0.15)"
+                  }}>
+                    {(p.userName || "U").substring(0, 2).toUpperCase()}
+                  </div>
+                  <span style={{ 
+                    fontSize: isExpanded ? "0.8rem" : "0.75rem", 
+                    color: "#64748b", 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: 6 
+                  }}>
+                    <svg style={{ width: 14, height: 14 }} fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5l4.553-2.276A1 1 0 0121 9.118v5.764a1 1 0 01-1.447.894L15 13.5M3 9a2 2 0 012-2h5.5M3 9v6a2 2 0 002 2h8a2 2 0 002-2v-.5M1 1l22 22" />
+                    </svg>
+                    Camera off
+                  </span>
+                </div>
+              )}
+
+              <div style={{
+                position: "absolute",
+                bottom: 8,
+                left: 8,
+                right: 8,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "6px 12px",
+                borderRadius: 6,
+                backgroundColor: "rgba(0,0,0,0.6)",
+                backdropFilter: "blur(2px)",
+                zIndex: 10
+              }}>
+                <span style={{ fontSize: isExpanded ? "0.8rem" : "0.7rem", color: "#f1f5f9", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: isExpanded ? 240 : 120 }}>
+                  {p.userName} {p.isMe && "(you)"}
+                </span>
+                <span style={{ fontSize: isExpanded ? "0.8rem" : "0.7rem", display: "flex", alignItems: "center", color: p.micOn ? "#22c55e" : "#ef4444" }}>
+                  {p.micOn ? (
+                    <Icon.Mic />
+                  ) : (
+                    <svg style={{ width: 12, height: 12 }} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 9a3 3 0 0 0 3 3m1.2-1.2A3 3 0 0 0 15 9V5a3 3 0 0 0-6 0v.8m10.2 11.2a7 7 0 0 1-7 7m0 0a7 7 0 0 1-7-7m7 7v4m0 0H8m4 0h4m-4-8v-3m10 6L1 1" />
+                    </svg>
+                  )}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
