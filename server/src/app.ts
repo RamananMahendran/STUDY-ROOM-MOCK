@@ -4,7 +4,7 @@ import authRoutes from './modules/auth/authRoutes.js';
 import problemRoutes from './modules/practice/problemRoutes.js';
 import codeExecutionRoutes from './modules/codeExecution/codeExecutionRoutes.js';
 import submissionRoutes from './modules/submission/submissionRoutes.js';
-import discussionRoutes from "./modules/discussion/discussionRoutes.js";
+import discussionRoutes from './modules/discussion/discussionRoutes.js';
 import pairRoutes from './modules/pair/pairRoutes.js';
 import interviewRoutes from './modules/interview/interviewRoutes.js';
 import roomRoutes from './modules/rooms/roomRoutes.js';
