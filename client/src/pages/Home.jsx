@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./Home.css";
 import Header from "./components/header.jsx";
 import Footer from "./components/footer.jsx";
 import {Link} from "react-router-dom";
+
 // ── DATA ──────────────────────────────────────────────────────────────────────
 
 const NAV_LINKS = ["Home", "Pricing", "Promise", "Changelog"];
@@ -83,7 +84,6 @@ function CmpCell({ value }) {
 
 // ── DASHBOARD ────────────────────────────────────────────────────────────
 
-// Fixed: activity array generated once with useMemo — no Math.random() during render
 const ACTIVITY_SEED = [3,1,4,2,4,0,3,2,4,3,1,0,2,4,3,2,1,4,0,3,4,2,1,3,2,4,1,0,3,4,2,3,1,4,2];
 
 function Dashboard() {
@@ -95,7 +95,7 @@ function Dashboard() {
     { name: "Dynamic Prog",     pct: 22, color: "#ef4444" },
   ];
   return (
-    <div style={{ background:"var(--surface)", border:"1px solid var(--border)", borderRadius:14, padding:"18px 20px", width:"100%", maxWidth:420, fontSize:"0.78rem", fontFamily:"'DM Sans', sans-serif" }}>
+    <div style={{ background:"var(--surface)", border:"1px solid var(--border)", borderRadius:14, padding:"18px 20px", width:"100%", height:"100%", boxSizing:"border-box", fontSize:"0.78rem", fontFamily:"'DM Sans', sans-serif" }}>
       {/* header */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
         <div>
@@ -185,7 +185,7 @@ function StudyRoomMock() {
   ];
 
   return (
-    <div id="study-rooms" style={{ display:"flex", background:"var(--surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", width:"100%", maxWidth:540, fontFamily:"'DM Sans', sans-serif", fontSize:"0.75rem" }}>
+    <div id="study-rooms" style={{ display:"flex", background:"var(--surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", width:"100%", height:"100%", fontFamily:"'DM Sans', sans-serif", fontSize:"0.75rem" }}>
       {/* sidebar */}
       <div style={{ width:130, background:"#080c12", borderRight:"1px solid #1e2433", padding:"14px 0" }}>
         <div style={{ padding:"0 12px 10px", display:"flex", alignItems:"center", gap:7 }}>
@@ -273,43 +273,269 @@ function CodeEditorMock() {
   const colors = { kw:"#c084fc", fn:"#60a5fa", id:"#e2e8f0", pl:"#94a3b8", sp:"" };
 
   return (
-    <div style={{ background:"var(--surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", width:"100%", maxWidth:560, fontFamily:"'DM Sans', sans-serif" }}>
-      {/* tabs */}
-      <div style={{ borderBottom:"1px solid #1e2433", padding:"12px 16px", display:"flex", alignItems:"center", gap:10 }}>
-        <span style={{ background:"#0f2a1a", color:"#4ade80", border:"1px solid #166534", borderRadius:4, padding:"2px 8px", fontSize:"0.65rem", fontWeight:700 }}>EASY</span>
-        <span style={{ color:"#4b5563", fontSize:"0.72rem" }}>#1</span>
-        <span style={{ color:"#4b5563", fontSize:"0.72rem", marginLeft:"auto" }}>52% accept</span>
-        {["solution.js","tests.js"].map((tab, i) => (
-          <button key={tab} style={{ background:i===0?"#111827":"transparent", color:i===0?"#f1f5f9":"#4b5563", border:"none", borderBottom:i===0?"2px solid #6366f1":"2px solid transparent", padding:"4px 12px", fontSize:"0.72rem", cursor:"pointer", fontFamily:"inherit" }}>{tab}</button>
-        ))}
-        <span style={{ color:"#4b5563", fontSize:"0.72rem", padding:"4px 12px" }}>JavaScript</span>
-        <button style={{ background:"#166534", color:"#4ade80", border:"none", borderRadius:6, padding:"4px 14px", fontSize:"0.72rem", fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>▶ Run</button>
-      </div>
-      {/* code */}
-      <div style={{ padding:"14px 0", background:"#080c12", fontFamily:"monospace", fontSize:"0.72rem", lineHeight:1.7 }}>
-        {lines.map(l => (
-          <div key={l.n} style={{ display:"flex", paddingLeft:8 }}>
-            <span style={{ width:24, color:"#374151", userSelect:"none", textAlign:"right", marginRight:12, flexShrink:0 }}>{l.n}</span>
-            <span>{l.code.map((seg, i) => <span key={i} style={{ color:colors[seg.t]||"#e2e8f0" }}>{seg.v}</span>)}</span>
-          </div>
-        ))}
-      </div>
-      {/* pair coding */}
-      <div style={{ borderTop:"1px solid var(--border)", padding:"8px 16px", background:"var(--surface)", display:"flex", alignItems:"center", gap:8 }}>
-        <div style={{ width:8, height:8, borderRadius:"50%", background:"#f97316" }} />
-        <span style={{ fontSize:"0.72rem", color:"#9ca3af" }}>Pair coding with <span style={{ color:"#f97316", fontWeight:700 }}>Aman</span></span>
-      </div>
-      {/* output */}
-      <div style={{ borderTop:"1px solid var(--border)", padding:"10px 16px", background:"#080c12" }}>
-        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-            <span style={{ fontSize:"0.7rem", color:"#6b7280" }}>Output</span>
-            <span style={{ color:"#4ade80", fontSize:"0.7rem", fontWeight:600 }}>● All tests passed</span>
-          </div>
-          <span style={{ fontSize:"0.65rem", color:"#374151" }}>42ms · 11.4MB</span>
+    <div style={{ display:"flex", background:"var(--surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", width:"100%", height:"100%", fontFamily:"'DM Sans', sans-serif" }}>
+      {/* Problem description panel */}
+      <div style={{ width:210, background:"#080c12", borderRight:"1px solid #1e2433", padding:"14px 14px", display:"flex", flexDirection:"column", gap:10, fontSize:"0.72rem" }}>
+        {/* top meta */}
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <span style={{ background:"#0f2a1a", color:"#4ade80", border:"1px solid #166534", borderRadius:4, padding:"2px 8px", fontSize:"0.65rem", fontWeight:700 }}>EASY</span>
+          <span style={{ color:"#4b5563", fontSize:"0.65rem" }}>#1</span>
+          <span style={{ color:"#4b5563", fontSize:"0.65rem", marginLeft:"auto" }}>52% accept</span>
         </div>
-        <div style={{ color:"#4ade80", fontSize:"0.68rem", fontFamily:"monospace" }}>✓ test_basic (3ms)</div>
-        <div style={{ color:"#4ade80", fontSize:"0.68rem", fontFamily:"monospace" }}>✓ test_negatives (2ms)</div>
+        {/* title */}
+        <div style={{ fontWeight:700, fontSize:"0.9rem", color:"#f1f5f9" }}>Two Sum</div>
+        {/* description */}
+        <div style={{ color:"#9ca3af", fontSize:"0.68rem", lineHeight:1.6 }}>
+          Given an array of integers <span style={{ color:"#e2e8f0", background:"#1e2433", borderRadius:3, padding:"0 4px", fontFamily:"monospace" }}>nums</span> and a target, return the indices of two numbers that add up to target.
+        </div>
+        {/* example */}
+        <div>
+          <div style={{ fontSize:"0.6rem", color:"#4b5563", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:6 }}>EXAMPLE</div>
+          <div style={{ background:"#111827", borderRadius:6, padding:"8px 10px", fontFamily:"monospace", fontSize:"0.65rem", color:"#9ca3af", lineHeight:1.8 }}>
+            <div>nums = [2,7,11,15]</div>
+            <div>target = 9</div>
+            <div style={{ color:"#4ade80", marginTop:4 }}>→ [0, 1]</div>
+          </div>
+        </div>
+        {/* pair coding badge */}
+        <div style={{ marginTop:"auto", background:"#111827", border:"1px solid #1e2433", borderRadius:8, padding:"7px 10px", display:"flex", alignItems:"center", gap:7 }}>
+          <div style={{ width:8, height:8, borderRadius:"50%", background:"#f97316", flexShrink:0 }} />
+          <span style={{ fontSize:"0.68rem", color:"#9ca3af" }}>Pair coding with <span style={{ color:"#f97316", fontWeight:700 }}>Aman</span></span>
+        </div>
+      </div>
+
+      {/* Editor + output */}
+      <div style={{ flex:1, display:"flex", flexDirection:"column" }}>
+        {/* tabs */}
+        <div style={{ borderBottom:"1px solid #1e2433", padding:"10px 14px", display:"flex", alignItems:"center", gap:8, background:"var(--surface)" }}>
+          {["solution.js","tests.js"].map((tab, i) => (
+            <button key={tab} style={{ background:i===0?"#111827":"transparent", color:i===0?"#f1f5f9":"#4b5563", border:"none", borderBottom:i===0?"2px solid #6366f1":"2px solid transparent", padding:"4px 12px", fontSize:"0.72rem", cursor:"pointer", fontFamily:"inherit" }}>{tab}</button>
+          ))}
+          <span style={{ color:"#4b5563", fontSize:"0.72rem", marginLeft:"auto" }}>JavaScript</span>
+          <button style={{ background:"#166534", color:"#4ade80", border:"none", borderRadius:6, padding:"4px 14px", fontSize:"0.72rem", fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>▶ Run</button>
+        </div>
+        {/* code */}
+        <div style={{ padding:"12px 0", background:"#080c12", fontFamily:"monospace", fontSize:"0.72rem", lineHeight:1.7, flex:1 }}>
+          {lines.map(l => (
+            <div key={l.n} style={{ display:"flex", paddingLeft:8 }}>
+              <span style={{ width:24, color:"#374151", userSelect:"none", textAlign:"right", marginRight:12, flexShrink:0 }}>{l.n}</span>
+              <span>{l.code.map((seg, i) => <span key={i} style={{ color:colors[seg.t]||"#e2e8f0" }}>{seg.v}</span>)}</span>
+            </div>
+          ))}
+        </div>
+        {/* output */}
+        <div style={{ borderTop:"1px solid var(--border)", padding:"10px 14px", background:"#080c12" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <span style={{ fontSize:"0.7rem", color:"#6b7280" }}>Output</span>
+              <span style={{ color:"#4ade80", fontSize:"0.7rem", fontWeight:600 }}>● All tests passed</span>
+            </div>
+            <span style={{ fontSize:"0.65rem", color:"#374151" }}>42ms · 11.4MB</span>
+          </div>
+          <div style={{ color:"#4ade80", fontSize:"0.68rem", fontFamily:"monospace" }}>✓ test_basic (3ms)</div>
+          <div style={{ color:"#4ade80", fontSize:"0.68rem", fontFamily:"monospace" }}>✓ test_negatives (2ms)</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── HERO CAROUSEL ─────────────────────────────────────────────────────────────
+// Conveyor belt: Room → Code → Dashboard → Room → ... (always left)
+// All slides are the SAME size.
+// Side peeks are full-size but low-opacity — NO scale transform.
+// Active slide: opacity 1. Side peeks: opacity ~0.3.
+// Container uses overflow:hidden to clip; no mask needed.
+//
+// Track layout: [ …clone-prev | slide0 | slide1 | slide2 | clone-next… ]
+// We use a wide virtual track and a translateX offset to keep the active
+// slide centred inside the visible window.
+
+const SLIDE_INTERVAL = 4000;
+const TOTAL_SLIDES   = 3;
+const SLIDE_W        = 660; // px — each slide slot width (includes padding)
+const SLIDE_H        = 400; // px — fixed height for ALL slides (enforces equal size)
+const ANIM_MS        = 520;
+const PEEK           = 160; // px each side visible for side peeks
+
+function HeroCarousel() {
+  const [current,      setCurrent]      = useState(0);
+  const [trackOffset,  setTrackOffset]  = useState(0);
+  const [isAnimating,  setIsAnimating]  = useState(false);
+  const timerRef = useRef(null);
+  const lockRef  = useRef(false);
+
+  // Build an extended track: clone-of-last | s0 | s1 | s2 | clone-of-first
+  // so both edges have a "ready" neighbour for seamless looping.
+  // Logical positions on track (0-indexed): clone-last=0, s0=1, s1=2, s2=3, clone-first=4
+  // We start with s0 centred → trackOffset = -1 * SLIDE_W (skip the clone-last)
+  const TRACK_START_OFFSET = -SLIDE_W; // offset so slot-1 (s0) is centred at start
+
+  const slideComponents = [
+    <StudyRoomMock  key="room" />,
+    <CodeEditorMock key="code" />,
+    <Dashboard      key="dash" />,
+  ];
+
+  // track slots: [clone of slide[2], slide[0], slide[1], slide[2], clone of slide[0]]
+  const trackSlots = [
+    { node: slideComponents[2], logIdx: 2 },  // slot 0 — clone-prev
+    { node: slideComponents[0], logIdx: 0 },  // slot 1
+    { node: slideComponents[1], logIdx: 1 },  // slot 2
+    { node: slideComponents[2], logIdx: 2 },  // slot 3
+    { node: slideComponents[0], logIdx: 0 },  // slot 4 — clone-next
+  ];
+
+  // The "visual slot index" of the current slide on the track
+  // slot 1 = slide[0], slot 2 = slide[1], slot 3 = slide[2]
+  const currentSlot = current + 1; // maps current (0-2) → slot (1-3)
+
+  // Offset to centre a given slot inside the visible window
+  // Visible window width = SLIDE_W + 2*PEEK (active slide + two side peeks)
+  // Centre of window is at: PEEK + SLIDE_W/2
+  // Slot centre is at: slot * SLIDE_W + SLIDE_W/2 (within track)
+  // So translateX = -(slot * SLIDE_W) + PEEK  ... then the TRACK_START_OFFSET shifts everything
+  const centreOffset = (slot) => -(slot * SLIDE_W) + PEEK;
+
+  // Initialise offset to centre slot 1 (slide[0])
+  useEffect(() => {
+    setTrackOffset(centreOffset(1));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const advanceBy = (steps) => {
+    if (lockRef.current) return;
+    lockRef.current = true;
+
+    const nextSlot    = currentSlot + steps;
+    const nextCurrent = (current + steps + TOTAL_SLIDES) % TOTAL_SLIDES;
+
+    // Animate to nextSlot
+    setIsAnimating(true);
+    setTrackOffset(centreOffset(nextSlot));
+
+    setTimeout(() => {
+      setCurrent(nextCurrent);
+
+      // If we slid to the clone-next (slot 4) or clone-prev (slot 0),
+      // snap silently back to the real equivalent slot
+      if (nextSlot >= TOTAL_SLIDES + 1) {
+        // landed on clone-next (slot 4 = clone of slide[0])
+        // real equivalent is slot 1
+        setIsAnimating(false);
+        setTrackOffset(centreOffset(1));
+      } else if (nextSlot <= 0) {
+        // landed on clone-prev (slot 0 = clone of slide[2])
+        // real equivalent is slot 3
+        setIsAnimating(false);
+        setTrackOffset(centreOffset(3));
+      } else {
+        setIsAnimating(false);
+      }
+      lockRef.current = false;
+    }, ANIM_MS + 20);
+  };
+
+  // Auto-play
+  const resetTimer = () => {
+    clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => advanceBy(1), SLIDE_INTERVAL);
+  };
+
+  useEffect(() => {
+    resetTimer();
+    return () => clearInterval(timerRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current]);
+
+  // Dot click — always go forward by shortest positive steps
+  const goTo = (idx) => {
+    if (idx === current || lockRef.current) return;
+    const steps = (idx - current + TOTAL_SLIDES) % TOTAL_SLIDES;
+    resetTimer();
+    advanceBy(steps);
+  };
+
+  // Visible window width
+  const windowW = SLIDE_W + PEEK * 2;
+
+  return (
+    <div style={{
+      width: "100%",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+    }}>
+      {/* ── viewport: clips everything outside ── */}
+      <div style={{
+        width:    windowW,
+        maxWidth: "100vw",
+        overflow: "hidden",
+        position: "relative",
+      }}>
+        {/* ── sliding track ── */}
+        <div style={{
+          display:    "flex",
+          alignItems: "stretch",
+          gap:        0,
+          transform:  `translateX(${trackOffset}px)`,
+          transition: isAnimating
+            ? `transform ${ANIM_MS}ms cubic-bezier(0.4, 0, 0.2, 1)`
+            : "none",
+          willChange: "transform",
+        }}>
+          {trackSlots.map((slot, i) => {
+            const isActive = slot.logIdx === current && (i === currentSlot);
+
+            return (
+              // Outer slot — sets conveyor spacing, opacity, pointer-events
+              <div key={i} style={{
+                flexShrink:    0,
+                width:         SLIDE_W,
+                padding:       "0 12px",
+                boxSizing:     "border-box",
+                opacity:       isActive ? 1 : 0.28,
+                transition:    `opacity ${ANIM_MS}ms ease`,
+                pointerEvents: isActive ? "auto" : "none",
+              }}>
+                {/* Fixed-size frame — forces every slide to identical W×H */}
+                <div style={{
+                  width:         "100%",   // SLIDE_W − 24px padding = 636px
+                  height:        SLIDE_H,
+                  overflow:      "hidden",
+                  borderRadius:  14,
+                  display:       "flex",
+                  flexDirection: "column",
+                }}>
+                  {/* Stretch child to fill the frame */}
+                  <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+                    {slot.node}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── dot indicators ── */}
+      <div style={{ display:"flex", gap:8, marginTop:28, justifyContent:"center" }}>
+        {Array.from({ length: TOTAL_SLIDES }).map((_, i) => (
+          <button
+            key={i}
+            onClick={() => goTo(i)}
+            style={{
+              width:        i === current ? 28 : 8,
+              height:       8,
+              borderRadius: 99,
+              background:   i === current ? "#6366f1" : "#1e2433",
+              border:       "none",
+              cursor:       "pointer",
+              padding:      0,
+              transition:   "width 300ms ease, background 300ms ease",
+            }}
+          />
+        ))}
       </div>
     </div>
   );
@@ -320,22 +546,18 @@ function CodeEditorMock() {
 function PricingProSection() {
   return (
     <section id ="pricing" className="pricing-pro-section">
-      {/* page-level glows behind card */}
       <div className="hero-glow" style={{ width:500, height:400, background:"#1e3a5f", top:"10%", right:"5%", opacity:0.3 }} />
       <div className="hero-glow" style={{ width:350, height:350, background:"#4c1d95", bottom:"5%", left:"10%", opacity:0.15 }} />
 
       <div className="pricing-pro-card">
-        {/* card inner glows */}
         <div className="pricing-pro-glow" style={{ width:400, height:300, background:"#1e40af", top:"-20%", right:"-5%", opacity:0.25 }} />
         <div className="pricing-pro-glow" style={{ width:300, height:300, background:"#6d28d9", bottom:"-20%", left:"30%", opacity:0.12 }} />
 
-        {/* badge */}
         <div className="pricing-pro-badge">
           <span className="pricing-pro-badge-dot" />
           CODING PRO · LIVE NOW
         </div>
 
-        {/* top: heading + right copy */}
         <div className="pricing-pro-top">
           <h2 className="pricing-pro-heading">
             The paid layer for{" "}
@@ -353,7 +575,6 @@ function PricingProSection() {
           </div>
         </div>
 
-        {/* 4 feature cards */}
         <div className="pricing-pro-features">
           {PRO_FEATURES.map(f => (
             <div key={f.title} className="pro-feature-card">
@@ -366,7 +587,6 @@ function PricingProSection() {
           ))}
         </div>
 
-        {/* CTAs */}
         <div className="pricing-pro-ctas">
           <Link to="/pricing" className="btn-primary lg">See Pricing →</Link>
           <Link to="/signup" className="btn-outline lg">Try free first →</Link>
@@ -409,7 +629,7 @@ export default function Home() {
           </p>
           <div className="hero-ctas fade-in-4">
             <Link to="/signup" className="btn-primary lg">Start studying free →</Link>
-            <a href = "#product"className="btn-outline lg">See it in action ▶</a>
+            <a href="#product" className="btn-outline lg">See it in action ▶</a>
           </div>
           <p className="hero-fine">No credit card · Google or email · 3 students joined today</p>
         </div>
@@ -426,9 +646,13 @@ export default function Home() {
         ))}
       </div>
 
-      {/* ── HERO CODE EDITOR ── */}
-      <section className="code-hero-section">
-        <CodeEditorMock />
+      {/* ── HERO CAROUSEL (replaces the old code-hero-section) ── */}
+      <section
+        id="product"
+        className="code-hero-section"
+        style={{ paddingTop: 48, paddingBottom: 32 }}
+      >
+        <HeroCarousel />
       </section>
 
       {/* ── STATS ── */}
@@ -448,7 +672,7 @@ export default function Home() {
       </section>
 
       {/* ── THE PRODUCT ── */}
-      <section id="product" className="product-section">
+      <section className="product-section">
         <div className="section-tag">THE PRODUCT</div>
         <h2 className="product-heading">
           Built for how students <span className="italic">actually</span> study.
@@ -483,7 +707,7 @@ export default function Home() {
       </section>
 
       {/* ── FEATURE: CODE ── */}
-      <section  id ="coding-ground" className="feature-section" style={{ paddingTop: 20 }}>
+      <section id="coding-ground" className="feature-section" style={{ paddingTop: 20 }}>
         <div className="feature-row reverse">
           <div className="feature-col-text">
             <div className="feature-eyebrow">CODE</div>
@@ -507,7 +731,7 @@ export default function Home() {
       </section>
 
       {/* ── FEATURE: PROGRESS ── */}
-      <section id ="mock-interviews" className="feature-section" style={{ paddingTop: 20 }}>
+      <section id="mock-interviews" className="feature-section" style={{ paddingTop: 20 }}>
         <div className="feature-row">
           <div className="feature-col-text">
             <div className="feature-eyebrow">PROGRESS</div>
@@ -547,7 +771,6 @@ export default function Home() {
           </div>
 
           <div className="cmp-table">
-            {/* header row */}
             <div className="cmp-row cmp-header">
               <div className="cmp-cell feature cmp-header-label">FEATURE</div>
               <div className="cmp-cell sr" style={{ flexDirection:"column", gap:2 }}>

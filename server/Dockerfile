@@ -71,4 +71,8 @@ COPY --from=builder /usr/src/app/seed.sql ./
 
 EXPOSE 5000
 
+<<<<<<< Updated upstream
 CMD ["sh", "-c", "npm run db:push && npm start"]
+=======
+CMD ["sh", "-c", "npm run db:push && node dist/src/server.js"]
+>>>>>>> Stashed changes

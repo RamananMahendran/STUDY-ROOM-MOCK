@@ -1,5 +1,3 @@
-// prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,71 +6,53 @@ datasource db {
   provider = "postgresql"
 }
 
-// ============================================================
-// MODULE 1: Users, Authentication & Gamification (BE1)
-// ============================================================
-
 model User {
-  id             Int       @id @default(autoincrement())
-  name           String
-  email          String    @unique
-  password       String    @db.Text
-  avatarUrl      String?   @map("avatar_url")
-  role           String    @default("free") // 'free', 'pro', 'admin'
-  streakCount    Int       @default(0)      @map("streak_count")
-  lastActiveAt   DateTime? @db.Timestamptz  @map("last_active_at")
-  totalStudyHours       Float     @default(0.0)   @map("total_study_hours")
-  focusSessionsCount    Int       @default(0)     @map("focus_sessions_count")
-  problemsSolved        Int       @default(0)     @map("problems_solved")
-  problemsAttempted     Int       @default(0)     @map("problems_attempted")
-  acceptanceRate        Float     @default(0.0)   @map("acceptance_rate")
-  pomodorosToday        Int       @default(0)     @map("pomodoros_today")
-  pomodorosTotal        Int       @default(0)     @map("pomodoros_total")
-  solvedThisMonth       Int       @default(0)     @map("solved_this_month")
-  solvedAllTime         Int       @default(0)     @map("solved_all_time")
-  studyHoursThisWeek    Float     @default(0.0)   @map("study_hours_this_week")
-  activityActiveDays    Int       @default(0)     @map("activity_active_days")
-  longestStreak         Int       @default(0)     @map("longest_streak")
-  totalSessions         Int       @default(0)     @map("total_sessions")
-  studyHoursToday       Float     @default(0.0)   @map("study_hours_today")
-  subjectMix            Json      @default("{}")   @map("subject_mix")
-  studyHoursLog         Json      @default("[]")   @map("study_hours_log")
-  heatmapData           Json      @default("[]")   @map("heatmap_data")
-  createdAt               DateTime  @default(now())  @db.Timestamptz @map("created_at")
-  updatedAt               DateTime  @default(now())  @updatedAt @db.Timestamptz @map("updated_at")
-
-  // Password reset (hashed token stored, never plaintext)
-  resetPasswordToken      String?   @map("reset_password_token")
-  resetPasswordExpire     DateTime? @db.Timestamptz @map("reset_password_expire")
-
-  // BE3 Day 4: Pair Coding Sessions
-  hostedSessions  PairSession[] @relation("HostSessions")
-  guestSessions   PairSession[] @relation("GuestSessions")
-  pairCursors     PairCursor[]
-
-  // BE1: Auth & Gamification Relations
-  oauthAccounts   OAuthAccount[]
-  subscriptions   Subscription[]
-  userBadges      UserBadge[]
-  friendshipsA    Friendship[] @relation("UserAFriendships")
-  friendshipsB    Friendship[] @relation("UserBFriendships")
-
-  // BE2: Study Rooms & Real-time Relations
-  ownedRooms      StudyRoom[]  @relation("RoomOwner")
-  roomMembers     RoomMember[]
-  chatMessages    ChatMessage[]
-  studySessions   StudySession[]
-
-  // BE3: Problems & Submissions Relations
-  submissions     Submission[]
-  discussions     Discussion[]
-  contestEntries  ContestParticipant[]
-
-  // Mock Interviews
-  mockInterviews MockInterview[]
-  
-  // Study Plans Progress
-  studyPlanProgress UserStudyPlanProgress[]
+  id                      Int                           @id @default(autoincrement())
+  name                    String
+  email                   String                        @unique
+  password                String
+  avatarUrl               String?                       @map("avatar_url")
+  role                    String                        @default("free")
+  streakCount             Int                           @default(0) @map("streak_count")
+  lastActiveAt            DateTime?                     @map("last_active_at") @db.Timestamptz(6)
+  totalStudyHours         Float                         @default(0.0) @map("total_study_hours")
+  focusSessionsCount      Int                           @default(0) @map("focus_sessions_count")
+  problemsSolved          Int                           @default(0) @map("problems_solved")
+  problemsAttempted       Int                           @default(0) @map("problems_attempted")
+  acceptanceRate          Float                         @default(0.0) @map("acceptance_rate")
+  pomodorosToday          Int                           @default(0) @map("pomodoros_today")
+  pomodorosTotal          Int                           @default(0) @map("pomodoros_total")
+  solvedThisMonth         Int                           @default(0) @map("solved_this_month")
+  solvedAllTime           Int                           @default(0) @map("solved_all_time")
+  studyHoursThisWeek      Float                         @default(0.0) @map("study_hours_this_week")
+  activityActiveDays      Int                           @default(0) @map("activity_active_days")
+  longestStreak           Int                           @default(0) @map("longest_streak")
+  totalSessions           Int                           @default(0) @map("total_sessions")
+  studyHoursToday         Float                         @default(0.0) @map("study_hours_today")
+  subjectMix              Json                          @default("{}") @map("subject_mix")
+  studyHoursLog           Json                          @default("[]") @map("study_hours_log")
+  heatmapData             Json                          @default("[]") @map("heatmap_data")
+  createdAt               DateTime                      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime                      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  resetPasswordToken      String?                       @map("reset_password_token")
+  resetPasswordExpire     DateTime?                     @map("reset_password_expire") @db.Timestamptz(6)
+  chatMessages            ChatMessage[]
+  contestEntries          ContestParticipant[]
+  discussions             Discussion[]
+  friendshipsA            Friendship[]                  @relation("UserAFriendships")
+  friendshipsB            Friendship[]                  @relation("UserBFriendships")
+  mockInterviews          MockInterview[]
+  oauthAccounts           OAuthAccount[]
+  pairCursors             PairCursor[]
+  guestSessions           PairSession[]                 @relation("GuestSessions")
+  hostedSessions          PairSession[]                 @relation("HostSessions")
+  roomMembers             RoomMember[]
+  ownedRooms              StudyRoom[]                   @relation("RoomOwner")
+  studySessions           StudySession[]
+  submissions             Submission[]
+  subscriptions           Subscription[]
+  userBadges              UserBadge[]
+  studyPlanProgress       UserStudyPlanProgress[]
   weeklyChallengeProgress UserWeeklyChallengeProgress[]
 
   @@map("users")
@@ -81,10 +61,9 @@ model User {
 model OAuthAccount {
   id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId           Int      @map("user_id")
-  provider         String   // 'google', 'github'
+  provider         String
   providerClientId String   @map("provider_client_id")
-  createdAt        DateTime @default(now()) @db.Timestamptz @map("created_at")
-
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerClientId])
@@ -92,16 +71,15 @@ model OAuthAccount {
 }
 
 model Subscription {
-  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId             Int       @map("user_id")
-  status             String    // 'active', 'canceled', 'unpaid'
-  planType           String    @map("plan_type") // 'monthly', 'yearly'
-  currentPeriodStart DateTime  @db.Timestamptz @map("current_period_start")
-  currentPeriodEnd   DateTime  @db.Timestamptz @map("current_period_end")
-  createdAt          DateTime  @default(now()) @db.Timestamptz @map("created_at")
-  updatedAt          DateTime  @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
-
-  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId             Int      @map("user_id")
+  status             String
+  planType           String   @map("plan_type")
+  currentPeriodStart DateTime @map("current_period_start") @db.Timestamptz(6)
+  currentPeriodEnd   DateTime @map("current_period_end") @db.Timestamptz(6)
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("subscriptions")
 }
@@ -117,13 +95,12 @@ model Badge {
 }
 
 model UserBadge {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    Int      @map("user_id")
-  badgeId   String   @db.Uuid @map("badge_id")
-  earnedAt  DateTime @default(now()) @db.Timestamptz @map("earned_at")
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  id       String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId   Int      @map("user_id")
+  badgeId  String   @map("badge_id") @db.Uuid
+  earnedAt DateTime @default(now()) @map("earned_at") @db.Timestamptz(6)
+  badge    Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, badgeId])
   @@map("user_badges")
@@ -133,9 +110,8 @@ model Friendship {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userAId   Int      @map("user_a_id")
   userBId   Int      @map("user_b_id")
-  status    String   @default("pending") // 'pending', 'accepted', 'blocked'
-  createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
-
+  status    String   @default("pending")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   userA     User     @relation("UserAFriendships", fields: [userAId], references: [id], onDelete: Cascade)
   userB     User     @relation("UserBFriendships", fields: [userBId], references: [id], onDelete: Cascade)
 
@@ -143,24 +119,19 @@ model Friendship {
   @@map("friendships")
 }
 
-// ============================================================
-// MODULE 2: Real-time Study Rooms & Productivity (BE2)
-// ============================================================
-
 model StudyRoom {
-  id         String   @id
+  id         String             @id
   name       String
-  slug       String   @unique
-  ownerId    Int      @map("owner_id")
-  isPrivate  Boolean  @default(false) @map("is_private")
-  roomType   String   @default("study") // 'study', 'pair_programming', 'mock_interview'
-  createdAt  DateTime @default(now()) @db.Timestamptz @map("created_at")
-  updatedAt  DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
-
-  owner      User         @relation("RoomOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  members    RoomMember[]
+  slug       String             @unique
+  ownerId    Int                @map("owner_id")
+  isPrivate  Boolean            @default(false) @map("is_private")
+  roomType   String             @default("study")
+  createdAt  DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   messages   ChatMessage[]
+  members    RoomMember[]
   tasks      RoomTask[]
+  owner      User               @relation("RoomOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   whiteboard WhiteboardSession?
 
   @@map("study_rooms")
@@ -169,11 +140,10 @@ model StudyRoom {
 model RoomMember {
   id       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   roomId   String    @map("room_id")
-  userId   Int       @map("user_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  userId   Int       @map("user_id")
   isOnline Boolean   @default(false) @map("is_online")
   socketId String?   @map("socket_id")
-  joinedAt DateTime  @default(now()) @db.Timestamptz @map("joined_at")
-
+  joinedAt DateTime  @default(now()) @map("joined_at") @db.Timestamptz(6)
   room     StudyRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -182,12 +152,11 @@ model RoomMember {
 }
 
 model ChatMessage {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  roomId    String   @map("room_id")
-  userId    Int      @map("user_id") // 👈 FIXED: Changed String @db.Uuid to Int
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId    String    @map("room_id")
+  userId    Int       @map("user_id")
   message   String
-  createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
-
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   room      StudyRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -195,123 +164,101 @@ model ChatMessage {
 }
 
 model RoomTask {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  roomId      String   @map("room_id")
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId      String    @map("room_id")
   title       String
-  isCompleted Boolean  @default(false) @map("is_completed")
-  createdAt   DateTime @default(now()) @db.Timestamptz @map("created_at")
-
+  isCompleted Boolean   @default(false) @map("is_completed")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   room        StudyRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   @@map("room_tasks")
 }
 
 model WhiteboardSession {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  roomId    String   @unique @map("room_id")
-  elements  Json     @default("[]")
-  updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
-
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId    String    @unique @map("room_id")
+  elements  Json      @default("[]")
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   room      StudyRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   @@map("whiteboard_sessions")
 }
 
-// ============================================================
-// MODULE 3: Problems, Contests & Discussions (BE3)
-// ============================================================
-
 model Problem {
-  id             Int      @id @default(autoincrement())
-  title          String   @unique
-  slug           String   @unique
-  description    String   @db.Text
-  difficulty     String
-  tags           String[]
-  testCases      Json     @default("[]")    @map("test_cases")
-  starterCode    Json     @default("{}")    @map("starter_code")
-  isPremium      Boolean  @default(false) @map("is_premium")
-  acceptanceRate Float    @default(0.0)   @map("acceptance_rate")
-  createdAt      DateTime @default(now()) @db.Timestamptz @map("created_at")
-  updatedAt      DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
-
-  // Mock Interview Relations
-  mockInterviewProblems MockInterviewProblem[]
-  mockInterviewResults  MockInterviewResult[]
-  
-  // Study Plan Relations
-  studyPlanProblems StudyPlanProblem[]
+  id                      Int                      @id @default(autoincrement())
+  title                   String                   @unique
+  slug                    String                   @unique
+  description             String
+  difficulty              String
+  tags                    String[]
+  testCases               Json                     @default("[]") @map("test_cases")
+  starterCode             Json                     @default("{}") @map("starter_code")
+  isPremium               Boolean                  @default(false) @map("is_premium")
+  acceptanceRate          Float                    @default(0.0) @map("acceptance_rate")
+  createdAt               DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime                 @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  contestProblems         ContestProblem[]
+  discussions             Discussion[]
+  mockInterviewProblems   MockInterviewProblem[]
+  mockInterviewResults    MockInterviewResult[]
+  pairSessions            PairSession[]
+  studyPlanProblems       StudyPlanProblem[]
+  submissions             Submission[]
   weeklyChallengeProblems WeeklyChallengeProblem[]
-  
-  // Existing Relations
-  submissions     Submission[]
-  discussions     Discussion[]
-  contestProblems ContestProblem[]
-  pairSessions    PairSession[]
 
   @@map("problems")
 }
 
 model Submission {
-  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId         Int      @map("user_id")
-  problemId      Int      @map("problem_id")
-  language       String
-  code           String   @db.Text
-  status         String   @default("pending")
-  runtimeMs      Int?     @map("runtime_ms")
-  memoryKb       Int?     @map("memory_kb")
-  
-  errorMessage   String?  @map("error_message")
-  testResults    Json?    @map("test_results")
-  submittedFrom  String?  @map("submitted_from")
-  pairSessionId  String?  @map("pair_session_id")
-  
-  createdAt      DateTime @default(now()) @db.Timestamptz @map("created_at")
-  updatedAt      DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
-
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  problem        Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
-  pairSession    PairSession? @relation(fields: [pairSessionId], references: [id])
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        Int          @map("user_id")
+  problemId     Int          @map("problem_id")
+  language      String
+  code          String
+  status        String       @default("pending")
+  runtimeMs     Int?         @map("runtime_ms")
+  memoryKb      Int?         @map("memory_kb")
+  errorMessage  String?      @map("error_message")
+  testResults   Json?        @map("test_results")
+  submittedFrom String?      @map("submitted_from")
+  pairSessionId String?      @map("pair_session_id")
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  pairSession   PairSession? @relation(fields: [pairSessionId], references: [id])
+  problem       Problem      @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("submissions")
 }
 
-// ============================================================
-// STUDY PLANS (BE3 Day 5/6)
-// ============================================================
-
 model StudyPlan {
-  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title          String
-  slug           String    @unique
-  description    String    @db.Text
-  difficulty     String    // 'beginner', 'intermediate', 'advanced', 'mixed'
-  durationDays   Int       @map("duration_days")
-  problemCount   Int       @map("problem_count")
-  isPro          Boolean   @default(false) @map("is_pro")
-  icon           String?   // emoji or icon name
-  color          String?   // theme color
-  createdAt      DateTime  @default(now()) @db.Timestamptz @map("created_at")
-  updatedAt      DateTime  @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
-
-  // Relations
-  userProgress   UserStudyPlanProgress[]
-  planProblems   StudyPlanProblem[]
+  id           String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title        String
+  slug         String                  @unique
+  description  String
+  difficulty   String
+  durationDays Int                     @map("duration_days")
+  problemCount Int                     @map("problem_count")
+  isPro        Boolean                 @default(false) @map("is_pro")
+  icon         String?
+  color        String?
+  createdAt    DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime                @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  planProblems StudyPlanProblem[]
+  userProgress UserStudyPlanProgress[]
 
   @@map("study_plans")
 }
 
 model StudyPlanProblem {
-  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  planId         String    @map("plan_id") @db.Uuid
-  problemId      Int       @map("problem_id")
-  dayNumber      Int       @map("day_number")
-  orderIndex     Int       @default(0) @map("order_index")
-  notes          String?   @db.Text
-
-  plan           StudyPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-  problem        Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  planId     String    @map("plan_id") @db.Uuid
+  problemId  Int       @map("problem_id")
+  dayNumber  Int       @map("day_number")
+  orderIndex Int       @default(0) @map("order_index")
+  notes      String?
+  plan       StudyPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  problem    Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
 
   @@unique([planId, dayNumber, problemId])
   @@map("study_plan_problems")
@@ -323,153 +270,131 @@ model UserStudyPlanProgress {
   planId         String    @map("plan_id") @db.Uuid
   currentDay     Int       @default(1) @map("current_day")
   completedDays  Int[]     @default([]) @map("completed_days")
-  startedAt      DateTime  @default(now()) @db.Timestamptz @map("started_at")
-  completedAt    DateTime? @db.Timestamptz @map("completed_at")
-  lastActivityAt DateTime  @default(now()) @db.Timestamptz @map("last_activity_at")
-
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startedAt      DateTime  @default(now()) @map("started_at") @db.Timestamptz(6)
+  completedAt    DateTime? @map("completed_at") @db.Timestamptz(6)
+  lastActivityAt DateTime  @default(now()) @map("last_activity_at") @db.Timestamptz(6)
   plan           StudyPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, planId])
   @@map("user_study_plan_progress")
 }
 
-// ============================================================
-// WEEKLY CHALLENGES (BE3 Day 6)
-// ============================================================
-
 model WeeklyChallenge {
-  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  weekNumber     Int       @unique @map("week_number")
-  startDate      DateTime  @db.Timestamptz @map("start_date")
-  endDate        DateTime  @db.Timestamptz @map("end_date")
-  theme          String?   // e.g., "Dynamic Programming Week", "Graph Week"
-  isActive       Boolean   @default(true) @map("is_active")
-  createdAt      DateTime  @default(now()) @db.Timestamptz @map("created_at")
-
-  problems       WeeklyChallengeProblem[]
-  userProgress   UserWeeklyChallengeProgress[]
+  id           String                        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  weekNumber   Int                           @unique @map("week_number")
+  startDate    DateTime                      @map("start_date") @db.Timestamptz(6)
+  endDate      DateTime                      @map("end_date") @db.Timestamptz(6)
+  theme        String?
+  isActive     Boolean                       @default(true) @map("is_active")
+  createdAt    DateTime                      @default(now()) @map("created_at") @db.Timestamptz(6)
+  userProgress UserWeeklyChallengeProgress[]
+  problems     WeeklyChallengeProblem[]
 
   @@map("weekly_challenges")
 }
 
 model WeeklyChallengeProblem {
-  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  challengeId    String    @map("challenge_id") @db.Uuid
-  problemId      Int       @map("problem_id")
-  dayNumber      Int       @map("day_number")  // 1-7
-  orderIndex     Int       @default(0) @map("order_index")
-
-  challenge      WeeklyChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
-  problem        Problem        @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  id          String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  challengeId String          @map("challenge_id") @db.Uuid
+  problemId   Int             @map("problem_id")
+  dayNumber   Int             @map("day_number")
+  orderIndex  Int             @default(0) @map("order_index")
+  challenge   WeeklyChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  problem     Problem         @relation(fields: [problemId], references: [id], onDelete: Cascade)
 
   @@unique([challengeId, dayNumber])
   @@map("weekly_challenge_problems")
 }
 
 model UserWeeklyChallengeProgress {
-  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId         Int       @map("user_id")
-  challengeId    String    @map("challenge_id") @db.Uuid
-  completedDays  Int[]     @default([]) @map("completed_days")
-  startedAt      DateTime  @default(now()) @db.Timestamptz @map("started_at")
-  completedAt    DateTime? @db.Timestamptz @map("completed_at")
-
-  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  challenge      WeeklyChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        Int             @map("user_id")
+  challengeId   String          @map("challenge_id") @db.Uuid
+  completedDays Int[]           @default([]) @map("completed_days")
+  startedAt     DateTime        @default(now()) @map("started_at") @db.Timestamptz(6)
+  completedAt   DateTime?       @map("completed_at") @db.Timestamptz(6)
+  challenge     WeeklyChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, challengeId])
   @@map("user_weekly_challenge_progress")
 }
 
-// ============================================================
-// MODULE 4: Mock Interview Mode (BE3 Day 5)
-// ============================================================
-
 model MockInterview {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId        Int      @map("user_id")
-  difficulty    String   // 'easy', 'medium', 'hard', 'mixed', 'random'
-  status        String   @default("in_progress") // 'in_progress', 'completed', 'timeout'
-  startedAt     DateTime @default(now()) @db.Timestamptz @map("started_at")
-  completedAt   DateTime? @db.Timestamptz @map("completed_at")
-  totalScore    Int?     @default(0) @map("total_score")
-  isPro         Boolean  @default(false) @map("is_pro")
-  weakTopics    String[] // Array of weak topics identified
-  problemCount  Int      @default(3) @map("problem_count")
-  
-  user          User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  problems      MockInterviewProblem[]
-  results       MockInterviewResult[]
+  id           String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       Int                    @map("user_id")
+  difficulty   String
+  status       String                 @default("in_progress")
+  startedAt    DateTime               @default(now()) @map("started_at") @db.Timestamptz(6)
+  completedAt  DateTime?              @map("completed_at") @db.Timestamptz(6)
+  totalScore   Int?                   @default(0) @map("total_score")
+  isPro        Boolean                @default(false) @map("is_pro")
+  weakTopics   String[]
+  problemCount Int                    @default(3) @map("problem_count")
+  problems     MockInterviewProblem[]
+  results      MockInterviewResult[]
+  user         User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("mock_interviews")
 }
 
 model MockInterviewProblem {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  interviewId   String   @map("interview_id") @db.Uuid
-  problemId     Int      @map("problem_id")
-  orderIndex    Int      @map("order_index")
-  
-  interview     MockInterview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
-  problem       Problem      @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  interviewId String        @map("interview_id") @db.Uuid
+  problemId   Int           @map("problem_id")
+  orderIndex  Int           @map("order_index")
+  interview   MockInterview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  problem     Problem       @relation(fields: [problemId], references: [id], onDelete: Cascade)
 
   @@unique([interviewId, orderIndex])
   @@map("mock_interview_problems")
 }
 
 model MockInterviewResult {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  interviewId   String   @map("interview_id") @db.Uuid
-  problemId     Int      @map("problem_id")
-  code          String   @db.Text
-  passed        Boolean
-  runtimeMs     Int?     @map("runtime_ms")
-  memoryKb      Int?     @map("memory_kb")
-  score         Int      @default(0)
-  submittedAt   DateTime @default(now()) @db.Timestamptz @map("submitted_at")
-  
-  interview     MockInterview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
-  problem       Problem      @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  interviewId String        @map("interview_id") @db.Uuid
+  problemId   Int           @map("problem_id")
+  code        String
+  passed      Boolean
+  runtimeMs   Int?          @map("runtime_ms")
+  memoryKb    Int?          @map("memory_kb")
+  score       Int           @default(0)
+  submittedAt DateTime      @default(now()) @map("submitted_at") @db.Timestamptz(6)
+  interview   MockInterview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  problem     Problem       @relation(fields: [problemId], references: [id], onDelete: Cascade)
 
   @@map("mock_interview_results")
 }
 
-// ============================================================
-// PAIR CODING SESSIONS (BE3 Day 4)
-// ============================================================
-
 model PairSession {
-  id          String   @id
-  roomCode    String   @unique @map("room_code")
-  problemId   Int?     @map("problem_id")
-  hostId      Int      @map("host_id")
-  guestId     Int?     @map("guest_id")
-  status      String   @default("waiting") // waiting, active, ended
-  language    String   @default("python")
-  currentCode String?  @map("current_code") @db.Text
-  createdAt   DateTime @default(now()) @db.Timestamptz @map("created_at")
-  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
-  submissions  Submission[]
-
-  // Relations
-  problem     Problem?      @relation(fields: [problemId], references: [id], onDelete: Cascade)
-  host        User         @relation("HostSessions", fields: [hostId], references: [id])
-  guest       User?        @relation("GuestSessions", fields: [guestId], references: [id])
+  id          String       @id
+  roomCode    String       @unique @map("room_code")
+  problemId   Int?         @map("problem_id")
+  hostId      Int          @map("host_id")
+  guestId     Int?         @map("guest_id")
+  status      String       @default("waiting")
+  language    String       @default("python")
+  currentCode String?      @map("current_code")
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   cursors     PairCursor[]
+  guest       User?        @relation("GuestSessions", fields: [guestId], references: [id])
+  host        User         @relation("HostSessions", fields: [hostId], references: [id])
+  problem     Problem?     @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  submissions Submission[]
 
   @@map("pair_sessions")
 }
 
 model PairCursor {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  sessionId    String   @map("session_id")
-  userId       Int      @map("user_id")
-  lineNumber   Int      @default(1) @map("line_number")
-  columnNumber Int      @default(1) @map("column_number")
-  color        String   @default("#7F77DD")
-  updatedAt    DateTime @default(now()) @updatedAt @db.Timestamptz @map("updated_at")
-
+  id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId    String      @map("session_id")
+  userId       Int         @map("user_id")
+  lineNumber   Int         @default(1) @map("line_number")
+  columnNumber Int         @default(1) @map("column_number")
+  color        String      @default("#7F77DD")
+  updatedAt    DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   session      PairSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -477,28 +402,23 @@ model PairCursor {
   @@map("pair_cursors")
 }
 
-// ============================================================
-// CONTESTS (BE3)
-// ============================================================
-
 model Contest {
   id           String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title        String
   description  String
-  startTime    DateTime             @db.Timestamptz @map("start_time")
-  endTime      DateTime             @db.Timestamptz @map("end_time")
-  createdAt    DateTime             @default(now()) @db.Timestamptz @map("created_at")
-  problems     ContestProblem[]
+  startTime    DateTime             @map("start_time") @db.Timestamptz(6)
+  endTime      DateTime             @map("end_time") @db.Timestamptz(6)
+  createdAt    DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
   participants ContestParticipant[]
+  problems     ContestProblem[]
 
   @@map("contests")
 }
 
 model ContestProblem {
-  contestId String @db.Uuid @map("contest_id")
-  problemId Int    @map("problem_id")
-  points    Int    @default(100)
-
+  contestId String  @map("contest_id") @db.Uuid
+  problemId Int     @map("problem_id")
+  points    Int     @default(100)
   contest   Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
   problem   Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
 
@@ -507,10 +427,9 @@ model ContestProblem {
 }
 
 model ContestParticipant {
-  contestId  String @db.Uuid @map("contest_id")
-  userId     Int    @map("user_id")
-  totalScore Int    @default(0) @map("total_score")
-
+  contestId  String  @map("contest_id") @db.Uuid
+  userId     Int     @map("user_id")
+  totalScore Int     @default(0) @map("total_score")
   contest    Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
   user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -522,18 +441,13 @@ model Discussion {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   problemId Int      @map("problem_id")
   userId    Int      @map("user_id")
-  content   String   @db.Text
-  createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
-
+  content   String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("discussions")
 }
-
-// ============================================================
-// MODULE 5: Global Infrastructure, Leaderboard & Audits (BE4)
-// ============================================================
 
 model LeaderboardEntry {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -541,18 +455,18 @@ model LeaderboardEntry {
   period     String
   score      Int      @default(0)
   rank       Int?
-  computedAt DateTime @default(now()) @db.Timestamptz @map("computed_at")
+  computedAt DateTime @default(now()) @map("computed_at") @db.Timestamptz(6)
 
   @@unique([userId, period])
   @@map("leaderboard_entries")
 }
 
 model AnalyticsEvent {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    Int?     @map("user_id")
-  eventName String   @map("event_name")
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     Int?     @map("user_id")
+  eventName  String   @map("event_name")
   properties Json?
-  createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@index([eventName])
   @@index([createdAt(sort: Desc)])
@@ -566,7 +480,7 @@ model AuditLog {
   targetType String   @map("target_type")
   targetId   String   @map("target_id")
   metaData   Json?    @map("metadata")
-  createdAt  DateTime @default(now()) @db.Timestamptz @map("created_at")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@map("audit_logs")
 }
@@ -575,10 +489,9 @@ model StudySession {
   id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId          Int      @map("user_id")
   roomId          String?  @map("room_id")
-  roomName        String   @map("room_name") @default("Study Room")
+  roomName        String   @default("Study Room") @map("room_name")
   durationMinutes Int      @map("duration_minutes")
-  createdAt       DateTime @default(now()) @db.Timestamptz @map("created_at")
-
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("study_sessions")
