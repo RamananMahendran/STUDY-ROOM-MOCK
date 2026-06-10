@@ -1,7 +1,7 @@
 import studyPlanModel from './modules/studyPlan/studyPlanModel.js';
 import prisma from './config/database.js';
 
-async function seedStudyPlans() {
+export async function seedStudyPlans() {
   console.log('🌱 Seeding study plans...');
   
   // First, seed the plans
@@ -111,6 +111,3 @@ async function seedStudyPlans() {
   console.log('🎉 Study plans seeded successfully!');
 }
 
-seedStudyPlans()
-  .catch(console.error)
-  .finally(() => process.exit(0));

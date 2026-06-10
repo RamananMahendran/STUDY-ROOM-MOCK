@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Sidebar from "../components/Sidebar.jsx";
-import Editor from "@monaco-editor/react";
-
+import CodeEditor from "../components/CodeEditor.jsx";
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 const IcoPlay = () => (
@@ -78,12 +77,7 @@ const LANGUAGES = [
     color: "#555555",
     bgColor: "#55555522",
     judge0Id: 50,
-    defaultCode: `#include <stdio.h>
-
-int main() {
-    printf("Hello, World!\\n");
-    return 0;
-}`,
+    defaultCode: `#include <stdio.h>\n\nint main() {\n    printf("Hello, World!\\n");\n    return 0;\n}`,
   },
   {
     id: "cpp",
@@ -92,12 +86,7 @@ int main() {
     color: "#f34b7d",
     bgColor: "#f34b7d22",
     judge0Id: 54,
-    defaultCode: `#include <iostream>
-
-int main() {
-    std::cout << "Hello, World!";
-    return 0;
-}`,
+    defaultCode: `#include <iostream>\n\nint main() {\n    std::cout << "Hello, World!";\n    return 0;\n}`,
   },
   {
     id: "java",
@@ -106,16 +95,9 @@ int main() {
     color: "#b07219",
     bgColor: "#b0721922",
     judge0Id: 62,
-    defaultCode: `public class Main {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}`,
+    defaultCode: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}`,
   },
 ];
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function Playground() {
@@ -125,18 +107,6 @@ export default function Playground() {
   const [running, setRunning] = useState(false);
   const [showStdin, setShowStdin] = useState(false);
   const [stdin, setStdin] = useState("");
-  const [editorTheme, setEditorTheme] = useState("vs-dark");
-
-  useEffect(() => {
-    const checkTheme = () => {
-      const isLight = document.documentElement.getAttribute("data-theme") === "light";
-      setEditorTheme(isLight ? "light" : "vs-dark");
-    };
-    checkTheme();
-    const observer = new MutationObserver(checkTheme);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => observer.disconnect();
-  }, []);
 
   const handleLangSwitch = (lang) => {
     setActiveLang(lang);
@@ -144,32 +114,22 @@ export default function Playground() {
     setOutputResult(null);
   };
 
- 
-
   const handleRun = async () => {
     setRunning(true);
     setOutputResult({ status: "running" });
-    
     try {
       const response = await fetch("http://localhost:5001/api/code/run", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sourceCode: code,
           languageId: activeLang.judge0Id,
           stdin: stdin || undefined,
         }),
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to execute code");
-      }
-
+      if (!response.ok) throw new Error("Failed to execute code");
       const result = await response.json();
       const data = result.data;
-
       if (data.compile_output) {
         setOutputResult({ status: "error", title: "Compilation Error", message: data.compile_output, time: data.time });
       } else if (data.stderr) {
@@ -180,7 +140,6 @@ export default function Playground() {
         setOutputResult({ status: "success", title: "Execution successful", message: data.stdout || "(no output)", time: data.time });
       }
     } catch (err) {
-      console.error("Error executing code:", err);
       setOutputResult({ status: "error", title: "System Error", message: err.message });
     } finally {
       setRunning(false);
@@ -192,13 +151,10 @@ export default function Playground() {
     setOutputResult(null);
   };
 
-  
-
   return (
     <div className="fixed inset-0 flex font-sans overflow-hidden select-none" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       <Sidebar active="playground" />
 
-      {/* Main area */}
       <div className="flex-1 flex flex-col overflow-hidden">
 
         {/* ── Top bar ── */}
@@ -208,29 +164,13 @@ export default function Playground() {
             <p className="text-[11px] text-gray-500 mt-0.5">Write, run, and experiment</p>
           </div>
           <div className="flex items-center gap-2">
-            {/* Pair Code button */}
-            <button
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border text-gray-400 text-[12px] font-semibold hover:border-indigo-500/40 hover:text-indigo-400 transition-all"
-              style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
-            >
-              <IcoPairCode />
-              <span>Pair Code</span>
+            <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg border text-gray-400 text-[12px] font-semibold hover:border-indigo-500/40 hover:text-indigo-400 transition-all" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+              <IcoPairCode /><span>Pair Code</span>
             </button>
-            {/* Reset button */}
-            <button
-              onClick={handleReset}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border text-gray-400 text-[12px] font-semibold hover:border-[#2e3448] hover:text-gray-300 transition-all"
-              style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
-            >
-              <IcoReset />
-              <span>Reset</span>
+            <button onClick={handleReset} className="flex items-center gap-1.5 px-3 py-2 rounded-lg border text-gray-400 text-[12px] font-semibold hover:border-[#2e3448] hover:text-gray-300 transition-all" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+              <IcoReset /><span>Reset</span>
             </button>
-            {/* Run button */}
-            <button
-              onClick={handleRun}
-              disabled={running}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] disabled:opacity-60 text-white text-[12px] font-bold shadow-lg shadow-indigo-600/20 transition-all"
-            >
+            <button onClick={handleRun} disabled={running} className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] disabled:opacity-60 text-white text-[12px] font-bold shadow-lg shadow-indigo-600/20 transition-all">
               <IcoPlay />
               <span>{running ? "Running…" : "Run"}</span>
               {!running && <span className="text-indigo-200/60 text-[10px] font-normal ml-0.5">⌃↵</span>}
@@ -253,14 +193,7 @@ export default function Playground() {
                   color: isActive ? lang.color : "#6b7280",
                 }}
               >
-                <span
-                  className="text-[9px] font-black px-1 py-0.5 rounded"
-                  style={{
-                    backgroundColor: isActive ? lang.color + "33" : "#1e243322",
-                    color: isActive ? lang.color : "#6b7280",
-                    letterSpacing: "0.05em",
-                  }}
-                >
+                <span className="text-[9px] font-black px-1 py-0.5 rounded" style={{ backgroundColor: isActive ? lang.color + "33" : "#1e243322", color: isActive ? lang.color : "#6b7280", letterSpacing: "0.05em" }}>
                   {lang.abbr}
                 </span>
                 <span>{lang.label}</span>
@@ -272,38 +205,20 @@ export default function Playground() {
         {/* ── Editor + Output ── */}
         <div className="flex flex-1 overflow-hidden mx-5 mb-0 gap-3">
 
-          {/* Editor pane */}
-            <div className="flex-1 rounded-t-xl border border-b-0 overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-            <Editor
-                height="100%"
-                language={activeLang.id}
-                theme={editorTheme}
-                value={code}
-                onChange={(value) => setCode(value || "")}
-                onMount={(editor, monaco) => {
+          {/* Editor pane — now uses CodeEditor */}
+          <div className="flex-1 rounded-t-xl border border-b-0 overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+            <CodeEditor
+              language={activeLang.id}
+              value={code}
+              onChange={setCode}
+              onMount={(editor, monaco) => {
                 editor.addCommand(
-                monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
-                () => handleRun()
+                  monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
+                  () => handleRun()
                 );
-            }}
-                options={{
-                minimap: {
-                    enabled: false,
-                },
-                fontSize: 14,
-                fontFamily: "JetBrains Mono, monospace",
-                automaticLayout: true,
-                scrollBeyondLastLine: false,
-                wordWrap: "on",
-                padding: {
-                    top: 16,
-                },
-                tabSize: 2,
-                lineNumbers: "on",
-                renderLineHighlight: "all",
-                }}
+              }}
             />
-            </div>
+          </div>
 
           {/* Output pane */}
           <div className="w-[380px] flex-shrink-0 flex flex-col rounded-t-xl border border-b-0 overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
@@ -319,7 +234,6 @@ export default function Playground() {
                   </div>
                 ) : (
                   <div className="flex flex-col gap-4">
-                    {/* Status header */}
                     <div className="flex items-center justify-between border-b border-[#1e2433]/50 pb-3">
                       <div className={`flex items-center gap-2 text-[12px] font-bold ${outputResult.status === 'success' ? 'text-emerald-500' : 'text-red-500'}`}>
                         {outputResult.status === 'success' ? <IcoCheck /> : <IcoCross />}
@@ -332,7 +246,6 @@ export default function Playground() {
                         </div>
                       )}
                     </div>
-                    {/* Raw output */}
                     <div className="flex flex-col gap-2">
                       <span className="text-[10px] font-bold text-gray-500 tracking-widest uppercase">Output</span>
                       <div className="rounded-lg p-3 overflow-x-auto border" style={{ background: 'var(--surface-2)', borderColor: 'var(--border)' }}>
@@ -343,9 +256,7 @@ export default function Playground() {
                 )
               ) : (
                 <div className="h-full flex flex-col items-center justify-center gap-3 text-center pt-10">
-                  <div className="text-gray-700">
-                    <IcoTerminal />
-                  </div>
+                  <div className="text-gray-700"><IcoTerminal /></div>
                   <p className="text-[12px] text-gray-600">Press Run (Ctrl+Enter) to execute</p>
                 </div>
               )}
@@ -355,30 +266,15 @@ export default function Playground() {
 
         {/* ── Custom input (stdin) ── */}
         <div className="mx-5 mb-5 border border-t-0 rounded-b-xl flex-shrink-0" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-          <button
-            onClick={() => setShowStdin(o => !o)}
-            className="flex items-center gap-2 w-full px-4 py-2.5 text-[12px] text-gray-500 hover:text-gray-400 transition-colors"
-          >
-            <span
-              style={{
-                display: "inline-block",
-                transform: showStdin ? "rotate(90deg)" : "rotate(0deg)",
-                transition: "transform 0.2s",
-              }}
-            >
+          <button onClick={() => setShowStdin(o => !o)} className="flex items-center gap-2 w-full px-4 py-2.5 text-[12px] text-gray-500 hover:text-gray-400 transition-colors">
+            <span style={{ display: "inline-block", transform: showStdin ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
               <IcoChevronRight />
             </span>
             <span>Custom input (stdin)</span>
           </button>
           {showStdin && (
             <div className="px-4 pb-3">
-              <textarea
-                value={stdin}
-                onChange={(e) => setStdin(e.target.value)}
-                placeholder="Enter custom input here…"
-                rows={3}
-                className="w-full rounded-lg p-3 font-mono text-[12px] outline-none resize-none transition-colors input-glass"
-              />
+              <textarea value={stdin} onChange={(e) => setStdin(e.target.value)} placeholder="Enter custom input here…" rows={3} className="w-full rounded-lg p-3 font-mono text-[12px] outline-none resize-none transition-colors input-glass" />
             </div>
           )}
         </div>
