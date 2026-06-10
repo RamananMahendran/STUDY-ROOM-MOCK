@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import Problem from './problemModel.js'; // Adjusted path according to your new file structure
+import Problem from './problemModel.js';
+import prisma from '../../config/database.js';
 
 // Get all problems with filters
 export const getAllProblems = async (req: Request, res: Response): Promise<any> => {
@@ -111,6 +112,75 @@ export const deleteProblem = async (req: Request, res: Response): Promise<any> =
     });
   } catch (error: any) {
     console.error('Error deleting problem:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// Get leaderboard for a specific problem
+export const getProblemLeaderboard = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const problemId = Number(id);
+
+    if (isNaN(problemId)) {
+      return res.status(400).json({ success: false, error: 'Invalid problem ID' });
+    }
+
+    const submissions = await prisma.submission.findMany({
+      where: {
+        problemId: problemId,
+        status: 'accepted'
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatarUrl: true
+          }
+        }
+      },
+      orderBy: [
+        { runtimeMs: 'asc' },
+        { createdAt: 'asc' }
+      ]
+    });
+
+    const colors = ["#10b981", "#e85d04", "#6c63ff", "#64748b", "#3b82f6", "#ec4899", "#8b5cf6", "#f59e0b"];
+    const getAvatarBg = (name: string) => {
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const index = Math.abs(hash) % colors.length;
+      return colors[index];
+    };
+
+    const uniqueUserSubmissions: any[] = [];
+    const seenUsers = new Set();
+
+    for (const sub of submissions) {
+      if (!seenUsers.has(sub.userId)) {
+        seenUsers.add(sub.userId);
+        uniqueUserSubmissions.push({
+          name: sub.user.name,
+          lang: sub.language.charAt(0).toUpperCase() + sub.language.slice(1),
+          score: 100,
+          avatarBg: getAvatarBg(sub.user.name),
+          initial: sub.user.name.charAt(0).toUpperCase(),
+          runtime: sub.runtimeMs,
+          createdAt: sub.createdAt
+        });
+      }
+    }
+
+    return res.json({
+      success: true,
+      data: uniqueUserSubmissions
+    });
+  } catch (error: any) {
+    console.error('Error fetching problem leaderboard:', error);
     return res.status(500).json({ success: false, error: error.message });
   }
 };
