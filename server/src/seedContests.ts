@@ -2,7 +2,7 @@ import prisma from './config/database.js';
 import bcrypt from 'bcryptjs';
 import { generateStarterCode } from './utils/starterCodeGenerator.js';
 
-async function seedContests() {
+export async function seedContests() {
   console.log('🌱 Starting contests seeding...');
 
   try {
@@ -313,14 +313,8 @@ async function seedContests() {
     console.log('✅ Seeding contests completed successfully!');
   } catch (error) {
     console.error('❌ Seeding contests failed:', error);
-  } finally {
-    await prisma.$disconnect();
-  }
+  } 
 }
 
-// Check if run directly
-if (process.argv[1]?.includes('seedContests')) {
-  seedContests();
-}
 
 export default seedContests;

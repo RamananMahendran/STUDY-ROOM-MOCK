@@ -4,6 +4,8 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import prisma from '../src/config/database.js';
 import { generateStarterCode } from '../src/utils/starterCodeGenerator.js';
+import { seedContests } from '../src/seedContests.js';
+import { seedStudyPlans } from '../src/seedStudyPlans.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -175,7 +177,12 @@ async function seedDatabase() {
         console.log(`Updated statistics for user: ${u.email}`);
       }
     }
+    
+    console.log('Seeding contests...');
+    await seedContests();
 
+    console.log('Seeding study plans...');
+    await seedStudyPlans();
     console.log('Seeding completed successfully!');
   } catch (err) {
     console.error('Error seeding database:', err);
@@ -183,6 +190,8 @@ async function seedDatabase() {
     await client.end();
     await prisma.$disconnect();
   }
+
+  
 }
 
 seedDatabase();
