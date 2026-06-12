@@ -224,6 +224,11 @@ function DescriptionPanel({ problem }) {
       <div className="flex items-center gap-3 mb-4">
         <h1 className="text-2xl font-extrabold text-gray-100 m-0 tracking-tight">{problem.title}</h1>
         <DifficultyBadge difficulty={problem.difficulty} />
+        {problem.leetcodeUrl && (
+          <a href={problem.leetcodeUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#111622] hover:bg-[#1a2133] border border-[#1e2433] text-[11px] font-bold text-indigo-400 hover:text-indigo-300 transition-all ml-auto md:ml-0 shadow-sm shadow-indigo-600/5">
+            LeetCode <IcoExternal />
+          </a>
+        )}
       </div>
       <div className="flex flex-wrap gap-2 mb-6">
         {(problem.tags || []).map(tag => (
@@ -231,16 +236,35 @@ function DescriptionPanel({ problem }) {
         ))}
       </div>
       <div className="text-[14px] text-gray-300 leading-relaxed mb-6 font-normal space-y-4 prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: problem.description.replace(/\n/g, '<br/>') }} />
-      <div className="bg-[#1e1b4b]/40 border border-indigo-500/20 rounded-xl p-4 mb-8">
-        <span className="font-bold text-indigo-400">Hint:</span> <span className="text-indigo-200/80 text-[13px]">A hash map lets you solve this in O(n).</span>
-      </div>
+      
+      {problem.hints && problem.hints.length > 0 ? (
+        <div className="space-y-3 mb-8">
+          <h3 className="text-[11px] font-black tracking-widest text-gray-500 uppercase mb-2">Hints</h3>
+          {problem.hints.map((hint, index) => (
+            <div key={index} className="bg-[#1e1b4b]/40 border border-indigo-500/20 rounded-xl p-4">
+              <span className="font-bold text-indigo-400">Hint {index + 1}:</span> <span className="text-indigo-200/80 text-[13px]">{hint}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="bg-[#1e1b4b]/40 border border-indigo-500/20 rounded-xl p-4 mb-8">
+          <span className="font-bold text-indigo-400">Hint:</span> <span className="text-indigo-200/80 text-[13px]">A hash map lets you solve this in O(n).</span>
+        </div>
+      )}
+
       <div className="mb-8">
         <h3 className="text-[11px] font-black tracking-widest text-gray-500 uppercase mb-3">Constraints</h3>
-        <div className="bg-[#111622] border border-[#1e2433]/70 rounded-xl p-4 font-mono text-[12px] text-gray-300 space-y-1.5 shadow-inner">
-          <div>2 ≤ nums.length ≤ 10⁴</div>
-          <div>-10⁹ ≤ nums[i] ≤ 10⁹</div>
-          <div>-10⁹ ≤ target ≤ 10⁹</div>
-          <div className="pt-2 text-gray-400">Exactly one valid answer exists.</div>
+        <div className="bg-[#111622] border border-[#1e2433]/70 rounded-xl p-4 font-mono text-[12px] text-gray-300 space-y-1.5 shadow-inner whitespace-pre-wrap">
+          {problem.constraints ? (
+            problem.constraints
+          ) : (
+            <>
+              <div>2 ≤ nums.length ≤ 10⁴</div>
+              <div>-10⁹ ≤ nums[i] ≤ 10⁹</div>
+              <div>-10⁹ ≤ target ≤ 10⁹</div>
+              <div className="pt-2 text-gray-400">Exactly one valid answer exists.</div>
+            </>
+          )}
         </div>
       </div>
       {testCases.length > 0 && (
