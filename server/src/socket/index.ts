@@ -7,6 +7,7 @@ import { registerPresenceHandlers } from './handlers/presence.handler.js';
 import { registerTimerHandlers } from './handlers/timer.handler.js';
 import { registerChatHandlers } from './handlers/chat.handler.js';
 import { registerCollaborationHandlers } from './handlers/collaboration.handler.js';
+import { registerWebRTCHandlers } from './handlers/webrtc.handler.js';
 
 let ioInstance: Server | null = null;
 
@@ -69,6 +70,7 @@ export const initializeSocketServer = (httpServer: HTTPServer): Server => {
     registerTimerHandlers(io, socket);
     registerChatHandlers(io, socket);
     registerCollaborationHandlers(io, socket);
+    registerWebRTCHandlers(io, socket);
   });
 
   return io;
@@ -78,3 +80,4 @@ export const initializeSocketServer = (httpServer: HTTPServer): Server => {
 export const getIO = (): Server | null => {
   return ioInstance;
 };
+

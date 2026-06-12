@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Pricing.css";
-import Header from "./components/header.jsx";
+import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
 
 
