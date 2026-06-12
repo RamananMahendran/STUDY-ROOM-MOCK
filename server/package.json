@@ -17,7 +17,9 @@
     "docker:start": "ts-node-esm src/server.ts",
     "db:push": "prisma db push",
     "test:db": "npm run build && node dist/test-db.js",
-    "seed": "prisma db seed"
+    "seed": "prisma db seed",
+    "import:neetcode": "tsx src/scripts/importNeetCode150.ts",
+    "import:neetcode:dry": "tsx src/scripts/importNeetCode150.ts --dry-run"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
