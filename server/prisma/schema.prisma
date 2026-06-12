@@ -195,6 +195,9 @@ model Problem {
   starterCode             Json                     @default("{}") @map("starter_code")
   isPremium               Boolean                  @default(false) @map("is_premium")
   acceptanceRate          Float                    @default(0.0) @map("acceptance_rate")
+  constraints             String?
+  hints                   String[]                 @default([])
+  leetcodeUrl             String?                  @map("leetcode_url")
   createdAt               DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt               DateTime                 @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   contestProblems         ContestProblem[]

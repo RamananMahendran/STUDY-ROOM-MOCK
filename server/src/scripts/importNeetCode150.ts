@@ -14,6 +14,7 @@ const prisma = new PrismaClient({
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import { generateStarterCode } from '../utils/starterCodeGenerator.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,6 +41,97 @@ function normalizeDifficulty(difficulty: string): string {
   // Default to medium if unknown
   console.warn(`Unknown difficulty: "${difficulty}", defaulting to medium`);
   return 'medium';
+}
+
+function parseValue(valStr: string): any {
+  const clean = valStr.trim().replace(/^["']|["']$/g, '');
+  if (clean === 'true') return true;
+  if (clean === 'false') return false;
+  if (clean === 'null') return null;
+  
+  if (!isNaN(clean as any) && clean !== '') {
+    return Number(clean);
+  }
+  
+  try {
+    const jsonStr = clean.replace(/'/g, '"');
+    return JSON.parse(jsonStr);
+  } catch (e) {
+    return clean;
+  }
+}
+
+function parseInputVariables(inputStr: string): Record<string, any> {
+  const result: Record<string, any> = {};
+  const clean = inputStr.replace(/`/g, '').trim();
+  
+  const parts: string[] = [];
+  let bracketDepth = 0;
+  let inQuotes = false;
+  let currentPart = '';
+  
+  for (let i = 0; i < clean.length; i++) {
+    const char = clean[i];
+    if (char === '[' || char === '{') bracketDepth++;
+    else if (char === ']' || char === '}') bracketDepth--;
+    else if (char === '"' || char === "'") inQuotes = !inQuotes;
+    
+    if (char === ',' && bracketDepth === 0 && !inQuotes) {
+      parts.push(currentPart.trim());
+      currentPart = '';
+    } else {
+      currentPart += char;
+    }
+  }
+  if (currentPart.trim()) {
+    parts.push(currentPart.trim());
+  }
+  
+  for (const part of parts) {
+    const eqIdx = part.indexOf('=');
+    if (eqIdx !== -1) {
+      const varName = part.substring(0, eqIdx).trim().replace(/^\*+|\*+$/g, '').trim();
+      const varValueStr = part.substring(eqIdx + 1).trim();
+      result[varName] = parseValue(varValueStr);
+    } else {
+      result['input'] = parseValue(part);
+    }
+  }
+  
+  return result;
+}
+
+function parseExamples(content: string): any[] {
+  const testCases: any[] = [];
+  const lines = content.split('\n');
+  let currentInput: any = null;
+  let currentExpected: any = null;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    
+    const inputMatch = line.match(/(?:Input|Input:)\s*\*?\*?\s*:\s*(.+)/i) || line.match(/(?:Input|Input:)\s*\*?\*?\s*(.+)/i);
+    if (inputMatch) {
+      const inputStr = inputMatch[1].trim().replace(/^\*+|\*+$/g, '').replace(/^`|`$/g, '').replace(/```/g, '').trim();
+      currentInput = parseInputVariables(inputStr);
+      continue;
+    }
+    
+    const outputMatch = line.match(/(?:Output|Output:)\s*\*?\*?\s*:\s*(.+)/i) || line.match(/(?:Output|Output:)\s*\*?\*?\s*(.+)/i);
+    if (outputMatch && currentInput) {
+      const outputStr = outputMatch[1].trim().replace(/^\*+|\*+$/g, '').replace(/^`|`$/g, '').replace(/```/g, '').trim();
+      currentExpected = parseValue(outputStr);
+      testCases.push({
+        input: currentInput,
+        expected: currentExpected,
+        description: `Example ${testCases.length + 1}`
+      });
+      currentInput = null;
+      currentExpected = null;
+    }
+  }
+  
+  return testCases;
 }
 
 // ── Parser ────────────────────────────────────────────────────────────────────
@@ -803,7 +895,15 @@ async function importAllProblems(problemsPath: string) {
       const problemNumber = numberMatch ? parseInt(numberMatch[1]) : i + 1;
 
       const slug = generateSlug(problemData.title, problemNumber);
-      const starterCode = getStarterCode(problemData.title);
+      
+      // Parse examples from markdown content as test cases
+      let testCases = parseExamples(content);
+      if (testCases.length === 0) {
+        testCases = generateTestCases(problemData.title, problemData.difficulty);
+      }
+
+      // Generate starter code with driver functions using the generated test cases
+      const starterCode = generateStarterCode(problemData.title, slug, testCases);
       
       // Normalize difficulty to match database constraint (lowercase)
       const normalizedDifficulty = normalizeDifficulty(problemData.difficulty);
@@ -817,10 +917,13 @@ async function importAllProblems(problemsPath: string) {
           description: problemData.description || problemData.examples || 'Problem description',
           difficulty: normalizedDifficulty,
           tags: problemData.topics.slice(0, 5),
-          testCases: generateTestCases(problemData.title, problemData.difficulty),
+          testCases,
           starterCode,
           isPremium: false,
           acceptanceRate: Math.random() * 40 + 30,
+          constraints: problemData.constraints,
+          hints: problemData.hints,
+          leetcodeUrl: problemData.leetcodeUrl,
         },
       });
 
