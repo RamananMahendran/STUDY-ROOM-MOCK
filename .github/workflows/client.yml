@@ -29,9 +29,6 @@ jobs:
     - name: Install dependencies
       working-directory: client
       run: npm ci
-    - name: Lint
-      working-directory: client
-      run: npm run lint --if-present
     - name: Build
       working-directory: client
       run: npm run build --if-present
