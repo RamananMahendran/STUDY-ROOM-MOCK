@@ -1,0 +1,47 @@
+name: Server Code Build CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "server/src/**"
+      - "server/package.json"
+      - "server/tsconfig.json"
+      - "!server/src/test-db.ts"
+      - "!server/src/test-community.ts"
+      - "!server/src/test-insights.ts"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "server/src/**"
+      - "server/package.json"
+      - "server/tsconfig.json"
+      - "!server/src/test-db.ts"
+      - "!server/src/test-community.ts"
+      - "!server/src/test-insights.ts"
+
+jobs:
+  server-build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: 'server/package-lock.json'
+    - name: Install dependencies
+      working-directory: server
+      run: npm ci
+    - name: Generate Prisma Client
+      working-directory: server
+      run: npx prisma generate
+    - name: Build TypeScript Code
+      working-directory: server
+      run: npm run build --if-present
