@@ -16,7 +16,7 @@ import MockInterview from './pages/practice/MockInterview.jsx';
 import Playground from './pages/practice/Playground.jsx';
 import ProblemsPage from './pages/practice/ProblemsPage.jsx';
 import ProblemPage from './pages/practice/ProblemPage.jsx';
-import Community from './pages/Community.jsx';
+import Community from './pages/community.jsx';
 import ReferAndEarn from './pages/ReferAndEarn.jsx';
 import FloatingMessage from './pages/components/FloatingMessage.jsx';
 import StudyPlans from './pages/practice/StudyPlans.jsx';

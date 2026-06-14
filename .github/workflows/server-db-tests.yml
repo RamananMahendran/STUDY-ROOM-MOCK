@@ -1,0 +1,86 @@
+name: Server Database Tests CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "server/prisma/**"
+      - "server/src/config/database.ts"
+      - "server/src/test-db.ts"
+      - "server/src/test-community.ts"
+      - "server/src/test-insights.ts"
+      - "server/package.json"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "server/prisma/**"
+      - "server/src/config/database.ts"
+      - "server/src/test-db.ts"
+      - "server/src/test-community.ts"
+      - "server/src/test-insights.ts"
+      - "server/package.json"
+
+jobs:
+  server-db-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: studyroom_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d studyroom_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 3s
+          --health-retries 3
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyroom_db?schema=public
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: 'server/package-lock.json'
+    - name: Install dependencies
+      working-directory: server
+      run: npm ci
+    - name: Generate Prisma Client
+      working-directory: server
+      run: npx prisma generate
+    - name: Push Schema to Database
+      working-directory: server
+      run: npx prisma db push
+    - name: Run Database and API Tests
+      working-directory: server
+      run: npm run test:db
+    - name: Run Community Integration Tests
+      working-directory: server
+      run: npx tsx src/test-community.ts
+    - name: Run Insights Integration Tests
+      working-directory: server
+      run: npx tsx src/test-insights.ts
