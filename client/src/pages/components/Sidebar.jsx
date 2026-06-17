@@ -323,6 +323,30 @@ export default function Sidebar({ active, onNav }) {
             )}
           </div>
         ))}
+
+        {/* Admin Panel — only visible for admin users */}
+        {(() => {
+          try {
+            const u = JSON.parse(localStorage.getItem("user") || "{}");
+            if (u.role !== "admin") return null;
+          } catch { return null; }
+          return (
+            <div style={{ marginTop: 4, paddingTop: 8, borderTop: "1px solid var(--border)" }}>
+              <button
+                onClick={() => go("admin", "/admin")}
+                style={{
+                  ...btnStyle(active === "admin"),
+                  color: active === "admin" ? "#f59e0b" : "var(--text-muted)",
+                  backgroundColor: active === "admin" ? "rgba(245,158,11,0.12)" : "transparent",
+                }}
+              >
+                <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+                <span style={{ flex: 1 }}>Admin Panel</span>
+                <span style={{ fontSize: 8, fontWeight: 800, padding: "1px 5px", borderRadius: 10, backgroundColor: "rgba(245,158,11,0.15)", color: "#f59e0b" }}>⚡</span>
+              </button>
+            </div>
+          );
+        })()}
       </nav>
 
       {/* ── User tray ── */}

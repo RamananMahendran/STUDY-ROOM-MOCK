@@ -57,9 +57,8 @@ export async function seedContests() {
 
     const problemMap = new Map(problems.map(p => [p.slug, p.id]));
     
-    // Fallback in case some slugs are missing
     const getProblemId = (slug: string): number => {
-      const id = problemMap.get(slug);
+      const id = problemMap.get(slug) as number | undefined;
       if (id !== undefined) return id;
       return problems[0].id; // Return first found problem as fallback
     };

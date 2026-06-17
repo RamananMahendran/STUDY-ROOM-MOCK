@@ -30,6 +30,15 @@ import PlacementSprint30 from './pages/practice/plans/placement-sprint-30.jsx';
 import FaangPrep45 from './pages/practice/plans/faang-prep-45.jsx';
 import ArraysMastery14 from './pages/practice/plans/arrays-mastery-14.jsx';
 import WeeklyChallenge7 from './pages/practice/plans/weekly-challenge-7.jsx';
+import AdminLayout from './pages/admin/AdminLayout.jsx';
+import AdminDashboard from './pages/admin/AdminDashboard.jsx';
+import AdminUsers from './pages/admin/AdminUsers.jsx';
+import AdminProblems from './pages/admin/AdminProblems.jsx';
+import AdminContests from './pages/admin/AdminContests.jsx';
+import AdminRooms from './pages/admin/AdminRooms.jsx';
+import AdminSubmissions from './pages/admin/AdminSubmissions.jsx';
+import AdminStudyPlans from './pages/admin/AdminStudyPlans.jsx';
+import AdminAuditLog from './pages/admin/AdminAuditLog.jsx';
 
 function App() {
   return (
@@ -69,6 +78,18 @@ function App() {
         <Route path="/promise" element={<Promise />} />
         <Route path="/changelog" element={<Changelog />} />
         <Route path="/room/:roomId" element={<Room />} />
+
+        {/* Admin Panel */}
+        <Route element={<AdminLayout />}>
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/problems" element={<AdminProblems />} />
+          <Route path="/admin/contests" element={<AdminContests />} />
+          <Route path="/admin/rooms" element={<AdminRooms />} />
+          <Route path="/admin/submissions" element={<AdminSubmissions />} />
+          <Route path="/admin/study-plans" element={<AdminStudyPlans />} />
+          <Route path="/admin/audit-log" element={<AdminAuditLog />} />
+        </Route>
 
         <Route path="*" element={<Home />} /> {/* Fallback route for unmatched paths */}  
       </Routes>

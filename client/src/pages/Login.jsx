@@ -255,6 +255,7 @@ export default function Login() {
         name: data.username,
         email: data.email,
         streak: data.streak || 0,
+        role: data.role
       }));
       if (window.addNotification) window.addNotification('Logged in with Google successfully!');
       navigate('/home');
@@ -396,7 +397,8 @@ export default function Login() {
                       username: data.username,
                       name: data.username,
                       email: data.email,
-                      streak: data.streak || 10
+                      streak: data.streak || 10,
+                      role: data.role
                     }));
 
                     if (window.addNotification) {
