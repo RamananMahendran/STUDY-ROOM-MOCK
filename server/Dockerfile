@@ -42,7 +42,7 @@ FROM node:22-alpine AS builder
 WORKDIR /usr/src/app
 COPY package*.json ./
 COPY prisma ./prisma/
-RUN npm ci
+RUN npm install
 
 # ⚡ COPY EVERYTHING FIRST
 COPY . .
