@@ -348,9 +348,36 @@ const User = {
   },
 
   async upgradeToPro(userId: number) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new Error("User not found");
+    
+    // Only upgrade if they are not already admin to prevent accidental downgrade
+    const newRole = user.role === 'admin' ? 'admin' : 'pro';
+
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { role: 'pro' }
+      data: { role: newRole }
+    });
+
+    return {
+      ...updatedUser,
+      username: updatedUser.name,
+      streak: updatedUser.streakCount,
+      last_active_at: updatedUser.lastActiveAt,
+      created_at: updatedUser.createdAt,
+      avatar_url: updatedUser.avatarUrl,
+    };
+  },
+
+  async setRole(userId: number, role: string) {
+    const validRoles = ['free', 'pro', 'admin'];
+    if (!validRoles.includes(role)) {
+      throw new Error(`Invalid role "${role}". Must be one of: ${validRoles.join(', ')}`);
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { role }
     });
 
     return {

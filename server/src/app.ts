@@ -14,6 +14,7 @@ import studyPlanRoutes from './modules/studyPlan/studyPlanRoutes.js';
 import sessionRoutes from './modules/sessions/sessionRoutes.js';
 import friendshipRoutes from './modules/friendship/friendshipRoutes.js';
 import leaderboardRoutes from './modules/leaderboard/leaderboardRoutes.js';
+import adminRoutes from './modules/admin/adminRoutes.js';
 
 const app: Application = express();
 
@@ -46,6 +47,7 @@ app.use('/api/study-plans', studyPlanRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/friendships', friendshipRoutes);
 app.use('/api/leaderboards', leaderboardRoutes);
+app.use('/api/admin', adminRoutes);          // Admin Panel (protected)
 
 // 404 Handler
 app.use(notFound);
